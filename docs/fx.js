@@ -19,6 +19,7 @@
     root.style.setProperty('--fa', acc);
     root.style.setProperty('--fb', th.accentSoft);
     root.style.setProperty('--fi', th.ink);
+    root.style.setProperty('--fm', th.muted);
     root.style.setProperty('--fg', th.accentSoft + '48');
     // фольга: тёмный, светлый и блик из акцента
     root.style.setProperty('--fa1', shade(acc, -0.28));
@@ -216,30 +217,51 @@
 
   /* ---------- 6. Календарь и маршрут ---------- */
   var actDone = false;
+  var ICO = {
+    cal: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4" /> <path d="M16 2v4" /> <path d="M21 13V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8" /> <path d="M3 10h18" /> <path d="M16 19h6" /> <path d="M19 16v6" /></svg>', pin: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /> <circle cx="12" cy="10" r="3" /></svg>', nav: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11" /></svg>', car: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2h4" /> <path d="m21 8-2 2-1.5-3.7A2 2 0 0 0 15.646 5H8.4a2 2 0 0 0-1.903 1.257L5 10 3 8" /> <path d="M7 14h.01" /> <path d="M17 14h.01" /> <rect width="18" height="8" x="3" y="10" rx="2" /> <path d="M5 18v2" /> <path d="M19 18v2" /></svg>'
+  };
+  function monthCard(I, T, th) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(I.date); if (!m) return '';
+    var y = +m[1], mo = +m[2] - 1, d = +m[3];
+    var first = new Date(y, mo, 1).getDay(), dim = new Date(y, mo + 1, 0).getDate();
+    var lead = (first + 6) % 7; // неделя с понедельника
+    var wd = [1, 2, 3, 4, 5, 6, 0].map(function (i) { return '<i>' + esc(T.days[i].slice(0, 2)) + '</i>'; }).join('');
+    var cells = '', i;
+    for (i = 0; i < lead; i++) cells += '<b class="e"></b>';
+    for (i = 1; i <= dim; i++) cells += i === d ? '<b class="on"><span>' + i + '</span></b>' : '<b>' + i + '</b>';
+    return '<div class="fx-cal"><div class="hd"><span class="mn">' + esc(T.months[mo]) + '</span><span class="yr">' + y + '</span></div>' +
+      '<div class="wk">' + wd + '</div><div class="dg">' + cells + '</div></div>';
+  }
   var setupActions = safe(function () {
     if (actDone) return; var c = getCtx(); if (!c) return;
     var I = c.I, T = c.T; if (!I.date) return;
     var anchor = null; var cards = document.querySelectorAll('#st > div');
     cards.forEach(function (d) { if (d.querySelector('a[href^="http"][target="_blank"]') && /border-radius:16px/.test(d.getAttribute('style') || '')) anchor = d; });
     if (!anchor) { cards.forEach(function (d) { if (!anchor && (d.textContent || '').indexOf(T.where) >= 0 && d.getAttribute('style') && d.getAttribute('style').indexOf('border-radius:16px') >= 0) anchor = d; }); }
-    if (!anchor) anchor = $('cdw'); if (!anchor) return; actDone = true;
+    var cdw = $('cdw'); if (!cdw) return; actDone = true;
     var place = [I.place, I.addr].filter(Boolean).join(', ');
     var q = encodeURIComponent(place);
     var mapUrl = /^https?:\/\//.test(I.map) ? I.map : (place ? 'https://www.google.com/maps/search/?api=1&query=' + q : '');
     var yandex = place ? 'https://yandex.com/maps/?text=' + q : '';
-    var taxi = place ? 'https://3.redirect.appmetrica.yandex.com/route?end-lat=&end-lon=&appmetrica_tracking_id=1178268795219780156&ref=marhabo&end-name=' + q : '';
-    var ico = {
-      cal: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M12 14v4M10 16h4"/></svg>',
-      pin: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>',
-      car: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V11l2-5h10l2 5v5M3 16h18M7 19v-3M17 19v-3"/><circle cx="8" cy="13" r=".6"/><circle cx="16" cy="13" r=".6"/></svg>',
-      gm: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2ZM9 4v14M15 6v14"/></svg>'
-    };
-    var box = document.createElement('div'); box.className = 'fx-act';
-    box.innerHTML = '<button type="button" class="wide" id="fxcal">' + ico.cal + '<span>' + T.addCal + '</span></button>' +
-      (mapUrl ? '<a href="' + esc(mapUrl) + '" target="_blank" rel="noreferrer">' + ico.pin + '<span>' + T.route + '</span></a>' : '') +
-      (yandex ? '<a href="' + esc(yandex) + '" target="_blank" rel="noreferrer">' + ico.gm + '<span>' + T.yandex + '</span></a>' : '') +
-      (taxi ? '<a class="wide" href="' + esc(taxi) + '" target="_blank" rel="noreferrer">' + ico.car + '<span>' + T.taxi + '</span></a>' : '');
-    anchor.appendChild(box);
+    // такси: если в ссылке на карту есть координаты, открываем Яндекс Go точно; иначе маршрут «такси» в Яндекс Картах по адресу
+    var ll = null, mm;
+    var mu = String(I.map || '');
+    if ((mm = /[?&](?:ll|pt)=(-?\d+\.\d+)[,%2C]+(-?\d+\.\d+)/i.exec(mu))) ll = [mm[2], mm[1]]; // Яндекс: долгота,широта
+    else if ((mm = /@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(mu)) || (mm = /[?&](?:q|query|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/i.exec(mu)) || (mm = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(mu))) ll = [mm[1], mm[2]];
+    if (ll && (Math.abs(ll[0]) > 90 || Math.abs(ll[1]) > 180)) ll = null;
+    var taxi = ll ? 'https://go.yandex/route?end-lat=' + ll[0] + '&end-lon=' + ll[1] : (place ? 'https://yandex.com/maps/?rtext=~' + q + '&rtt=taxi' : '');
+    // 1) календарь месяца сразу после табло обратного отсчёта
+    var calBox = document.createElement('div'); calBox.className = 'fx-calw';
+    calBox.innerHTML = monthCard(I, T, c.th) + '<button type="button" class="fx-addcal" id="fxcal">' + ICO.cal + '<span>' + T.addCal + '</span></button>';
+    cdw.parentNode.insertBefore(calBox, cdw.nextSibling);
+    // 2) кнопки маршрута внутри карточки «Где»
+    if (anchor && (mapUrl || yandex || taxi)) {
+      var box = document.createElement('div'); box.className = 'fx-act';
+      box.innerHTML = (mapUrl ? '<a href="' + esc(mapUrl) + '" target="_blank" rel="noreferrer">' + ICO.pin + '<span>' + T.route + '</span></a>' : '') +
+        (yandex ? '<a href="' + esc(yandex) + '" target="_blank" rel="noreferrer">' + ICO.nav + '<span>' + T.yandex + '</span></a>' : '') +
+        (taxi ? '<a class="wide tx" href="' + esc(taxi) + '" target="_blank" rel="noreferrer">' + ICO.car + '<span>' + T.taxi + '</span></a>' : '');
+      anchor.appendChild(box);
+    }
     $('fxcal').addEventListener('click', function () { downloadICS(c); });
   });
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }

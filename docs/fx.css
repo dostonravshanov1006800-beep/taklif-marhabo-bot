@@ -129,13 +129,33 @@
 #fx .pt{display:none}
 
 /* ---------- 6. Календарь, маршрут, такси ---------- */
-.fx-act{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.fx-act a,.fx-act button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 10px;border-radius:12px;text-decoration:none;cursor:pointer;
-  font:600 10.5px/1.2 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--fb,#EADBC4);color:var(--fi,#2B2219);background:var(--fg,rgba(234,219,196,.28));
-  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 12px -8px rgba(60,40,15,.45);transition:transform .15s,box-shadow .15s}
-.fx-act a:active,.fx-act button:active{transform:translateY(1px) scale(.985);box-shadow:0 1px 0 rgba(255,255,255,.7) inset}
-.fx-act svg{flex:none}
+.fx-calw{margin-top:26px}
+.fx-cal{border-radius:18px;padding:18px 16px 14px;background:linear-gradient(180deg,rgba(255,255,255,.85),var(--fg,rgba(234,219,196,.3)));border:1px solid var(--fb,#EADBC4);
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 18px 30px -24px rgba(60,40,15,.5)}
+.fx-cal .hd{display:flex;align-items:baseline;justify-content:center;gap:10px;padding-bottom:12px;margin-bottom:10px;border-bottom:1px solid var(--fb,#EADBC4)}
+.fx-cal .mn{font:500 24px/1 'Cormorant Garamond',Georgia,serif;text-transform:capitalize;color:var(--fi,#2B2219);letter-spacing:.02em}
+.fx-cal .yr{font:600 11px Manrope,sans-serif;letter-spacing:.3em;color:var(--fa,#B28A50)}
+.fx-cal .wk,.fx-cal .dg{display:grid;grid-template-columns:repeat(7,1fr);text-align:center}
+.fx-cal .wk i{font:600 9px Manrope,sans-serif;font-style:normal;letter-spacing:.12em;text-transform:uppercase;color:var(--fm,#8B7A66);padding:2px 0 8px;opacity:.85}
+.fx-cal .dg b{font:500 15px/1 'Cormorant Garamond',Georgia,serif;font-weight:600;color:var(--fi,#2B2219);height:34px;display:grid;place-items:center;opacity:.78}
+.fx-cal .dg b.e{opacity:0}
+.fx-cal .dg b.on{opacity:1}
+.fx-cal .dg b.on span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:16px;font-weight:700;
+  background:radial-gradient(circle at 32% 28%,var(--fa2,#d9b36f),var(--fa,#B28A50) 70%);box-shadow:0 0 0 4px rgba(255,255,255,.55),0 8px 16px -6px var(--fa,#B28A50);position:relative}
+.fx-cal .dg b.on span:after{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px solid var(--fa,#B28A50);opacity:.45;animation:fxpulse 2.6s ease-out infinite}
+@keyframes fxpulse{0%{transform:scale(.8);opacity:.6}100%{transform:scale(1.35);opacity:0}}
+.fx-addcal{width:100%;margin-top:12px}
+.fx-act{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fx-act a,.fx-addcal{display:flex;align-items:center;justify-content:center;gap:9px;min-height:50px;padding:0 12px;border-radius:14px;text-decoration:none;cursor:pointer;
+  font:700 10.5px/1.2 Manrope,sans-serif;letter-spacing:.13em;text-transform:uppercase;border:1px solid var(--fb,#EADBC4);color:var(--fi,#2B2219);
+  background:linear-gradient(180deg,#fff,rgba(255,255,255,.7));box-shadow:0 1px 0 #fff inset,0 10px 18px -12px rgba(60,40,15,.55);transition:transform .15s,box-shadow .15s;-webkit-tap-highlight-color:transparent}
+.fx-act a svg,.fx-addcal svg{color:var(--fa,#B28A50);flex:none;width:18px;height:18px;min-width:18px}
+.fx-act a span,.fx-addcal span{min-width:0}
+.fx-act a:active,.fx-addcal:active{transform:translateY(1px) scale(.985);box-shadow:0 1px 0 #fff inset}
 .fx-act .wide{grid-column:1/-1}
+.fx-act .tx{background:linear-gradient(180deg,#FFD84D,#F7C21A);border-color:#E9B40E;color:#2B2219;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 12px 20px -12px rgba(190,140,0,.8)}
+.fx-act .tx svg{color:#2B2219}
+@media(max-width:340px){.fx-act{grid-template-columns:1fr}.fx-act a{letter-spacing:.08em}}
 
 /* ---------- 10. Музыка: эквалайзер и громкость ---------- */
 .mb{position:relative;overflow:hidden}
