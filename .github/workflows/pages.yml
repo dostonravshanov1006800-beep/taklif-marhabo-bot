@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths: ['docs/**', '.github/workflows/pages.yml']
+  schedule:
+    - cron: '17 3 * * *'   # раз в сутки перепубликует сайт на случай сбоя
   workflow_dispatch:
 
 permissions:
@@ -23,12 +25,6 @@ jobs:
       url: ${{ steps.d.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Подставить имя бота
-        run: |
-          BOT=$(curl -s "https://api.telegram.org/bot${BOT_TOKEN}/getMe" | python3 -c "import sys,json;print(json.load(sys.stdin)['result']['username'])")
-          sed -i "s/__BOT__/${BOT}/" docs/index.html
-        env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: docs }

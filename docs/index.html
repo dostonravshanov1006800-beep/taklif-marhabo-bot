@@ -51,7 +51,7 @@ textarea{min-height:84px;resize:vertical}
 <div id="app"></div>
 <script type="module">
 import {TPL,pack} from './shared.js';
-const BOT='__BOT__', OWNER_KEY='taklif_v1';
+const BOT='Taklifnomai_bot', OWNER_KEY='taklif_v1';
 const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{if(tg.isVersionAtLeast('6.1')){tg.setHeaderColor('#FCF9F3');tg.setBackgroundColor('#FCF9F3')}}catch(e){}}
 const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{};
 const OWNER=String(me.id||'');

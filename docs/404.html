@@ -1,0 +1,22 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Marhabo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}body{min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px;font-family:Manrope,system-ui,sans-serif;background:radial-gradient(120% 70% at 80% -10%,#F7EEDF 0%,#FCF9F3 55%,#FDFBF7 100%);color:#2B2219}
+small{display:block;font-size:10px;letter-spacing:.38em;text-transform:uppercase;color:#A08D74}
+h1{font-family:'Cormorant Garamond',Georgia,serif;font-weight:500;font-size:38px;margin:8px 0 10px}
+p{color:#8B7A66;font-size:14px;line-height:1.6;max-width:300px;margin:0 auto}
+.sp{width:30px;height:30px;border:2px solid #EADBC4;border-top-color:#B28A50;border-radius:99px;margin:22px auto 0;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+a{display:inline-block;margin-top:22px;padding:12px 22px;border-radius:12px;background:#2B2219;color:#fff;text-decoration:none;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+</style></head><body><div>
+<small>Marhabo</small><h1>Загружаем…</h1>
+<p>Страница обновляется. Это займёт несколько секунд.<br><span style="opacity:.8">Sahifa yangilanmoqda, bir necha soniya kuting.</span></p>
+<div class="sp"></div><a href="./">Обновить / Yangilash</a>
+<script>
+// Автоповтор: после публикации сайта страница сама откроется. Не больше 20 попыток.
+var n=+(sessionStorage.getItem('r404')||0);
+if(n<20){sessionStorage.setItem('r404',n+1);setTimeout(function(){location.replace(location.pathname.replace(/[^\/]*$/,'')+(location.search||''))},3000)}
+else{sessionStorage.removeItem('r404')}
+</script></div></body></html>
