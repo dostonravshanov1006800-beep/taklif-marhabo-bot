@@ -16,6 +16,7 @@ body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--i
 .top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 6px}
 .logo{font-size:27px;line-height:1}.logo small{font-family:Manrope;font-size:8.5px;letter-spacing:.26em;color:#A08D74;text-transform:uppercase;margin-left:7px}
 .nav{display:flex;align-items:center;gap:12px}
+@media(max-width:340px){.nav{gap:4px}.nav a,.nav button.l{letter-spacing:.1em;padding:0 2px}.lang button{padding:0 8px}}
 .nav a,.nav button.l{font:inherit;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;min-height:40px;padding:0 4px}
 .lang{display:inline-flex;border:1px solid #E4D8C6;border-radius:99px;padding:2px;background:rgba(255,255,255,.55)}
 .lang button{border:0;background:none;font:inherit;font-size:10px;letter-spacing:.14em;color:#7A6A57;border-radius:99px;padding:0 12px;min-height:34px;cursor:pointer}
@@ -79,6 +80,11 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .prow{display:grid;grid-template-columns:100px 1fr 40px;gap:8px;margin-bottom:8px}
 .x{border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer;font-size:18px;color:#8B7A66}
 .hint{font-size:11.5px;color:#A08D74;margin-top:7px;line-height:1.5}
+.pvf{position:fixed;inset:0;z-index:60;background:#14100b;display:flex;flex-direction:column}
+.pvf .tb{flex:none;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));color:#EDE3D2;font-size:12px}
+.pvf .tb button{border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;border-radius:99px;min-height:36px;padding:0 16px;font:600 12px Manrope,sans-serif;cursor:pointer}
+.pvf iframe{flex:1;width:100%;border:0;background:#FCF9F3}
+.pvbtn{width:100%;margin-top:10px;min-height:46px;border:1px solid #B28A50;background:#fff;color:#8B6A33;border-radius:12px;font:700 12px Manrope,sans-serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
 .pv{margin-top:26px}.pv .t{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#A08D74;margin-bottom:10px}.pv .t:before,.pv .t:after{content:"";flex:1;height:1px;background:var(--line)}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(252,249,243,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
 .bar .b{width:100%;justify-content:center}
@@ -110,11 +116,27 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .b.s{padding:10px 16px;font-size:10px;letter-spacing:.14em}
 .empty{text-align:center;color:var(--mut);padding:50px 14px;font-size:14px;line-height:1.6}
 /* панель */
+.sm2{margin-top:16px;padding:16px;border:1px solid #E7DAC6;border-radius:16px;background:#fff}
+.sm2 h4{margin:0 0 12px;font:600 11px Manrope,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#8B7A66}
+.sm2 .big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.sm2 .big b{font:500 34px 'Cormorant Garamond',Georgia,serif;color:#2B2219}.sm2 .big span{font-size:13px;color:#8B7A66}
+.sm2 .bar2{display:flex;height:10px;border-radius:99px;overflow:hidden;background:#F3EADB;margin:12px 0 8px}.sm2 .bar2 i{display:block;height:100%}
+.sm2 .lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#8B7A66}.sm2 .lg em{font-style:normal;display:inline-flex;align-items:center;gap:5px}.sm2 .lg em:before{content:'';width:8px;height:8px;border-radius:99px;background:var(--c)}
+.sm2 .rw{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #F0E7D9;font-size:13px;color:#8B7A66}.sm2 .rw b{color:#2B2219;font-weight:600;text-align:right}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
 .stat{border:1px solid var(--line);background:rgba(255,255,255,.6);border-radius:14px;padding:12px 10px;transition:.25s;cursor:pointer;font:inherit;text-align:left;color:inherit}
 .stat.on{background:#fff;box-shadow:0 0 0 1.5px var(--c) inset}
 .stat p{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#A08D74}.stat b{display:block;margin-top:5px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:28px;line-height:1;color:var(--c)}
 .gl{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.vgrid{display:grid;gap:10px;margin-top:8px}
+.vi{display:flex;gap:10px;align-items:center;padding:10px;border:1px solid #E7DAC6;border-radius:14px;background:#fff}
+.vi .vt{flex:none;position:relative;width:78px;border-radius:9px;background:#2a2118 center/cover;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff}
+.vi .vt.l{aspect-ratio:16/9}.vi .vt.p{aspect-ratio:9/16;width:46px}
+.vi .vt svg{opacity:.9}
+.vi .vm{flex:1;min-width:0;font-size:12px;color:#8B7A66;line-height:1.4}.vi .vm b{display:block;color:#2B2219;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi .vo{display:flex;gap:6px;margin-top:6px}
+.vi .vo button{flex:1;min-height:34px;border:1px solid #E7DAC6;border-radius:9px;background:#fff;font:600 11px Manrope,sans-serif;color:#8B7A66;cursor:pointer}
+.vi .vo button.on{background:#B28A50;border-color:#B28A50;color:#fff}
+.vi .vx{flex:none;width:34px;height:34px;border:0;border-radius:99px;background:#F3EADB;color:#8B7A66;font-size:18px;cursor:pointer}
 .g{display:flex;align-items:center;gap:7px;padding:11px 12px;border-bottom:1px solid #F0E7D9}.g:last-child{border:0}
 .av{flex:none;width:36px;height:36px;border-radius:99px;background:#F5EBDB;color:#8A6A3B;display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-size:16px}
 .g .n{flex:1;min-width:0}.g .n b{display:block;font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -140,10 +162,10 @@ let LANG=localStorage.getItem('lg')||(me.language_code||'ru').slice(0,2); if(LAN
 const TX={
 ru:{ey:'Приглашения ручной работы',h:'Приглашение, которое запомнят',sub:'Красивая открытка с обращением по имени для каждого гостя. А вы видите, кто открыл приглашение и кто придёт.',cta:'Создать приглашение',demo:'Посмотреть пример',f1:'Личная ссылка для каждого гостя',f2:'Живая открытка вместо PDF',f3:'Ответы «Приду» и «Не смогу» сразу',f4:'Фото, галерея и музыка внутри',tt:'Шаблоны для любого праздника',ts:'Свадьба, день рождения, юбилей, никах, Навруз и другие торжества.',how:'Как это работает',s1:'Выберите шаблон',s1d:'Свадьба, день рождения, юбилей, никах, Навруз — стиль подбирается сам.',s2:'Заполните детали',s2d:'Имена, дата и место, фотографии, музыка, программа вечера и слова для гостей.',s3:'Отправьте ссылки',s3d:'У каждого гостя своя ссылка с его именем. Открытия и ответы — в панели.',ft:'Сделано с любовью к деталям',prof:'Мои',opened:'Открыли',choose:'Выбрать',guestS:'Дильноза',
  new:'Новое приглашение',edit:'Редактирование',fsub:'Заполните детали — открытка соберётся сама.',tpl:'Шаблон',n1:'Имя',n2:'Второе имя',date:'Дата',time:'Время',opt:'необязательно',place:'Место',addr:'Адрес',map:'Ссылка на карту',photos:'Фотографии',cover:'Обложка',portrait:'Портрет',gallery:'Галерея',photoHint:'Прямая https-ссылка на файл. Если пусто, подберём фото под шаблон.',galHint:'До 6 ссылок, по одной в строке.',music:'Музыка',musicHint:'Прямая ссылка на MP3. Если пусто, играет музыка шаблона.',text:'Текст приглашения',prog:'Программа вечера',what:'Что происходит',addp:'Добавить пункт',dress:'Дресс-код',contact:'Контакт для вопросов',pv:'Предпросмотр',save:'Создать приглашение',saveE:'Сохранить изменения',needs:'Заполните имя и дату',
- none:'Пока нет приглашений',noneS:'Создайте первое — оно появится здесь.',open:'Открыть',edit2:'Изменить',panel:'Панель',back:'Назад',total:'Гостей',cOp:'Открыли',cYes:'Придут',cNo:'Не смогут',cPe:'Не ответили',addg:'Добавить гостей',addh:'Каждое имя с новой строки',add:'Добавить',gl:'Список гостей',emp:'Пока нет гостей',empS:'Добавьте имена — для каждого гостя появится личная ссылка.',st:{y:'Придёт',n:'Не сможет',p:'Не ответил'},openedAt:'открыл',share:'Отправить',copy:'Скопировать',copied:'Скопировано',gen:'Общая ссылка',del:'Удалить',delc:'Удалить приглашение?',created:'Приглашение готово',createdS:'Теперь добавьте гостей: у каждого будет личная ссылка с его именем.',toG:'Добавить гостей',stale:'Данные обновляются раз в минуту-две',gcount:'гостей',pubOk:'Опубликовано, ссылка короткая',pubOld:'Вы изменили приглашение. Нажмите «Обновить», чтобы гости увидели новое.',pubNew:'Нажмите «Опубликовать»: откроется бот, отправьте сообщение, и ссылка станет короткой и красивой.',pubGo:'Опубликовать',pubUp:'Обновить',pubChk:'Проверить ссылку',needName:'Сначала укажите имя',mediaBig:'Файл больше 25 МБ',badimg:'Не удалось прочитать фото',choose2:'Выбрать файл',replace:'Заменить',rm:'Убрать',saved:'Сохранено навсегда',local:'Только на этом телефоне',use:'Выбрать',toBot:'Сохранить навсегда через бота',toBotH:'Отправьте тот же файл боту как фото или файл (скрепка → Файл), затем вернитесь сюда: приложение само найдёт его и подставит. Если не сработало, нажмите «Проверить файлы».',chk:'Проверить файлы',cov2:'Обложка',cov2s:'Первое фото, которое откроет гость',por2:'Портрет',por2s:'Фото пары или именинника',gal2:'Фотогалерея',gal2s:'До 6 фото',mus2:'Музыка',mus2s:'MP3, M4A. Если не выбрать, играет музыка шаблона',addph:'Добавить фото',fnote:'Файл пока виден только вам. Чтобы его увидели гости, отправьте его боту: он сохранит файл, и здесь всё подставится само.',syncN:'Ждут сохранения: ',syncW:'Ищем файл в хранилище…',syncOk:'Готово: файлы сохранены для всех',nofiles:'Бот пока не получил файлов'},
+ none:'Пока нет приглашений',noneS:'Создайте первое — оно появится здесь.',open:'Открыть',edit2:'Изменить',panel:'Панель',back:'Назад',total:'Гостей',cOp:'Открыли',cYes:'Придут',cNo:'Не смогут',cPe:'Не ответили',addg:'Добавить гостей',addh:'Каждое имя с новой строки',add:'Добавить',gl:'Список гостей',emp:'Пока нет гостей',empS:'Добавьте имена — для каждого гостя появится личная ссылка.',st:{y:'Придёт',n:'Не сможет',p:'Не ответил'},sum:'Итоги',sumOpen:'Открыли {n}% гостей',sumRate:'Ответили {n}% гостей',sumLast:'Последний ответ',sumDay:'за 24 часа',sumNone:'Пока никто не ответил',sumAgo:'{n} мин назад',sumAgoH:'{n} ч назад',sumNow:'только что',gOf:'из',pvFull:'Посмотреть как гость',pvClose:'Закрыть',pvHint:'Так приглашение увидит гость. Нажмите на печать.',openedAt:'открыл',share:'Отправить',copy:'Скопировать',copied:'Скопировано',gen:'Общая ссылка',del:'Удалить',delc:'Удалить приглашение?',created:'Приглашение готово',createdS:'Теперь добавьте гостей: у каждого будет личная ссылка с его именем.',toG:'Добавить гостей',stale:'Данные обновляются раз в минуту-две',gcount:'гостей',pubOk:'Опубликовано, ссылка короткая',pubOld:'Вы изменили приглашение. Нажмите «Обновить», чтобы гости увидели новое.',pubNew:'Нажмите «Опубликовать»: откроется бот, отправьте сообщение, и ссылка станет короткой и красивой.',pubGo:'Опубликовать',pubUp:'Обновить',pubChk:'Проверить ссылку',needName:'Сначала укажите имя',mediaBig:'Файл больше 25 МБ',badimg:'Не удалось прочитать фото',choose2:'Выбрать файл',replace:'Заменить',rm:'Убрать',saved:'Сохранено навсегда',local:'Только на этом телефоне',use:'Выбрать',toBot:'Сохранить навсегда через бота',toBotH:'Отправьте тот же файл боту как фото или файл (скрепка → Файл), затем вернитесь сюда: приложение само найдёт его и подставит. Если не сработало, нажмите «Проверить файлы».',chk:'Проверить файлы',cov2:'Обложка',cov2s:'Первое фото, которое откроет гость',por2:'Портрет',por2s:'Фото пары или именинника',gal2:'Фотогалерея',gal2s:'До 6 фото',mus2:'Музыка',vid2:'Видео',vid2s:'до 3 роликов: MP4 или WebM, до 19 МБ каждый',vidadd:'Добавить видео',vidh:'Горизонтальное 16:9',vidv:'Вертикальное 9:16',vidbig:'Видео больше 19 МБ. Сожмите его и выберите снова.',vidmax:'Можно добавить не больше 3 видео.',vidwait:'Отправьте это видео боту как файл, он сохранит его',mus2s:'MP3, M4A. Если не выбрать, играет музыка шаблона',addph:'Добавить фото',fnote:'Файл пока виден только вам. Чтобы его увидели гости, отправьте его боту: он сохранит файл, и здесь всё подставится само.',syncN:'Ждут сохранения: ',syncW:'Ищем файл в хранилище…',syncOk:'Готово: файлы сохранены для всех',nofiles:'Бот пока не получил файлов'},
 uz:{ey:"Qo'l mehnati taklifnomalari",h:"Esda qoladigan taklifnoma",sub:"Har bir mehmonga ismi bilan murojaat qilingan chiroyli taklifnoma. Kim ochgani va kim kelishini ko'rasiz.",cta:'Taklifnoma yaratish',demo:"Namunani ko'rish",f1:'Har bir mehmon uchun shaxsiy havola',f2:"PDF o'rniga jonli taklifnoma",f3:"«Boraman» va «Kela olmayman» javoblari darhol",f4:'Rasm, galereya va musiqa ichida',tt:"Har qanday bayram uchun shablonlar",ts:"To'y, tug'ilgan kun, yubiley, nikoh, Navro'z va boshqa tantanalar.",how:'Qanday ishlaydi',s1:'Shablonni tanlang',s1d:"To'y, tug'ilgan kun, yubiley, nikoh, Navro'z — uslub o'zi tanlanadi.",s2:"Tafsilotlarni to'ldiring",s2d:"Ismlar, sana va joy, rasmlar, musiqa, kechqurun dasturi va mehmonlarga so'zlar.",s3:'Havolalarni yuboring',s3d:"Har bir mehmonda ismi bilan o'z havolasi bor. Ochilishlar va javoblar panelda.",ft:"Tafsilotlarga muhabbat bilan yaratilgan",prof:'Mening',opened:'Ochdi',choose:'Tanlash',guestS:'Dilnoza',
  new:'Yangi taklifnoma',edit:'Tahrirlash',fsub:"Tafsilotlarni kiriting — taklifnoma o'zi yig'iladi.",tpl:'Shablon',n1:'Ism',n2:'Ikkinchi ism',date:'Sana',time:'Vaqt',opt:'ixtiyoriy',place:'Joy',addr:'Manzil',map:'Xarita havolasi',photos:'Rasmlar',cover:'Muqova',portrait:'Portret',gallery:'Galereya',photoHint:"Faylga to'g'ridan-to'g'ri https havola. Bo'sh bo'lsa, shablon rasmi qo'yiladi.",galHint:"6 tagacha havola, har qatorda bitta.",music:'Musiqa',musicHint:"MP3 ga to'g'ridan-to'g'ri havola. Bo'sh bo'lsa, shablon musiqasi ijro etiladi.",text:'Taklifnoma matni',prog:'Kechqurun dasturi',what:'Nima bo‘ladi',addp:"Band qo'shish",dress:'Kiyim uslubi',contact:"Savollar uchun aloqa",pv:"Ko'rib chiqish",save:'Taklifnoma yaratish',saveE:"O'zgarishlarni saqlash",needs:'Ism va sanani kiriting',
- none:"Hozircha taklifnoma yo'q",noneS:"Birinchisini yarating — shu yerda paydo bo'ladi.",open:'Ochish',edit2:"O'zgartirish",panel:'Panel',back:'Orqaga',total:'Mehmonlar',cOp:'Ochdi',cYes:'Keladi',cNo:'Kela olmaydi',cPe:'Javob bermadi',addg:"Mehmon qo'shish",addh:'Har bir ism yangi qatorda',add:"Qo'shish",gl:"Mehmonlar ro'yxati",emp:"Hozircha mehmon yo'q",empS:"Ismlarni qo'shing — har biri uchun shaxsiy havola paydo bo'ladi.",st:{y:'Keladi',n:'Kela olmaydi',p:'Javob bermadi'},openedAt:'ochdi',share:'Yuborish',copy:'Nusxa olish',copied:'Nusxa olindi',gen:'Umumiy havola',del:"O'chirish",delc:"Taklifnoma o'chirilsinmi?",created:'Taklifnoma tayyor',createdS:"Endi mehmonlarni qo'shing: har birida o'z ismi bilan shaxsiy havola bo'ladi.",toG:"Mehmon qo'shish",stale:"Ma'lumotlar har 1-2 daqiqada yangilanadi",gcount:'mehmon',pubOk:'E\'lon qilindi, havola qisqa',pubOld:'Taklifnomani o\'zgartirdingiz. Mehmonlar yangisini ko\'rishi uchun «Yangilash» ni bosing.',pubNew:'«E\'lon qilish» ni bosing: bot ochiladi, xabarni yuboring, havola qisqa va chiroyli bo\'ladi.',pubGo:'E\'lon qilish',pubUp:'Yangilash',pubChk:'Havolani tekshirish',needName:'Avval ismni kiriting',mediaBig:'Fayl 25 MB dan katta',badimg:'Rasmni o‘qib bo‘lmadi',choose2:'Fayl tanlash',replace:'Almashtirish',rm:'Olib tashlash',saved:'Doimiy saqlangan',local:'Faqat shu telefonda',use:'Tanlash',toBot:'Bot orqali doimiy saqlash',toBotH:'Xuddi shu faylni botga rasm yoki fayl sifatida yuboring (skrepka → Fayl), keyin shu yerga qayting: ilova o‘zi topib almashtiradi. Ishlamasa, «Fayllarni tekshirish» ni bosing.',chk:'Fayllarni tekshirish',cov2:'Muqova',cov2s:'Mehmon ochadigan birinchi rasm',por2:'Portret',por2s:'Juftlik yoki tug‘ilgan kun egasi rasmi',gal2:'Fotogalereya',gal2s:'6 tagacha rasm',mus2:'Musiqa',mus2s:'MP3, M4A. Tanlanmasa, shablon musiqasi ijro etiladi',addph:'Rasm qo‘shish',fnote:'Fayl hozircha faqat sizda ko‘rinadi. Mehmonlar ko‘rishi uchun uni botga yuboring: bot saqlaydi va bu yerda o‘zi almashadi.',syncN:'Saqlanishi kutilmoqda: ',syncW:'Fayl omborda qidirilmoqda…',syncOk:'Tayyor: fayllar hamma uchun saqlandi',nofiles:'Bot hali fayl olmagan'}};
+ none:"Hozircha taklifnoma yo'q",noneS:"Birinchisini yarating — shu yerda paydo bo'ladi.",open:'Ochish',edit2:"O'zgartirish",panel:'Panel',back:'Orqaga',total:'Mehmonlar',cOp:'Ochdi',cYes:'Keladi',cNo:'Kela olmaydi',cPe:'Javob bermadi',addg:"Mehmon qo'shish",addh:'Har bir ism yangi qatorda',add:"Qo'shish",gl:"Mehmonlar ro'yxati",emp:"Hozircha mehmon yo'q",empS:"Ismlarni qo'shing — har biri uchun shaxsiy havola paydo bo'ladi.",st:{y:'Keladi',n:'Kela olmaydi',p:'Javob bermadi'},sum:'Natijalar',sumOpen:'Mehmonlarning {n}% ochdi',sumRate:'Mehmonlarning {n}% javob berdi',sumLast:'Oxirgi javob',sumDay:'24 soat ichida',sumNone:'Hozircha hech kim javob bermadi',sumAgo:'{n} daqiqa oldin',sumAgoH:'{n} soat oldin',sumNow:'hozirgina',gOf:'/',pvFull:'Mehmon sifatida ko‘rish',pvClose:'Yopish',pvHint:'Mehmon taklifnomani shunday ko‘radi. Muhrni bosing.',openedAt:'ochdi',share:'Yuborish',copy:'Nusxa olish',copied:'Nusxa olindi',gen:'Umumiy havola',del:"O'chirish",delc:"Taklifnoma o'chirilsinmi?",created:'Taklifnoma tayyor',createdS:"Endi mehmonlarni qo'shing: har birida o'z ismi bilan shaxsiy havola bo'ladi.",toG:"Mehmon qo'shish",stale:"Ma'lumotlar har 1-2 daqiqada yangilanadi",gcount:'mehmon',pubOk:'E\'lon qilindi, havola qisqa',pubOld:'Taklifnomani o\'zgartirdingiz. Mehmonlar yangisini ko\'rishi uchun «Yangilash» ni bosing.',pubNew:'«E\'lon qilish» ni bosing: bot ochiladi, xabarni yuboring, havola qisqa va chiroyli bo\'ladi.',pubGo:'E\'lon qilish',pubUp:'Yangilash',pubChk:'Havolani tekshirish',needName:'Avval ismni kiriting',mediaBig:'Fayl 25 MB dan katta',badimg:'Rasmni o‘qib bo‘lmadi',choose2:'Fayl tanlash',replace:'Almashtirish',rm:'Olib tashlash',saved:'Doimiy saqlangan',local:'Faqat shu telefonda',use:'Tanlash',toBot:'Bot orqali doimiy saqlash',toBotH:'Xuddi shu faylni botga rasm yoki fayl sifatida yuboring (skrepka → Fayl), keyin shu yerga qayting: ilova o‘zi topib almashtiradi. Ishlamasa, «Fayllarni tekshirish» ni bosing.',chk:'Fayllarni tekshirish',cov2:'Muqova',cov2s:'Mehmon ochadigan birinchi rasm',por2:'Portret',por2s:'Juftlik yoki tug‘ilgan kun egasi rasmi',gal2:'Fotogalereya',gal2s:'6 tagacha rasm',mus2:'Musiqa',vid2:'Video',vid2s:'3 tagacha rolik: MP4 yoki WebM, har biri 19 MB gacha',vidadd:"Video qo'shish",vidh:'Gorizontal 16:9',vidv:'Vertikal 9:16',vidbig:'Video 19 MB dan katta. Siqib, qayta tanlang.',vidmax:"3 tadan ortiq video qo'shib bo'lmaydi.",vidwait:'Bu videoni botga fayl sifatida yuboring, u saqlaydi',mus2s:'MP3, M4A. Tanlanmasa, shablon musiqasi ijro etiladi',addph:'Rasm qo‘shish',fnote:'Fayl hozircha faqat sizda ko‘rinadi. Mehmonlar ko‘rishi uchun uni botga yuboring: bot saqlaydi va bu yerda o‘zi almashadi.',syncN:'Saqlanishi kutilmoqda: ',syncW:'Fayl omborda qidirilmoqda…',syncOk:'Tayyor: fayllar hamma uchun saqlandi',nofiles:'Bot hali fayl olmagan'}};
 const t=k=>TX[LANG][k];
 const TP=['wedding','birthday','anniversary','nikah','navruz','other'];
 const SAMP={wedding:['Азиз','Дилноза','Слоновая кость и золото','Sutrang va tilla'],birthday:['Мадина','','Пудровый и коралловый','Pushti va marjon'],anniversary:['Бахтиёр','Нилуфар','Изумруд и золото','Zumrad va tilla'],nikah:['Иброхим','Зухра','Шалфей и крем','Shalfey va krem'],navruz:['Семья Рахимовых','','Весенняя бирюза','Bahor feruza'],other:['Шахзод','Камола','Слива и шампань','Olxo‘ri va shampan']};
@@ -151,7 +173,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;'
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');
 const uid=()=>Math.random().toString(36).slice(2,8);
-const blank=()=>({id:uid(),t:'wedding',l:LANG,a:'',b:'',d:'',h:'',pl:'',ad:'',m:'',x:'',dc:'',ct:'',u:'',c:'',o:'',g:'',gl:[],pr:[['','']],guests:[],pv:{}});
+const blank=()=>({id:uid(),t:'wedding',l:LANG,a:'',b:'',d:'',h:'',pl:'',ad:'',m:'',x:'',dc:'',ct:'',u:'',c:'',o:'',g:'',gl:[],vl:[],pr:[['','']],guests:[],pv:{}});
 const ST={view:'home',items:[],draft:blank(),cur:null,filter:'all',log:{},copied:null};
 
 /* ---- хранилище ----
@@ -160,7 +182,7 @@ const ST={view:'home',items:[],draft:blank(),cur:null,filter:'all',log:{},copied
 const cs=V('6.9')?tg.CloudStorage:null;
 const CH=3500, LK='taklif_v3';
 const L={get:()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch{return[]}},set:a=>{try{localStorage.setItem(LK,JSON.stringify(a))}catch(e){}}};
-const clean=it=>{const c=JSON.parse(JSON.stringify(it));delete c.pv;if(c.gl)c.gl=c.gl.filter(g=>g.url).map(g=>({url:g.url}));return c};
+const clean=it=>{const c=JSON.parse(JSON.stringify(it));delete c.pv;if(c.gl)c.gl=c.gl.filter(g=>g.url).map(g=>({url:g.url}));if(c.vl)c.vl=c.vl.filter(v=>v.url).map(v=>({url:v.url,o:v.o==='p'?'p':'l'}));return c};
 const csGet=k=>new Promise(r=>{let d=false;const f=v=>{if(!d){d=true;r(v)}};try{cs.getItem(k,(e,v)=>f(e?null:v))}catch(e){f(null)}setTimeout(()=>f(null),2500)});
 const csSet=(k,v)=>new Promise(r=>{let d=false;const f=ok=>{if(!d){d=true;r(ok)}};try{cs.setItem(k,v,(e,ok)=>f(!e&&ok!==false))}catch(e){f(false)}setTimeout(()=>f(false),2500)});
 const csDel=ks=>new Promise(r=>{if(!ks.length)return r();let d=false;const f=()=>{if(!d){d=true;r()}};try{cs.removeItems(ks,f)}catch(e){f()}setTimeout(f,2500)});
@@ -195,6 +217,7 @@ function payload(it,gIdx){
  const rel=u=>isRepo(u)?u.slice(SITE.length):(/^https:/.test(u||'')?u:'');
  const ph={};const c=rel(it.c),pt=rel(it.o),mu=rel(it.u);if(c)ph.c=c;if(pt)ph.o=pt;
  const g=(it.gl||[]).map(x=>rel(x.url)).filter(Boolean).slice(0,6);if(g.length)ph.g=g;
+ const vv=(it.vl||[]).map(x=>[rel(x.url),x.o==='p'?'p':'l']).filter(x=>x[0]).slice(0,3);if(vv.length)ph.v=vv;
  if(mu)o.u=mu; if(Object.keys(ph).length)o.p=ph;
  const pr=(it.pr||[]).filter(p=>p[1]&&p[1].trim());if(pr.length)o.pr=pr;
  if(gIdx!=null){o.g=it.guests[gIdx].n;o.q=it.guests[gIdx].k}
@@ -222,6 +245,12 @@ const counts=it=>{let o=0,y=0,n=0;it.guests.forEach(g=>{const s=gstat(it,g);if(s
 ST.lib=[];
 async function loadLib(){ if(!OWNER)return; try{const r=await fetch(SITE+'media/'+OWNER+'/index.json?_='+Date.now(),{cache:'no-store'});if(r.ok){ST.lib=(await r.json()).map(x=>({...x,url:SITE+'media/'+OWNER+'/'+x.f}))}}catch(e){} }
 function shrink(file,max,q){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const im=new Image();im.onerror=()=>rej(new Error('img'));im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))};im.src=fr.result};fr.readAsDataURL(file)})}
+
+function videoMeta(file){return new Promise(res=>{const u=URL.createObjectURL(file),v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='metadata';let done=false;
+ const fin=(o,thumb)=>{if(done)return;done=true;URL.revokeObjectURL(u);res({o,thumb})};
+ v.onloadedmetadata=()=>{const o=v.videoHeight>v.videoWidth?'p':'l';try{v.currentTime=Math.min(0.5,(v.duration||1)/4)}catch(e){fin(o,'')}
+  v.onseeked=()=>{try{const k=Math.min(1,240/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(v.videoWidth*k));c.height=Math.max(1,Math.round(v.videoHeight*k));c.getContext('2d').drawImage(v,0,0,c.width,c.height);fin(o,c.toDataURL('image/jpeg',.6))}catch(e){fin(o,'')}}};
+ v.onerror=()=>fin('l','');setTimeout(()=>fin(v.videoHeight>v.videoWidth?'p':'l',''),4000);v.src=u})}
 function pickFile(accept,multiple){return new Promise(r=>{const i=document.createElement('input');i.type='file';i.accept=accept;i.multiple=!!multiple;i.style.cssText='position:fixed;left:-999px;opacity:0';document.body.appendChild(i);i.onchange=()=>{const f=[...i.files];i.remove();r(f)};i.addEventListener('cancel',()=>{i.remove();r([])});i.click()})}
 const isRepo=u=>String(u||'').indexOf(SITE+'media/')===0;
 const toBot=()=>{const u='https://t.me/'+BOT;if(tg&&V('6.1'))tg.openTelegramLink(u);else window.open(u,'_blank')};
@@ -236,15 +265,15 @@ function imgFP(src){return new Promise(res=>{const im=new Image();if(!/^data:/.t
 const ham=(a,b)=>{if(!a||!b)return 64;let n=0;for(let i=0;i<64;i++)if(a[i]!==b[i])n++;return n};
 
 /* ---- автопривязка: файлы, которые бот сохранил в репозиторий, заменяют локальные ---- */
-function pendingSlots(d){const a=[];['c','o'].forEach(k=>{if(d.pv&&d.pv[k]&&!d[k])a.push({k,kind:'photo'})});(d.gl||[]).forEach((g,i)=>{if(g.pv&&!g.url)a.push({k:'g',i,kind:'photo'})});if(d.pv&&d.pv.u&&!d.u)a.push({k:'u',kind:'audio'});return a}
+function pendingSlots(d){const a=[];['c','o'].forEach(k=>{if(d.pv&&d.pv[k]&&!d[k])a.push({k,kind:'photo'})});(d.gl||[]).forEach((g,i)=>{if(g.pv&&!g.url)a.push({k:'g',i,kind:'photo'})});if(d.pv&&d.pv.u&&!d.u)a.push({k:'u',kind:'audio'});(d.vl||[]).forEach((v,i)=>{if(!v.url)a.push({k:'v',i,kind:'video'})});return a}
 function pendingCount(){const d=ST.draft;return d?pendingSlots(d).length:0}
 const pendingFor=it=>pendingSlots(it).length;
 const waitingItems=()=>ST.items.filter(i=>pendingFor(i)>0);
 async function autoAttach(d){
   if(!d||!ST.lib.length)return 0;
-  const since=(d.pv&&d.pv.at)||0, used=new Set([d.c,d.o,d.u,...(d.gl||[]).map(g=>g.url)].filter(Boolean));
+  const since=(d.pv&&d.pv.at)||0, used=new Set([d.c,d.o,d.u,...(d.gl||[]).map(g=>g.url),...(d.vl||[]).map(v=>v.url)].filter(Boolean));
   const fresh=kind=>ST.lib.filter(x=>x.k===kind&&!used.has(x.url)&&(Date.parse(x.t)||0)>=since-60000).sort((a,b)=>(Date.parse(a.t)||0)-(Date.parse(b.t)||0));
-  let n=0; const ph=fresh('photo'), au=fresh('audio');
+  let n=0; const ph=fresh('photo'), au=fresh('audio'), vd=fresh('video');
   // отпечатки новых файлов в хранилище
   const fps=[]; for(const x of ph){fps.push({x,f:await imgFP(x.url)})}
   const slots=pendingSlots(d);
@@ -253,6 +282,11 @@ async function autoAttach(d){
   // 1 проход: точное совпадение по отпечатку
   const left=[];
   for(const sl of slots){
+    if(sl.kind==='video'){
+      const v=d.vl[sl.i], hit=vd.find(x=>Math.abs((+x.kb||0)-(v.kb||0))<=3)||(vd.length===1&&(d.vl.filter(z=>!z.url).length===1)?vd[0]:null);
+      if(hit){v.url=hit.url;if(hit.o)v.o=hit.o;delete v.pv;delete v.nm;vd.splice(vd.indexOf(hit),1);n++}
+      continue;
+    }
     if(sl.kind==='audio'){
       const want=d.pv.uK, hit=au.find(x=>Math.abs((+x.kb||0)-want)<=2)||(au.length===1?au[0]:null);
       if(hit){d.u=hit.url;delete d.pv.u;delete d.pv.uN;delete d.pv.uK;au.splice(au.indexOf(hit),1);n++}
@@ -284,7 +318,7 @@ const needSync=()=>!document.hidden&&((ST.view==='form'&&pendingCount())||waitin
 document.addEventListener('visibilitychange',()=>{if(needSync())syncFiles()});
 setInterval(()=>{if(needSync())syncFiles()},6000);
 
-function libBox(kind){const items=ST.lib.filter(x=>x.k===kind);return items.length?'<div class="lib">'+items.slice(0,8).map(x=>'<div class="it"><div class="th '+(kind==='audio'?'au':'')+'" style="'+(kind==='photo'?'background-image:url('+esc(x.url)+')':'')+'">'+(kind==='audio'?'♪':'')+'</div><div class="n">'+x.kb+' KB · '+esc((x.t||'').slice(0,10))+'</div><button class="sm pr" data-use="'+esc(x.url)+'" data-kind="'+kind+'">'+t('use')+'</button></div>').join('')+'</div>':''}
+function libBox(kind){const items=ST.lib.filter(x=>x.k===kind);return items.length?'<div class="lib">'+items.slice(0,8).map(x=>'<div class="it"><div class="th '+(kind==='audio'?'au':'')+'" style="'+(kind==='photo'?'background-image:url('+esc(x.url)+')':kind==='video'?'background:#2a2118':'')+'">'+(kind==='audio'?'♪':kind==='video'?'<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M8 5.5v13l11-6.5z"/></svg>':'')+'</div><div class="n">'+x.kb+' KB · '+esc((x.t||'').slice(0,10))+'</div><button class="sm pr" data-use="'+esc(x.url)+'" data-kind="'+kind+'">'+t('use')+'</button></div>').join('')+'</div>':''}
 
 /* ---- иконки / орнамент ---- */
 const IC={chk:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',arr:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',cp:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>',ok:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',ex:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/></svg>',sh:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>',tr:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',eye:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'};
@@ -321,6 +355,18 @@ function preview(d){const T=TPL[d.t],th=T.theme,cover=d.pv&&d.pv.c?d.pv.c:(/^htt
   +'<p class="fd" style="margin-top:12px;font-size:28px;line-height:1.1;color:'+th.ink+'">'+(esc(d.a)||'Азиз')+(d.b||!d.a?'<span style="margin:0 5px;font-style:italic;color:'+th.accent+'">&amp;</span>'+(esc(d.b)||(d.a?'':'Дилноза')):'')+'</p>'
   +'<p class="up" style="margin-top:8px;font-size:10px;letter-spacing:.22em;color:'+th.accent+'">'+(fmtD(d.d)||'—')+(d.h?' · '+esc(d.h):'')+'</p>'
   +(d.pl?'<p class="fd" style="margin-top:10px;font-size:17px;color:'+th.ink+'">'+esc(d.pl)+'</p>':'')+'</div>'}
+
+function draftPayload(d){const o=payload(d);o.k=BOT;o.o=OWNER;o.l=LANG;const p=o.p||{};
+ const loc=u=>/^data:image\//.test(u||'')?u:null;
+ if(!p.c&&d.pv&&loc(d.pv.c))p.c=d.pv.c; if(!p.o&&d.pv&&loc(d.pv.o))p.o=d.pv.o;
+ const g=(d.gl||[]).map(x=>x.url&&isRepo(x.url)?x.url.slice(SITE.length):(loc(x.pv)||'')).filter(Boolean).slice(0,6); if(g.length)p.g=g;
+ if(Object.keys(p).length)o.p=p; return o}
+function openFullPreview(){const d=ST.draft; if(!d.a.trim())d={...d,a:'Азиз'}; 
+ const w=document.createElement('div');w.className='pvf';w.innerHTML='<div class="tb"><span>'+t('pvHint')+'</span><button>'+t('pvClose')+'</button></div><iframe src="i.html#preview" title="preview"></iframe>';
+ document.body.appendChild(w);
+ const fr=w.querySelector('iframe'),send=()=>{try{fr.contentWindow.postMessage({mh:'preview',d:draftPayload(d)},location.origin)}catch(e){}};
+ const on=e=>{if(e.origin===location.origin&&e.data&&e.data.mh==='ready')send()};window.addEventListener('message',on);
+ const close=()=>{window.removeEventListener('message',on);w.remove()};w.querySelector('button').onclick=close}
 function form(){const d=ST.draft,isE=ST.items.some(x=>x.id===d.id);
  let h='<div class="view"><div class="ph"><button class="back" data-go="home">←</button><h2>'+(isE?t('edit'):t('new'))+'</h2></div><p class="hint" style="margin:2px 0 0 48px">'+t('fsub')+'</p>';
  h+='<div class="lbl">'+t('tpl')+'</div><div class="tpls">'+TP.map(id=>{const T=TPL[id];return '<button class="tp '+(d.t===id?'on':'')+'" data-tpl="'+id+'"><img src="'+T.photos.cover.replace('w=1400','w=300')+'" alt=""><b>'+T.label[LANG]+'</b><s><i style="background:'+T.theme.accent+'"></i><i style="background:'+T.theme.accentSoft+'"></i></s></button>'}).join('')+'</div>';
@@ -329,12 +375,14 @@ function form(){const d=ST.draft,isE=ST.items.some(x=>x.id===d.id);
  h+='<div class="lbl">'+t('place')+'<em>'+t('opt')+'</em></div><input data-f="pl" value="'+esc(d.pl)+'" maxlength="90" placeholder="Ресторан «Версаль»"><div class="lbl">'+t('addr')+'<em>'+t('opt')+'</em></div><input data-f="ad" value="'+esc(d.ad)+'" maxlength="120" placeholder="ул. Амира Темура, 12"><div class="lbl">'+t('map')+'<em>'+t('opt')+'</em></div><input data-f="m" value="'+esc(d.m)+'" placeholder="https://" maxlength="300">';
  h+='<div class="lbl">'+t('photos')+'</div>'+slot('c',t('cov2'),t('cov2s'))+'<div style="height:8px"></div>'+slot('o',t('por2'),t('por2s'));
  h+='<div class="lbl">'+t('gal2')+'<em>'+t('gal2s')+'</em></div><div class="gr">'+d.gl.map((g,i)=>'<div class="gi" style="background-image:url('+esc(g.pv||g.url)+')"><button data-gx="'+i+'">×</button></div>').join('')+(d.gl.length<6?'<div class="ad" data-gadd>+</div>':'')+'</div>';
+ h+='<div class="lbl">'+t('vid2')+'<em>'+t('opt')+'</em></div><div class="meta" style="margin:0 0 6px">'+t('vid2s')+'</div><div class="vgrid">'+(d.vl||[]).map((v,i)=>{const done=!!v.url,pr=isRepo(v.url);return '<div class="vi"><div class="vt '+(v.o==='p'?'p':'l')+'" '+(v.pv?'style="background-image:url('+esc(v.pv)+')"':'')+'><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M8 5.5v13l11-6.5z"/></svg></div><div class="vm"><b>'+esc(v.nm||'video')+'</b>'+(done?'<span class="tag2 ok">'+t('saved')+'</span>':'<span class="tag2 wt">'+t('local')+'</span>')+'<div class="vo"><button data-vo="'+i+':l" class="'+(v.o!=='p'?'on':'')+'">'+t('vidh')+'</button><button data-vo="'+i+':p" class="'+(v.o==='p'?'on':'')+'">'+t('vidv')+'</button></div></div><button class="vx" data-vx="'+i+'" aria-label="x">×</button></div>'}).join('')+'</div>'+((d.vl||[]).length<3?'<button class="sm pr" data-vadd style="margin-top:8px;width:100%;min-height:44px">+ '+t('vidadd')+'</button>':'');
+
  h+='<div class="lbl">'+t('mus2')+'<em>'+t('opt')+'</em></div>'+slot('u',t('mus2'),t('mus2s'));
- h+='<div class="card" style="margin-top:14px;padding:14px"><div id="fsync">'+((pendingCount()||ST.lib.length)?syncBanner():'')+'</div><div class="meta" style="margin:0;line-height:1.5">'+t('fnote')+'</div><div class="mini"><button class="b d s" data-tobot>'+t('toBot')+'</button><button class="b o s" data-chk>'+t('chk')+'</button></div><p class="hint">'+t('toBotH')+'</p><div id="libp">'+libBox('photo')+'</div><div id="liba">'+libBox('audio')+'</div></div>';
+ h+='<div class="card" style="margin-top:14px;padding:14px"><div id="fsync">'+((pendingCount()||ST.lib.length)?syncBanner():'')+'</div><div class="meta" style="margin:0;line-height:1.5">'+t('fnote')+'</div><div class="mini"><button class="b d s" data-tobot>'+t('toBot')+'</button><button class="b o s" data-chk>'+t('chk')+'</button></div><p class="hint">'+t('toBotH')+'</p><div id="libp">'+libBox('photo')+'</div><div id="liba">'+libBox('audio')+'</div><div id="libv">'+libBox('video')+'</div></div>';
  h+='<div class="lbl">'+t('text')+'<em>'+t('opt')+'</em></div><textarea data-f="x" maxlength="600" placeholder="'+esc(TPL[d.t].greeting[LANG])+'">'+esc(d.x)+'</textarea>';
  h+='<div class="lbl">'+t('prog')+'</div><div id="prl">'+d.pr.map((p,i)=>'<div class="prow"><input type="time" data-p="'+i+'" data-k="0" value="'+esc(p[0])+'"><input data-p="'+i+'" data-k="1" value="'+esc(p[1])+'" maxlength="80" placeholder="'+t('what')+'"><button class="x" data-px="'+i+'">×</button></div>').join('')+'</div>'+(d.pr.length<10?'<button class="b o s" data-addp>+ '+t('addp')+'</button>':'');
  h+='<div class="lbl">'+t('dress')+'<em>'+t('opt')+'</em></div><input data-f="dc" value="'+esc(d.dc)+'" maxlength="80"><div class="lbl">'+t('contact')+'<em>'+t('opt')+'</em></div><input data-f="ct" value="'+esc(d.ct)+'" maxlength="60" placeholder="+998 90 000 00 00">';
- h+='<div class="pv"><div class="t">'+t('pv')+'</div><div id="pvb">'+preview(d)+'</div></div><p class="err" id="er"></p></div><div class="bar"><button class="b d" id="sv">'+(isE?t('saveE'):t('save'))+'</button></div>';
+ h+='<div class="pv"><div class="t">'+t('pv')+'</div><div id="pvb">'+preview(d)+'</div><button class="pvbtn" data-pvfull>'+t('pvFull')+'</button></div><p class="err" id="er"></p></div><div class="bar"><button class="b d" id="sv">'+(isE?t('saveE'):t('save'))+'</button></div>';
  return top()+h}
 
 /* ---- мои ---- */
@@ -344,12 +392,24 @@ function mine(){let h=top()+'<div class="view"><div class="ph"><button class="ba
  return h+'</div><div class="bar"><button class="b d" data-new="wedding">'+t('cta')+IC.arr+'</button></div>'}
 function done(){return top()+'<div class="done view"><div class="ck">✓</div><h2 class="fd" style="font-weight:500;font-size:34px">'+t('created')+'</h2><p class="sub" style="margin:10px auto 0;text-align:center">'+t('createdS')+'</p></div><div class="bar"><button class="b d" id="tog">'+t('toG')+'</button></div>'}
 
+function summaryCard(it,c){
+ const tot=c.total; if(!tot)return '';
+ const pct=n=>Math.round(n*100/tot), ans=c.y+c.n;
+ const times=it.guests.map(g=>{const e=ST.log[it.id+':'+g.k]||{};return e.s&&e.t?Date.parse(e.t):0}).filter(Boolean).sort((a,b)=>b-a);
+ const day=times.filter(x=>Date.now()-x<864e5).length;
+ const ago=ms=>{const m=Math.max(0,Math.round((Date.now()-ms)/6e4));return m<1?t('sumNow'):m<60?t('sumAgo').replace('{n}',m):m<1440?t('sumAgoH').replace('{n}',Math.round(m/60)):fmtD(new Date(ms).toISOString().slice(0,10))};
+ return '<div class="sm2"><h4>'+t('sum')+'</h4><div class="big"><b>'+c.y+'</b><span>'+t('cYes').toLowerCase()+' '+t('gOf')+' '+tot+'</span></div>'
+  +'<div class="bar2"><i style="width:'+pct(c.y)+'%;background:#2F6B52"></i><i style="width:'+pct(c.n)+'%;background:#9C3B2A"></i><i style="width:'+pct(c.p)+'%;background:#D9CBB4"></i></div>'
+  +'<div class="lg"><em style="--c:#2F6B52">'+t('cYes')+' '+c.y+'</em><em style="--c:#9C3B2A">'+t('cNo')+' '+c.n+'</em><em style="--c:#D9CBB4">'+t('cPe')+' '+c.p+'</em></div>'
+  +'<div class="rw"><span>'+t('sumRate').replace('{n}',pct(ans))+'</span><b>'+ans+' / '+tot+'</b></div>'
+  +'<div class="rw"><span>'+t('sumOpen').replace('{n}',pct(c.o))+'</span><b>'+c.o+' / '+tot+'</b></div>'
+  +'<div class="rw"><span>'+(times.length?t('sumLast'):t('sumNone'))+'</span><b>'+(times.length?ago(times[0])+(day?' · '+day+' '+t('sumDay'):''):'—')+'</b></div></div>'}
 /* ---- панель хозяина ---- */
 function panel(){const it=ST.items.find(x=>x.id===ST.cur);if(!it){ST.view='mine';return mine()}const c=counts(it),th=TPL[it.t].theme;
  const FL=[['all',t('total'),c.total,'#8A7B68'],['o',t('cOp'),c.o,'#B28A50'],['y',t('cYes'),c.y,'#2F6B52'],['n',t('cNo'),c.n,'#9C3B2A'],['p',t('cPe'),c.p,'#8A7B68']];
  let rows=it.guests.map((g,i)=>({g,i,s:gstat(it,g)})).filter(x=>ST.filter==='all'||(ST.filter==='o'&&x.s.o)||(ST.filter==='y'&&x.s.s==='y')||(ST.filter==='n'&&x.s.s==='n')||(ST.filter==='p'&&x.s.s==='p'));
  let h=top()+'<div class="view"><div class="ph"><button class="back" data-go="mine">←</button><h2>'+esc(it.a)+(it.b?' & '+esc(it.b):'')+'</h2></div><p class="hint" style="margin:0 0 0 48px">'+fmtD(it.d)+'</p>';
- h+='<div class="stats">'+FL.slice(0,3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'</div><div class="stats" style="margin-top:8px">'+FL.slice(3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'<div></div></div><p class="hint">'+t('stale')+'</p>';
+ h+='<div class="stats">'+FL.slice(0,3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'</div><div class="stats" style="margin-top:8px">'+FL.slice(3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'<div></div></div><p class="hint">'+t('stale')+'</p>'+summaryCard(it,c);
  const fresh=isFresh(it),has=!!slugOf(it);
  h+='<div class="card" style="margin-top:16px"><div class="meta" style="margin:0 0 8px">'+t('gen')+'</div><div class="lk"><input readonly value="'+esc(linkFor(it))+'"><button class="ib" data-shg="'+it.id+'" title="'+t('share')+'">'+IC.sh+'</button></div>'
   +(has&&fresh?'<span class="tag2 ok" style="margin-top:8px">'+t('pubOk')+'</span>':'<div class="meta" style="margin:10px 0 0;line-height:1.5">'+(has?t('pubOld'):t('pubNew'))+'</div>')
@@ -381,10 +441,20 @@ function bind(){
  $$('[data-clr]').forEach(b=>b.onclick=()=>{const k=b.dataset.clr;ST.draft[k]='';delete ST.draft.pv[k];if(k==='u')delete ST.draft.pv.uN;render()});
  const gad=$('[data-gadd]');if(gad)gad.onclick=async()=>{const fs=await pickFile('image/*',true);if(!fs.length)return;for(const f of fs){if(ST.draft.gl.length>=6)break;try{{const pv=await shrink(f,420,.7);ST.draft.gl.push({pv,url:'',fp:await imgFP(pv)})}}catch(e){}}render()};
  $$('[data-gx]').forEach(b=>b.onclick=()=>{ST.draft.gl.splice(+b.dataset.gx,1);render()});
+ const vad=$('[data-vadd]');if(vad)vad.onclick=async()=>{const fs=await pickFile('video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov',false);if(!fs.length)return;const f=fs[0];
+  if(f.size>19*1024*1024){alert(t('vidbig'));return}
+  if((ST.draft.vl||[]).length>=3){alert(t('vidmax'));return}
+  const meta=await videoMeta(f);
+  ST.draft.vl=ST.draft.vl||[];ST.draft.vl.push({url:'',pv:meta.thumb||'',o:meta.o,kb:Math.round(f.size/1024),nm:f.name});ST.draft.pv.at=Math.min(ST.draft.pv.at||Infinity,Date.now());render()};
+ $$('[data-vo]').forEach(b=>b.onclick=()=>{const [i,o]=b.dataset.vo.split(':');ST.draft.vl[+i].o=o;render()});
+ $$('[data-vx]').forEach(b=>b.onclick=()=>{ST.draft.vl.splice(+b.dataset.vx,1);render()});
+
+ const pf=$('[data-pvfull]');if(pf)pf.onclick=openFullPreview;
  const tb=$('[data-tobot]');if(tb)tb.onclick=toBot;
  const ck=$('[data-chk]');if(ck)ck.onclick=async()=>{ck.textContent='…';await loadLib();render()};
  $$('[data-use]').forEach(b=>b.onclick=()=>{const u=b.dataset.use,kind=b.dataset.kind;
-  if(kind==='audio'){ST.draft.u=u;delete ST.draft.pv.u;delete ST.draft.pv.uN}
+  if(kind==='video'){const it=ST.lib.find(x=>x.url===u)||{};ST.draft.vl=ST.draft.vl||[];if(ST.draft.vl.length<3&&!ST.draft.vl.some(v=>v.url===u))ST.draft.vl.push({url:u,pv:'',o:it.o==='p'?'p':'l',kb:it.kb,nm:'video'})}
+  else if(kind==='audio'){ST.draft.u=u;delete ST.draft.pv.u;delete ST.draft.pv.uN}
   else if(!ST.draft.c){ST.draft.c=u;delete ST.draft.pv.c}
   else if(!ST.draft.o){ST.draft.o=u;delete ST.draft.pv.o}
   else if(ST.draft.gl.length<6)ST.draft.gl.push({url:u,pv:u});

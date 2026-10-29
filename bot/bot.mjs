@@ -1,6 +1,6 @@
 // Telegram-бот Marhabo. Без зависимостей. Работает как long polling внутри GitHub Actions.
 // Умеет только: /start (красивый текст + кнопка мини-приложения) и приём ответа гостя.
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 const TOKEN = process.env.BOT_TOKEN;
@@ -106,7 +106,7 @@ const T = {
     mediaBig: '⚠️ Файл больше 19 МБ. Сожмите его и отправьте снова.',
     pubOk: (n) => `✅ Приглашение <b>${n}</b> опубликовано. Ссылка ниже заработает через 1-2 минуты. Вернитесь в Marhabo: гостевые ссылки станут короткими.`,
     pubBad: '⚠️ Не удалось прочитать приглашение. Вернитесь в Marhabo и нажмите «Опубликовать» ещё раз.',
-    mediaBad: '⚠️ Нужны фото (JPG, PNG, WebP) или музыка (MP3, M4A, OGG, WAV). Отправьте как фото или как файл.',
+    mediaBad: '⚠️ Нужны фото (JPG, PNG, WebP), музыка (MP3, M4A, OGG, WAV) или видео (MP4, WebM до 19 МБ). Отправьте как фото, видео или как файл.',
     guest: 'Гость',
   },
   uz: {
@@ -133,7 +133,7 @@ const T = {
     mediaBig: '⚠️ Fayl 19 MB dan katta. Siqib, qayta yuboring.',
     pubOk: (n) => `✅ <b>${n}</b> taklifnomasi e'lon qilindi. Havola 1-2 daqiqada ishlaydi. Marhabo'ga qaytsangiz, mehmon havolalari qisqa bo'ladi.`,
     pubBad: '⚠️ Taklifnomani o‘qib bo‘lmadi. Marhabo\'ga qaytib «E\'lon qilish» ni yana bosing.',
-    mediaBad: '⚠️ Rasm (JPG, PNG, WebP) yoki musiqa (MP3, M4A, OGG, WAV) kerak. Rasm yoki fayl sifatida yuboring.',
+    mediaBad: '⚠️ Rasm (JPG, PNG, WebP), musiqa (MP3, M4A, OGG, WAV) yoki video (MP4, WebM, 19 MB gacha) kerak. Rasm, video yoki fayl sifatida yuboring.',
     guest: 'Mehmon',
   },
 };
@@ -142,20 +142,27 @@ const langOf = (u) => ((u?.language_code || 'ru').startsWith('uz') ? 'uz' : 'ru'
 
 // ---- Приём файлов от владельца: фото/документ/аудио -> docs/media/<owner>/ ----
 const MEDIA_DIR = 'docs/media';
-const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/ogg': 'ogg', 'audio/wav': 'wav' };
+const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'audio/mpeg': 'mp3', 'audio/mp3': 'mp3', 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/ogg': 'ogg', 'audio/wav': 'wav', 'video/mp4': 'mp4', 'video/quicktime': 'mp4', 'video/webm': 'webm', 'video/x-m4v': 'mp4' };
 async function saveMedia(m) {
-  let fileId, ext, kind, size;
+  let fileId, ext, kind, size, vw, vh;
   if (m.photo && m.photo.length) {
     const p = m.photo[m.photo.length - 1]; fileId = p.file_id; ext = 'jpg'; kind = 'photo'; size = p.file_size;
   } else if (m.audio) {
     fileId = m.audio.file_id; kind = 'audio'; size = m.audio.file_size;
     ext = EXT[m.audio.mime_type] || (/\.(mp3|m4a|ogg|wav)$/i.exec(m.audio.file_name || '') || [])[1] || 'mp3';
+  } else if (m.video || m.video_note) {
+    const v = m.video || m.video_note;
+    fileId = v.file_id; kind = 'video'; size = v.file_size;
+    ext = EXT[v.mime_type] || (/\.(mp4|webm|mov|m4v)$/i.exec(v.file_name || '') || [])[1] || 'mp4';
+    ext = ext.toLowerCase(); if (ext === 'mov' || ext === 'm4v') ext = 'mp4';
+    vw = v.width; vh = v.height;
   } else if (m.document) {
     const mt = m.document.mime_type || '';
-    ext = EXT[mt] || (/\.(jpe?g|png|webp|mp3|m4a|ogg|wav)$/i.exec(m.document.file_name || '') || [])[1];
+    ext = EXT[mt] || (/\.(jpe?g|png|webp|mp3|m4a|ogg|wav|mp4|webm|mov|m4v)$/i.exec(m.document.file_name || '') || [])[1];
     if (!ext) return { error: 'type' };
-    ext = ext.toLowerCase().replace('jpeg', 'jpg');
-    fileId = m.document.file_id; kind = /^(mp3|m4a|ogg|wav)$/.test(ext) ? 'audio' : 'photo'; size = m.document.file_size;
+    ext = ext.toLowerCase().replace('jpeg', 'jpg'); if (ext === 'mov' || ext === 'm4v') ext = 'mp4';
+    fileId = m.document.file_id; kind = /^(mp3|m4a|ogg|wav)$/.test(ext) ? 'audio' : /^(mp4|webm)$/.test(ext) ? 'video' : 'photo'; size = m.document.file_size;
+    if (m.document.thumbnail || m.document.thumb) { const th = m.document.thumbnail || m.document.thumb; vw = th.width; vh = th.height; }
   } else return null;
   if (size && size > 19 * 1024 * 1024) return { error: 'size' };
   const f = await tg('getFile', { file_id: fileId });
@@ -169,7 +176,15 @@ async function saveMedia(m) {
   writeFileSync(`${dir}/${id}.${ext}`, buf);
   let idx = [];
   try { idx = JSON.parse(readFileSync(`${dir}/index.json`, 'utf8')); } catch {}
-  idx.unshift({ f: `${id}.${ext}`, k: kind, kb: Math.round(buf.length / 1024), t: new Date().toISOString() });
+  const rec = { f: `${id}.${ext}`, k: kind, kb: Math.round(buf.length / 1024), t: new Date().toISOString() };
+  if (kind === 'video' && vw && vh) { rec.w = vw; rec.h = vh; rec.o = vh > vw ? 'p' : 'l'; } // ориентация: p = 9:16, l = 16:9
+  idx.unshift(rec);
+  // репозиторий не должен раздуваться: у владельца храним не больше 3 видео, самые старые удаляем с диска
+  const vids = idx.filter((x) => x.k === 'video');
+  if (vids.length > 3) {
+    for (const old of vids.slice(3)) { try { unlinkSync(`${dir}/${old.f}`); } catch {} }
+    const drop = new Set(vids.slice(3).map((x) => x.f)); idx = idx.filter((x) => !drop.has(x.f));
+  }
   writeFileSync(`${dir}/index.json`, JSON.stringify(idx.slice(0, 60)));
   dirty.add('media');
   return { url: `${APP_URL.replace(/\/?$/, '/')}media/${m.from.id}/${id}.${ext}`, kind, kb: Math.round(buf.length / 1024) };
@@ -220,7 +235,7 @@ function makeSlug(d, owner, invId) {
 }
 const cleanStr = (v, max) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
 const okUrl = (u) => (/^https:\/\/[^\s<>"']{3,400}$/i.test(u || '') ? u : '');
-const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav)$/i.test(u || '') ? u : (okUrl(u)));
+const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav|mp4|webm)$/i.test(u || '') ? u : (okUrl(u)));
 function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
   const o = { t: ['wedding','birthday','jubilee','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: d.l === 'uz' ? 'uz' : 'ru',
@@ -233,6 +248,11 @@ function sanitizeInv(d, owner) {
     const p = {}; const c = okMedia(d.p.c), q = okMedia(d.p.o);
     if (c) p.c = c; if (q) p.o = q;
     if (Array.isArray(d.p.g)) { const g = d.p.g.map(okMedia).filter(Boolean).slice(0, 6); if (g.length) p.g = g; }
+    // видео: [[путь, 'l'|'p'], ...] — l = 16:9 (горизонтальное), p = 9:16 (вертикальное). Только файлы из нашего репозитория или https.
+    if (Array.isArray(d.p.v)) {
+      const v = d.p.v.slice(0, 3).map((x) => { const u = okMedia(Array.isArray(x) ? x[0] : x); const o2 = Array.isArray(x) && x[1] === 'p' ? 'p' : 'l'; return u && /\.(mp4|webm)(\?|$)/i.test(u) ? [u, o2] : null; }).filter(Boolean);
+      if (v.length) p.v = v;
+    }
     if (Object.keys(p).length) o.p = p;
   }
   if (Array.isArray(d.pr)) { const pr = d.pr.slice(0, 10).map((r) => [cleanStr(r && r[0], 5), cleanStr(r && r[1], 80)]).filter((r) => r[1]); if (pr.length) o.pr = pr; }
@@ -289,7 +309,7 @@ async function onMessage(m) {
   }
 
   // файлы от владельца
-  if (m.photo || m.audio || m.document) {
+  if (m.photo || m.audio || m.document || m.video || m.video_note) {
     const res = await saveMedia(m);
     if (res && res.url) {
       publish();
