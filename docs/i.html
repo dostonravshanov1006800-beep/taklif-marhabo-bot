@@ -80,7 +80,7 @@ function fail(l){const t=X[l||'ru'];document.body.innerHTML='<div style="min-hei
 if(!D||!D.a){fail()}else{
 const lang=D.l==='uz'?'uz':'ru',T=X[lang],tp=TPL[D.t]||TPL.wedding,th=tp.theme,mo=tp.motif;
 document.documentElement.lang=lang;document.body.style.background=th.page;
-const ph=D.p||{};const cover=ph.c||tp.photos.cover,portrait=ph.o||tp.photos.portrait,gallery=(ph.g&&ph.g.length)?ph.g:tp.photos.gallery,music=D.u||tp.music;
+const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');const abs=u=>u?(/^https:\/\//.test(u)?u:(/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav)$/i.test(u)?SITE+u:'')):'';const ph=D.p||{};const cover=abs(ph.c)||tp.photos.cover,portrait=abs(ph.o)||tp.photos.portrait,gallery=(ph.g&&ph.g.map(abs).filter(Boolean).length)?ph.g.map(abs).filter(Boolean):tp.photos.gallery,music=abs(D.u)||tp.music;
 const I={n1:D.a,n2:D.b||'',date:D.d||'',time:D.h||'',place:D.pl||'',addr:D.ad||'',map:D.m||'',text:D.x||tp.greeting[lang],prog:(D.pr||[]).filter(p=>p&&p[1]),dress:D.dc||'',contact:D.ct||''};
 const G=D.g||'';
 document.title=[I.n1,I.n2].filter(Boolean).join(' & ')+' · Marhabo';
