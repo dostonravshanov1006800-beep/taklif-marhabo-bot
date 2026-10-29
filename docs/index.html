@@ -238,6 +238,8 @@ const ham=(a,b)=>{if(!a||!b)return 64;let n=0;for(let i=0;i<64;i++)if(a[i]!==b[i
 /* ---- автопривязка: файлы, которые бот сохранил в репозиторий, заменяют локальные ---- */
 function pendingSlots(d){const a=[];['c','o'].forEach(k=>{if(d.pv&&d.pv[k]&&!d[k])a.push({k,kind:'photo'})});(d.gl||[]).forEach((g,i)=>{if(g.pv&&!g.url)a.push({k:'g',i,kind:'photo'})});if(d.pv&&d.pv.u&&!d.u)a.push({k:'u',kind:'audio'});return a}
 function pendingCount(){const d=ST.draft;return d?pendingSlots(d).length:0}
+const pendingFor=it=>pendingSlots(it).length;
+const waitingItems=()=>ST.items.filter(i=>pendingFor(i)>0);
 async function autoAttach(d){
   if(!d||!ST.lib.length)return 0;
   const since=(d.pv&&d.pv.at)||0, used=new Set([d.c,d.o,d.u,...(d.gl||[]).map(g=>g.url)].filter(Boolean));
@@ -267,10 +269,20 @@ function syncBanner(){const n=pendingCount();return n?'<div class="syncb"><span 
 let _polling=0;
 async function syncFiles(){
   if(!OWNER||_polling)return; _polling=1;
-  try{await loadLib(); if(ST.draft&&pendingCount()&&(await autoAttach(ST.draft))){render()} else if(ST.view==='form'){const b=$('#fsync');if(b)b.innerHTML=syncBanner()}}finally{_polling=0}
+  try{
+    await loadLib(); let changed=false;
+    if(ST.draft&&pendingCount()&&(await autoAttach(ST.draft))) changed=true;
+    for(const it of waitingItems()){
+      const n=await autoAttach(it);
+      if(n){changed=true;await persist(); if(!pendingFor(it)&&!isFresh(it)){ST.autoPub=it.id}}
+    }
+    if(changed)render(); else if(ST.view==='form'){const b=$('#fsync');if(b)b.innerHTML=syncBanner()}
+    if(ST.autoPub){const it=ST.items.find(x=>x.id===ST.autoPub);ST.autoPub=null;if(it&&!isFresh(it)){ST.pubNote=it.id;doPublish(it)}}
+  }finally{_polling=0}
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ST.view==='form'&&pendingCount())syncFiles()});
-setInterval(()=>{if(!document.hidden&&ST.view==='form'&&pendingCount())syncFiles()},6000);
+const needSync=()=>!document.hidden&&((ST.view==='form'&&pendingCount())||waitingItems().length);
+document.addEventListener('visibilitychange',()=>{if(needSync())syncFiles()});
+setInterval(()=>{if(needSync())syncFiles()},6000);
 
 function libBox(kind){const items=ST.lib.filter(x=>x.k===kind);return items.length?'<div class="lib">'+items.slice(0,8).map(x=>'<div class="it"><div class="th '+(kind==='audio'?'au':'')+'" style="'+(kind==='photo'?'background-image:url('+esc(x.url)+')':'')+'">'+(kind==='audio'?'♪':'')+'</div><div class="n">'+x.kb+' KB · '+esc((x.t||'').slice(0,10))+'</div><button class="sm pr" data-use="'+esc(x.url)+'" data-kind="'+kind+'">'+t('use')+'</button></div>').join('')+'</div>':''}
 
@@ -385,7 +397,7 @@ function bind(){
  $$('[data-p]').forEach(i=>i.oninput=()=>{ST.draft.pr[+i.dataset.p][+i.dataset.k]=i.value});
  $$('[data-px]').forEach(b=>b.onclick=()=>{ST.draft.pr.splice(+b.dataset.px,1);if(!ST.draft.pr.length)ST.draft.pr.push(['','']);render()});
  const ap=$('[data-addp]');if(ap)ap.onclick=()=>{ST.draft.pr.push(['','']);render()};
- const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';render();{const sv2=ST.items.find(x=>x.id===d.id);if(sv2&&!isFresh(sv2)&&!(sv2.pv&&Object.keys(sv2.pv).some(k=>/^[co]$|^u$/.test(k)))){setTimeout(()=>doPublish(sv2),450)}}};
+ const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';render();{const sv2=ST.items.find(x=>x.id===d.id);if(sv2&&!isFresh(sv2)&&!pendingFor(sv2)){setTimeout(()=>doPublish(sv2),450)}}};
  const tog=$('#tog');if(tog)tog.onclick=()=>{ST.view='panel';render()};
  $$('[data-view]').forEach(b=>b.onclick=()=>{ST.cur=b.dataset.view;ST.filter='all';ST.view='panel';render();loadLog().then(()=>ST.view==='panel'&&render())});
  $$('[data-open]').forEach(b=>b.onclick=()=>openUrl(linkFor(ST.items.find(x=>x.id===b.dataset.open))));
