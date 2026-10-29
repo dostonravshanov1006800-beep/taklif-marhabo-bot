@@ -129,6 +129,7 @@
         flip(cell, cdState.v[i], s, c); cdState.v[i] = s;
       });
     };
+    window.__fxOwnsCd = function () { return !!(w.querySelector('.cd[data-fx]') || w.querySelector('.fx-today')); };
     tick(); setInterval(tick, 1000);
   });
   function pad(x) { return String(x).padStart(2, '0'); }

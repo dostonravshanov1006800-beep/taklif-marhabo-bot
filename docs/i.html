@@ -1,4 +1,4 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><script>(function(){var p=location.pathname,m=p.match(/^(.*\/)(?:i\.html|i\/[^\/]*\/?)$/);document.write('<base href="'+(m?m[1]:p.replace(/[^\/]*$/,''))+'">')})()</script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Marhabo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -94,6 +94,7 @@ if(SLUG){
     try{const r=await fetch('inv/'+SLUG+'.json?_='+Math.floor(Date.now()/30000),{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.r&&tries<3){SLUG=j.r;continue}D=j}else if(r.status!==404)throw 0}catch(e){}
     if(!D){if(tries===0){const rt=document.getElementById('root');if(rt)rt.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;text-align:center;font-family:Georgia,serif;color:#7A6A57;font-size:15px">'+(BL==='uz'?'Yuklanmoqda…':'Загружается…')+'</div>'}await new Promise(r=>setTimeout(r,tries<2?1200:4000))}
   }
+  if(D&&SLUG&&/^[a-z0-9-]{2,60}$/.test(SLUG)&&history.replaceState){try{const keep=new URLSearchParams();['g','q','l'].forEach(k=>{if(QS.get(k))keep.set(k,QS.get(k))});const root=location.pathname.replace(/[^\/]*$/,'');history.replaceState(null,'',root+'i/'+SLUG+'/'+(keep.toString()?'?'+keep.toString():''))}catch(e){}}
   if(D){const g=(QS.get('g')||'').replace(/\s+/g,' ').trim().slice(0,60),q=(QS.get('q')||'').replace(/[^a-z0-9]/gi,'').slice(0,12);if(g){D.g=g;D.q=q}}
 }else if(raw==='preview'&&window.parent!==window){
   D=await new Promise(res=>{const to=setTimeout(()=>res(null),8000);window.addEventListener('message',function f(e){if(e.origin!==location.origin||!e.data||e.data.mh!=='preview'||!e.data.d)return;clearTimeout(to);window.removeEventListener('message',f);res(e.data.d)});try{window.parent.postMessage({mh:'ready'},location.origin)}catch(e){res(null)}});
@@ -103,7 +104,7 @@ function fail(l){const t=X[l||'ru'];document.body.innerHTML='<div style="min-hei
 if(!D||!D.a){fail(BL)}else{
 const lang=D.l==='uz'?'uz':'ru',T=X[lang],tp=TPL[D.t]||TPL.wedding,th=tp.theme,mo=tp.motif;
 document.documentElement.lang=lang;document.body.style.background=th.page;
-const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');const abs=u=>u?(/^https:\/\//.test(u)||(window.__PREVIEW&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(u))?u:(/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav|mp4|webm)$/i.test(u)?SITE+u:'')):'';const ph=D.p||{};const cover=abs(ph.c)||tp.photos.cover,portrait=abs(ph.o)||tp.photos.portrait,gallery=(ph.g&&ph.g.map(abs).filter(Boolean).length)?ph.g.map(abs).filter(Boolean):tp.photos.gallery,videos=(Array.isArray(ph.v)?ph.v:[]).map(x=>{const u=abs(Array.isArray(x)?x[0]:x);return u&&/\.(mp4|webm)(\?|$)/i.test(u)?{u,o:(Array.isArray(x)&&x[1]==='p')?'p':'l'}:null}).filter(Boolean).slice(0,3),music=abs(D.u)||tp.music;
+const SITE=document.baseURI.replace(/[?#].*$/,'').replace(/[^/]*$/,'');const abs=u=>u?(/^https:\/\//.test(u)||(window.__PREVIEW&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(u))?u:(/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav|mp4|webm)$/i.test(u)?SITE+u:'')):'';const ph=D.p||{};const cover=abs(ph.c)||tp.photos.cover,portrait=abs(ph.o)||tp.photos.portrait,gallery=(ph.g&&ph.g.map(abs).filter(Boolean).length)?ph.g.map(abs).filter(Boolean):tp.photos.gallery,videos=(Array.isArray(ph.v)?ph.v:[]).map(x=>{const u=abs(Array.isArray(x)?x[0]:x);return u&&/\.(mp4|webm)(\?|$)/i.test(u)?{u,o:(Array.isArray(x)&&x[1]==='p')?'p':'l'}:null}).filter(Boolean).slice(0,3),music=abs(D.u)||tp.music;
 const I={n1:D.a,n2:D.b||'',date:D.d||'',time:D.h||'',place:D.pl||'',addr:D.ad||'',map:D.m||'',text:D.x||tp.greeting[lang],prog:(D.pr||[]).filter(p=>p&&p[1]),dress:D.dc||'',contact:D.ct||''};
 const G=D.g||'';
 document.title=[I.n1,I.n2].filter(Boolean).join(' & ')+' · Marhabo';
@@ -137,7 +138,7 @@ h+=rsvp();
 h+='<div style="margin-top:36px;text-align:center"><div class="mt">'+motif(th.accent,120)+'</div><p class="fd" style="margin-top:16px;font-size:15px;color:'+th.ink+';opacity:.7">'+esc(ini())+(I.date?' · '+fmtD(I.date):'')+'</p>'+(I.contact?'<p style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:'+th.muted+'">'+IC.phone+esc(I.contact)+'</p>':'')+'</div></div></div>';
 $('root').innerHTML=gate+h;
 window.__INV={I,T,th,tp,lang,type:(D.t&&TPL[D.t]?D.t:'wedding'),gallery,ini:ini(),id:D.i||'',cover,portrait};try{window.__fxBoot&&window.__fxBoot()}catch(e){}
-const cd=()=>{if(!I.date)return;const d=new Date(I.date+'T'+(I.time||'12:00').slice(0,5)+':00')-new Date();if(isNaN(d)||d<=0){$('cdw').innerHTML='';return}const v=[Math.floor(d/864e5),Math.floor(d%864e5/36e5),Math.floor(d%36e5/6e4),Math.floor(d%6e4/1e3)],l=[T.day,T.hour,T.min,T.sec];$('cdw').innerHTML='<div style="margin-top:28px"><p class="up" style="text-align:center;font-size:10px;letter-spacing:.32em;color:'+th.muted+'">'+T.countdown+'</p><div class="cd">'+v.map((x,i)=>'<div style="border:1px solid '+th.accentSoft+';background:'+th.accentSoft+'33"><b class="fd" style="color:'+th.ink+'">'+String(x).padStart(2,'0')+'</b><small style="color:'+th.muted+'">'+l[i]+'</small></div>').join('')+'</div></div>'};
+const cd=()=>{if(!I.date)return;if(window.__fxOwnsCd&&window.__fxOwnsCd())return;const d=new Date(I.date+'T'+(I.time||'12:00').slice(0,5)+':00')-new Date();if(isNaN(d)||d<=0){$('cdw').innerHTML='';return}const v=[Math.floor(d/864e5),Math.floor(d%864e5/36e5),Math.floor(d%36e5/6e4),Math.floor(d%6e4/1e3)],l=[T.day,T.hour,T.min,T.sec];$('cdw').innerHTML='<div style="margin-top:28px"><p class="up" style="text-align:center;font-size:10px;letter-spacing:.32em;color:'+th.muted+'">'+T.countdown+'</p><div class="cd">'+v.map((x,i)=>'<div style="border:1px solid '+th.accentSoft+';background:'+th.accentSoft+'33"><b class="fd" style="color:'+th.ink+'">'+String(x).padStart(2,'0')+'</b><small style="color:'+th.muted+'">'+l[i]+'</small></div>').join('')+'</div></div>'};
 cd();setInterval(cd,1000);
 const au=$('au');au.src=music;au.volume=.45;
 const setPlay=p=>{const b=$('mb');b.classList.toggle('playing',p);$('mt').textContent=p?T.musicOff:T.musicOn};

@@ -203,7 +203,7 @@ function previewPage(slug, o) {
   let when = '';
   const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(o.d || '');
   if (dm) when = `${+dm[3]} ${MONTHS[lang][+dm[2] - 1] || ''} ${dm[1]}`.replace(/\s+/g, ' ') + (o.h ? `, ${o.h}` : '');
-  const title = `${names} · Marhabo`;
+  const title = names;
   const desc = [lang === 'ru' ? 'Приглашение' : 'Taklifnoma', when, o.pl].filter(Boolean).join(' · ');
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c)
     ? `${APP_URL.replace(/\/?$/, '/')}${o.p.c}`
@@ -211,11 +211,11 @@ function previewPage(slug, o) {
   const base = APP_URL.replace(/\/?$/, '/');
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${attr(title)}</title><meta name="description" content="${attr(desc)}">
-<meta property="og:type" content="website"><meta property="og:title" content="${attr(title)}"><meta property="og:description" content="${attr(desc)}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Taklifnoma"><meta property="og:title" content="${attr(title)}"><meta property="og:description" content="${attr(desc)}">
 <meta property="og:image" content="${attr(cover)}"><meta property="og:url" content="${attr(base + 'i/' + slug + '/')}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${attr(title)}"><meta name="twitter:image" content="${attr(cover)}">
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#FCF9F3;color:#2B2219;font-family:Georgia,serif;text-align:center}a{color:#B28A50}</style>
-</head><body><div><p style="letter-spacing:.3em;font-size:11px;text-transform:uppercase;color:#A08D74">Marhabo</p><h1 style="font-weight:500">${attr(names)}</h1><p><a id="go" href="../../i.html?s=${attr(slug)}">${lang === 'ru' ? 'Открыть приглашение' : 'Taklifnomani ochish'}</a></p></div>
+</head><body><div><p style="letter-spacing:.3em;font-size:11px;text-transform:uppercase;color:#A08D74">Taklifnoma</p><h1 style="font-weight:500">${attr(names)}</h1><p><a id="go" href="../../i.html?s=${attr(slug)}">${lang === 'ru' ? 'Открыть приглашение' : 'Taklifnomani ochish'}</a></p></div>
 <script>var q=location.search?'&'+location.search.slice(1):'';location.replace('../../i.html?s=${slug}'+q)</script></body></html>`;
 }
 let BOT_NAME = 'Taklifnomai_bot';
@@ -342,11 +342,49 @@ async function onMessage(m) {
     return;
   }
 
+  // красивая ссылка приглашения: /start i_<slug> или i_<slug>__<ключ гостя>
+  const iv = text.match(/^\/start\s+i_([a-z0-9-]{2,60}?)(?:__([a-z0-9]{1,12}))?$/i);
+  if (iv) {
+    const ok = await sendInviteCard(chat, iv[1].toLowerCase(), iv[2] ? iv[2].toLowerCase() : '', m.from);
+    if (ok) return;
+  }
+
   // /start, /info и любое другое сообщение: баннер + «Старт» и «Информация»
   if (/^\/info\b/i.test(text)) { await sendInfo(chat, lang); return; }
   await sendStart(chat, lang);
 }
 
+
+// ---- Красивая ссылка через бота: t.me/<бот>?start=i_<slug>[_<ключГостя>] ----
+function readInv(slug) {
+  if (!/^[a-z0-9-]{2,60}$/.test(slug)) return null;
+  try { return JSON.parse(readFileSync(`${INV_DIR}/${slug}.json`, 'utf8')); } catch { return null; }
+}
+function cardCaption(o, guestName) {
+  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const names = [o.a, o.b].filter(Boolean).map(esc).join(' &amp; ');
+  let when = '';
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(o.d || '');
+  if (dm) when = `${+dm[3]} ${MONTHS[lang][+dm[2] - 1] || ''} ${dm[1]}` + (o.h ? `, ${esc(o.h)}` : '');
+  const hi = guestName ? (lang === 'ru' ? `Дорогой(ая) <b>${esc(guestName)}</b>,\nвас приглашают` : `Hurmatli <b>${esc(guestName)}</b>,\nsizni taklif qilamiz`) : (lang === 'ru' ? 'Вас приглашают' : 'Sizni taklif qilamiz');
+  return `💌 ${hi}\n\n<b>${names}</b>` + (when ? `\n📅 ${when}` : '') + (o.pl ? `\n📍 ${esc(o.pl)}` : '');
+}
+async function sendInviteCard(chat, slug, guestKey, from) {
+  const o = readInv(slug);
+  if (!o) return false;
+  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const base = APP_URL.replace(/\/?$/, '/');
+  // имя берём из профиля Telegram того, кто открыл ссылку: список гостей в репозитории не публикуем
+  const gname = from ? [from.first_name].filter(Boolean).join(' ').slice(0, 40) : '';
+  const url = `${base}i/${slug}/` + (guestKey ? `?q=${encodeURIComponent(guestKey)}` + (gname ? `&g=${encodeURIComponent(gname)}` : '') : (gname ? `?g=${encodeURIComponent(gname)}` : ''));
+  const kb = { inline_keyboard: [[{ text: lang === 'ru' ? '💌 Открыть приглашение' : '💌 Taklifnomani ochish', web_app: { url } }]] };
+  const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c) ? `${base}${o.p.c}` : null;
+  const caption = cardCaption(o, gname);
+  let r = cover ? await tg('sendPhoto', { chat_id: chat, photo: cover, caption, parse_mode: 'HTML', reply_markup: kb }) : null;
+  if (!r) r = await tg('sendMessage', { chat_id: chat, text: caption, parse_mode: 'HTML', reply_markup: kb });
+  if (r && o.o && o.i) record(Number(o.o), o.i, guestKey || 'g', 'o', gname);
+  return !!r;
+}
 const startKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { url: APP_URL } }], [{ text: T[lang].btnInfo, callback_data: 'info' }]] });
 const infoKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { url: APP_URL } }], [{ text: T[lang].btnBack, callback_data: 'back' }]] });
 const bannerUrl = (lang) => `${APP_URL.replace(/\/?$/, '/')}brand/banner_${lang}.jpg`;
