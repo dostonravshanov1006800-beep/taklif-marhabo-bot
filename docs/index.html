@@ -385,7 +385,7 @@ function bind(){
  $$('[data-p]').forEach(i=>i.oninput=()=>{ST.draft.pr[+i.dataset.p][+i.dataset.k]=i.value});
  $$('[data-px]').forEach(b=>b.onclick=()=>{ST.draft.pr.splice(+b.dataset.px,1);if(!ST.draft.pr.length)ST.draft.pr.push(['','']);render()});
  const ap=$('[data-addp]');if(ap)ap.onclick=()=>{ST.draft.pr.push(['','']);render()};
- const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';render()};
+ const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';render();{const sv2=ST.items.find(x=>x.id===d.id);if(sv2&&!isFresh(sv2)&&!(sv2.pv&&Object.keys(sv2.pv).some(k=>/^[co]$|^u$/.test(k)))){setTimeout(()=>doPublish(sv2),450)}}};
  const tog=$('#tog');if(tog)tog.onclick=()=>{ST.view='panel';render()};
  $$('[data-view]').forEach(b=>b.onclick=()=>{ST.cur=b.dataset.view;ST.filter='all';ST.view='panel';render();loadLog().then(()=>ST.view==='panel'&&render())});
  $$('[data-open]').forEach(b=>b.onclick=()=>openUrl(linkFor(ST.items.find(x=>x.id===b.dataset.open))));
