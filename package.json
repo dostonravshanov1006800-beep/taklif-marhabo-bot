@@ -1,0 +1,7 @@
+{
+  "name": "taklif-marhabo-bot",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Telegram bot + Mini App on GitHub only (Actions + Pages). No paid services."
+}
