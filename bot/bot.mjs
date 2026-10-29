@@ -87,7 +87,7 @@ const T = {
     no: (n) => `❌ <b>${n}</b> не сможет прийти`,
     thanksYes: '🌿 Спасибо! Ваш ответ «Приду» отправлен хозяину приглашения. До встречи на празднике!',
     thanksNo: 'Спасибо за ответ. Мы сообщили хозяину приглашения.',
-    mediaOk: (kb) => `✅ Файл сохранён (${kb} КБ). Ссылка ниже. Он появится в форме через 1-2 минуты. Вернитесь в Marhabo и нажмите «Проверить файлы».`,
+    mediaOk: (kb) => `✅ Файл сохранён (${kb} КБ). Вернитесь в Marhabo: через 1-2 минуты он подставится сам и станет виден гостям.`,
     mediaBig: '⚠️ Файл больше 19 МБ. Сожмите его и отправьте снова.',
     pubOk: (n) => `✅ Приглашение <b>${n}</b> опубликовано. Ссылка ниже заработает через 1-2 минуты. Вернитесь в Marhabo: гостевые ссылки станут короткими.`,
     pubBad: '⚠️ Не удалось прочитать приглашение. Вернитесь в Marhabo и нажмите «Опубликовать» ещё раз.',
@@ -107,7 +107,7 @@ const T = {
     no: (n) => `❌ <b>${n}</b> kela olmaydi`,
     thanksYes: "🌿 Rahmat! «Boraman» javobingiz taklifnoma egasiga yuborildi. Bayramda ko'rishguncha!",
     thanksNo: 'Javobingiz uchun rahmat. Taklifnoma egasiga xabar berdik.',
-    mediaOk: (kb) => `✅ Fayl saqlandi (${kb} KB). Havola pastda. U 1-2 daqiqada shaklda paydo bo'ladi. Marhabo'ga qaytib «Fayllarni tekshirish» tugmasini bosing.`,
+    mediaOk: (kb) => `✅ Fayl saqlandi (${kb} KB). Marhabo'ga qayting: 1-2 daqiqada u o'zi almashadi va mehmonlarga ko'rinadi.`,
     mediaBig: '⚠️ Fayl 19 MB dan katta. Siqib, qayta yuboring.',
     pubOk: (n) => `✅ <b>${n}</b> taklifnomasi e'lon qilindi. Havola 1-2 daqiqada ishlaydi. Marhabo'ga qaytsangiz, mehmon havolalari qisqa bo'ladi.`,
     pubBad: '⚠️ Taklifnomani o‘qib bo‘lmadi. Marhabo\'ga qaytib «E\'lon qilish» ni yana bosing.',
@@ -262,7 +262,6 @@ async function onMessage(m) {
     if (res && res.url) {
       publish();
       await tg('sendMessage', { chat_id: chat, text: t.mediaOk(res.kb), parse_mode: 'HTML', disable_web_page_preview: true });
-      await tg('sendMessage', { chat_id: chat, text: res.url, disable_web_page_preview: true });
     } else {
       await tg('sendMessage', { chat_id: chat, text: res && res.error === 'size' ? t.mediaBig : t.mediaBad, parse_mode: 'HTML' });
     }
