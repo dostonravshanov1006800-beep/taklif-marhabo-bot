@@ -46,7 +46,7 @@ function publish() {
   if (!dirty.size) return;
   try {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
-    execSync('git add docs/data docs/media docs/inv');
+    execSync('git add docs/data docs/media docs/inv docs/i');
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' });
     dirty.clear();
@@ -155,6 +155,32 @@ async function saveMedia(m) {
 
 // ---- Публикация приглашений: #taklif <данные> -> docs/inv/<slug>.json, короткая ссылка /i/<slug> ----
 const INV_DIR = 'docs/inv';
+const PREV_DIR = 'docs/i';
+// запасные обложки по шаблонам (те же, что на странице гостя), чтобы у превью всегда была картинка
+const COVER = { wedding: 'photo-1606800052052-a08af7148866', birthday: 'photo-1530103862676-de8c9debad1d', jubilee: 'photo-1522673607200-164d1b6ce486', anniversary: 'photo-1522673607200-164d1b6ce486', nikoh: 'photo-1519741497674-611481863552', nikah: 'photo-1519741497674-611481863552', navruz: 'photo-1490750967868-88aa4486c946', other: 'photo-1492684223066-81342ee5ff30' };
+const MONTHS = { ru: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], uz: ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'] };
+const attr = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function previewPage(slug, o) {
+  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const names = [o.a, o.b].filter(Boolean).join(' & ') || 'Marhabo';
+  let when = '';
+  const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(o.d || '');
+  if (dm) when = `${+dm[3]} ${MONTHS[lang][+dm[2] - 1] || ''} ${dm[1]}`.replace(/\s+/g, ' ') + (o.h ? `, ${o.h}` : '');
+  const title = `${names} · Marhabo`;
+  const desc = [lang === 'ru' ? 'Приглашение' : 'Taklifnoma', when, o.pl].filter(Boolean).join(' · ');
+  const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c)
+    ? `${APP_URL.replace(/\/?$/, '/')}${o.p.c}`
+    : `https://images.unsplash.com/${COVER[o.t] || COVER.wedding}?auto=format&fit=crop&w=1200&q=70`;
+  const base = APP_URL.replace(/\/?$/, '/');
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${attr(title)}</title><meta name="description" content="${attr(desc)}">
+<meta property="og:type" content="website"><meta property="og:title" content="${attr(title)}"><meta property="og:description" content="${attr(desc)}">
+<meta property="og:image" content="${attr(cover)}"><meta property="og:url" content="${attr(base + 'i/' + slug + '/')}">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${attr(title)}"><meta name="twitter:image" content="${attr(cover)}">
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#FCF9F3;color:#2B2219;font-family:Georgia,serif;text-align:center}a{color:#B28A50}</style>
+</head><body><div><p style="letter-spacing:.3em;font-size:11px;text-transform:uppercase;color:#A08D74">Marhabo</p><h1 style="font-weight:500">${attr(names)}</h1><p><a id="go" href="../../i.html?s=${attr(slug)}">${lang === 'ru' ? 'Открыть приглашение' : 'Taklifnomani ochish'}</a></p></div>
+<script>var q=location.search?'&'+location.search.slice(1):'';location.replace('../../i.html?s=${slug}'+q)</script></body></html>`;
+}
 let BOT_NAME = 'Taklifnomai_bot';
 const TR = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:'o',қ:'q',ғ:'g',ҳ:'h',ʼ:'',"'":'' };
 const slugPart = (x) => String(x || '').toLowerCase().split('').map((c) => (c in TR ? TR[c] : c)).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24);
@@ -198,6 +224,8 @@ function saveInvitation(raw, owner) {
   if (!o) return { error: 'data' };
   const slug = makeSlug(o, owner, o.i);
   writeFileSync(`${INV_DIR}/${slug}.json`, JSON.stringify(o));
+  mkdirSync(`${PREV_DIR}/${slug}`, { recursive: true });
+  writeFileSync(`${PREV_DIR}/${slug}/index.html`, previewPage(slug, o));
   // индекс владельца: id приглашения -> slug (мини-апп по нему узнаёт короткую ссылку)
   const ixf = `${INV_DIR}/_${owner}.json`;
   let ix = {};
