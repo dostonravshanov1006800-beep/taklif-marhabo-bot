@@ -8,10 +8,10 @@ on:
     branches: [main]
     paths: ['bot/bot.mjs', '.github/workflows/bot.yml']
 
-# Только один бот одновременно. Новый запуск ждёт, а не убивает работающий.
+# Только один бот одновременно. Новый запуск (после обновления кода) заменяет старый.
 concurrency:
   group: taklif-bot
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write

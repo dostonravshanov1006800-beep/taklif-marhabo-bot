@@ -141,13 +141,16 @@ async function setup() {
   await tg('setMyCommands', { language_code: 'ru', commands: [{ command: 'start', description: 'Старт' }] });
 }
 
+let stopping = false;
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { stopping = true; });
+
 async function main() {
   await setup();
   let offset = existsSync(OFFSET_FILE) ? Number(readFileSync(OFFSET_FILE, 'utf8')) || 0 : 0;
   const stopAt = Date.now() + RUN_MINUTES * 60 * 1000;
   let lastPub = Date.now();
   console.log(`polling, offset=${offset}, until ${new Date(stopAt).toISOString()}`);
-  while (Date.now() < stopAt) {
+  while (Date.now() < stopAt && !stopping) {
     const updates = await tg('getUpdates', { offset, timeout: 45, allowed_updates: ['message'] });
     if (!updates) { await sleep(3000); continue; }
     for (const u of updates) {
