@@ -2,133 +2,263 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 <title>Marhabo</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:Manrope,system-ui,sans-serif;background:radial-gradient(120% 70% at 80% -10%,#F7EEDF 0%,#FCF9F3 45%,#FDFBF7 100%);color:#2B2219;min-height:100vh;padding:18px 16px 110px;-webkit-font-smoothing:antialiased}
-.fd{font-family:'Cormorant Garamond',Georgia,serif}
-.brand{text-align:center;padding-top:6px}
-.brand small{display:block;font-size:10px;letter-spacing:.38em;text-transform:uppercase;color:#A08D74}
-h1{font-size:40px;font-weight:500;line-height:1.05;margin-top:6px}
-.sub{text-align:center;color:#8B7A66;font-size:13px;margin:8px 0 16px}
-.orn{display:flex;justify-content:center;margin:10px 0 4px}
-.lbl{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#A08D74;margin:18px 0 7px}
-input,textarea{width:100%;border:1px solid #EDE3D4;background:#fff;border-radius:12px;padding:12px 14px;font:inherit;font-size:15px;color:#2B2219;outline:none;transition:border-color .2s}
-input:focus,textarea:focus{border-color:#B28A50}
-textarea{min-height:84px;resize:vertical}
+:root{--ink:#2B2219;--mut:#7A6A57;--ac:#B28A50;--line:#EDE3D4;--bg:#FCF9F3}
+html{scroll-behavior:smooth}
+body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.fd{font-family:'Cormorant Garamond',Georgia,serif}.up{text-transform:uppercase}
+#glow{position:fixed;inset:0;pointer-events:none;background:radial-gradient(90% 55% at 85% -8%,#F5E9D3 0%,transparent 60%),radial-gradient(70% 40% at -10% 30%,#F4E6E1 0%,transparent 60%)}
+#app{position:relative;max-width:560px;margin:0 auto;padding:0 18px 120px}
+/* шапка */
+.top{display:flex;align-items:center;justify-content:space-between;padding:20px 0 6px}
+.logo{font-size:27px;line-height:1}.logo small{font-family:Manrope;font-size:8.5px;letter-spacing:.26em;color:#A08D74;text-transform:uppercase;margin-left:7px}
+.nav{display:flex;align-items:center;gap:12px}
+.nav a,.nav button.l{font:inherit;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);background:none;border:0;cursor:pointer;min-height:40px;padding:0 4px}
+.lang{display:inline-flex;border:1px solid #E4D8C6;border-radius:99px;padding:2px;background:rgba(255,255,255,.55)}
+.lang button{border:0;background:none;font:inherit;font-size:10px;letter-spacing:.14em;color:#7A6A57;border-radius:99px;padding:0 12px;min-height:34px;cursor:pointer}
+.lang button.on{background:var(--ink);color:#FBF6EE}
+/* hero */
+.eb{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ac);margin-top:26px}
+h1.hero{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2.7rem,12.5vw,4rem);line-height:.96;margin-top:16px;max-width:11ch}
+.sub{margin-top:18px;font-size:15px;line-height:1.65;color:#6E6152;max-width:44ch}
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.b{display:inline-flex;align-items:center;gap:9px;border-radius:99px;padding:14px 24px;font:inherit;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:.25s}
+.b.d{background:var(--ink);color:#FBF6EE}.b.d:active{background:#3D3125}
+.b.o{border-color:#DFD2BE;color:#6E6152;background:transparent}
+.b svg{transition:transform .25s}.b:hover svg{transform:translateX(4px)}
+.feat{list-style:none;margin-top:26px;display:grid;gap:11px}
+.feat li{display:flex;gap:10px;font-size:13.5px;color:#6E6152;align-items:flex-start}
+.feat i{flex:none;width:16px;height:16px;border-radius:99px;background:#EFE4D3;color:var(--ac);display:grid;place-items:center;margin-top:1px}
+/* демо-открытка: парение */
+.demo{position:relative;margin:46px auto 0;max-width:330px}
+.demo:before{content:"";position:absolute;left:50%;top:-30px;width:320px;height:320px;transform:translateX(-50%);border-radius:99px;filter:blur(48px);background:radial-gradient(circle,rgba(178,138,80,.26),transparent 70%);pointer-events:none}
+.dwrap{opacity:0;transform:translateY(28px) rotate(-1.5deg);animation:dIn 1s cubic-bezier(.22,1,.36,1) .15s forwards}
+@keyframes dIn{to{opacity:1;transform:translateY(0) rotate(-1.5deg)}}
+.dcard{position:relative;overflow:hidden;border-radius:24px;padding:28px 22px 30px;text-align:center;border:1px solid #EADBC4;background:linear-gradient(180deg,#FFFEFB 0%,#FBF3E6 100%);box-shadow:0 40px 80px -50px rgba(43,34,25,.6);animation:float 9s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(-7px)}50%{transform:translateY(7px)}}
+.dcard .in{position:absolute;inset:7px;border-radius:18px;border:1px solid #EADBC4;pointer-events:none;z-index:2}
+.dcov{position:relative;margin:-28px -22px 18px;height:150px;overflow:hidden}
+.dcov img{width:100%;height:100%;object-fit:cover}.dcov:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),#FFFEFB)}
+.dchips{display:flex;justify-content:center;gap:8px;margin-top:16px}
+.dchips span{border-radius:99px;padding:6px 15px;font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+.dstat{position:absolute;left:-6px;bottom:-20px;z-index:3;border-radius:14px;border:1px solid #E7DCCA;background:rgba(255,255,255,.92);padding:9px 13px;box-shadow:0 16px 30px -24px rgba(43,34,25,.7);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);animation:float2 11s ease-in-out infinite}
+@keyframes float2{0%,100%{transform:translateY(6px)}50%{transform:translateY(-6px)}}
+.dstat p{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#A08D74}.dstat b{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:19px}
+/* секции */
+.sec{margin-top:70px;border-top:1px solid #EADFCE;padding-top:30px}
+.sec h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(1.9rem,8vw,2.5rem);line-height:1.05}
+.sec>p{margin-top:10px;font-size:13.5px;line-height:1.6;color:var(--mut);max-width:38ch}
+.rv{opacity:0;transform:translateY(20px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}.rv.on{opacity:1;transform:none}
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:22px}
+.tc{display:flex;flex-direction:column;overflow:hidden;border-radius:18px;text-align:left;cursor:pointer;font:inherit;color:inherit;padding:0;transition:transform .5s,box-shadow .5s;border:1px solid}
+.tc:active{transform:translateY(-3px)}
+.tc .im{position:relative;height:128px;overflow:hidden}.tc img{width:100%;height:100%;object-fit:cover;transition:transform .7s}.tc:active img,.tc:hover img{transform:scale(1.07)}
+.tc .im:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.02) 45%,var(--tb))}
+.tc .tag{position:absolute;left:9px;top:9px;z-index:2;border-radius:99px;background:rgba(255,255,255,.88);padding:4px 9px;font-size:8px;letter-spacing:.2em;text-transform:uppercase;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.tc .tx{padding:2px 10px 16px;text-align:center}.tc .nm{font-family:'Cormorant Garamond',serif;font-size:20px;line-height:1.15;display:block}.tc .nm i{margin:0 3px}.tc .ht{font-size:9.5px;display:block;margin-top:3px}
+.steps{margin-top:18px;border-top:1px solid #EADFCE}.steps>div{padding:22px 0;border-bottom:1px solid #EADFCE}
+.steps .n{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.24em;color:var(--ac)}.steps h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:23px;margin-top:8px}.steps p{margin-top:6px;font-size:13.5px;line-height:1.6;color:var(--mut)}
+.foot{margin-top:56px;text-align:center}.foot .fd{font-size:24px}.foot p{font-size:11px;letter-spacing:.16em;color:#A08D74;text-transform:uppercase;margin-top:4px}
+/* форма */
+.ph{display:flex;align-items:center;gap:10px;padding:18px 0 4px}
+.back{border:1px solid var(--line);background:#fff;width:38px;height:38px;border-radius:99px;font-size:17px;cursor:pointer;color:var(--ink)}
+.ph h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px}
+.lbl{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#A08D74;margin:20px 0 8px}
+.lbl em{font-style:normal;text-transform:none;letter-spacing:0;opacity:.8;margin-left:6px}
+input,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 14px;font:inherit;font-size:15px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(178,138,80,.14)}
+textarea{min-height:88px;resize:vertical;line-height:1.5}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.tpls{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.tpl{border:1px solid #EDE3D4;background:#fff;border-radius:14px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:inherit;transition:all .2s}
-.tpl b{display:block;font-size:14px;font-weight:600}
-.tpl.on{border-color:#B28A50;background:#FBF3E6;box-shadow:0 0 0 1px #B28A50 inset}
-.sw{display:flex;gap:6px;margin-top:8px}.sw i{width:14px;height:14px;border-radius:99px;display:block}
-.btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;font:inherit;font-size:13px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;background:#2B2219;color:#fff}
-.btn.g{background:transparent;color:#2B2219;border:1px solid #D9CBB4}
-.btn.s{padding:9px 14px;font-size:11px;width:auto;display:inline-block}
-.card{background:#fff;border:1px solid #EDE3D4;border-radius:18px;padding:16px;margin-bottom:12px;box-shadow:0 18px 40px -34px #2B2219}
-.card h3{font-size:24px;font-weight:500}
-.meta{color:#8B7A66;font-size:12px;margin-top:2px}
-.prow{display:grid;grid-template-columns:96px 1fr 38px;gap:8px;margin-bottom:8px}
-.x{border:1px solid #EDE3D4;background:#fff;border-radius:12px;cursor:pointer;font-size:18px;color:#8B7A66}
-.cnt{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
-.cnt div{background:#fff;border:1px solid #EDE3D4;border-radius:12px;padding:10px 2px;text-align:center}
-.cnt b{display:block;font-size:22px;font-weight:500}.cnt small{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#8B7A66}
-.g{display:flex;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid #F1E8D9}
-.g .n{flex:1;min-width:0}.g .n b{font-weight:600;font-size:14px}
-.bar{position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:rgba(252,249,243,.94);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-top:1px solid #EDE3D4}
-.tabs{display:flex;gap:6px;margin:6px 0 4px}.tabs button{flex:1;padding:11px;border-radius:12px;border:1px solid #EDE3D4;background:#fff;font:inherit;font-size:13px;cursor:pointer;color:inherit}
-.tabs button.on{background:#2B2219;color:#fff;border-color:#2B2219}
-.empty{text-align:center;color:#8B7A66;padding:36px 12px;font-size:14px}
-.err{color:#B4433A;font-size:12px;margin-top:10px;text-align:center;min-height:16px}
-.lang{position:absolute;right:14px;top:14px;font-size:11px;letter-spacing:.1em;border:1px solid #EDE3D4;background:#fff;border-radius:99px;padding:6px 12px;cursor:pointer;color:inherit}
-.hint{font-size:11px;color:#A08D74;margin-top:6px;line-height:1.5}
-.lk{display:flex;gap:8px;margin-top:10px}.lk input{font-size:12px}
-.done{text-align:center;padding:10px 0}
-.done .ck{width:56px;height:56px;border-radius:99px;background:#B28A50;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:26px}
+.tpls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tp{border:1px solid var(--line);background:#fff;border-radius:14px;padding:0;overflow:hidden;cursor:pointer;font:inherit;color:inherit;text-align:center;transition:.2s}
+.tp img{width:100%;height:54px;object-fit:cover;display:block}.tp b{display:block;font-size:11.5px;font-weight:600;padding:7px 4px 2px}.tp s{display:flex;gap:4px;justify-content:center;padding:0 0 8px;text-decoration:none}.tp s i{width:10px;height:10px;border-radius:99px}
+.tp.on{border-color:var(--ac);box-shadow:0 0 0 1.5px var(--ac)}
+.prow{display:grid;grid-template-columns:100px 1fr 40px;gap:8px;margin-bottom:8px}
+.x{border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer;font-size:18px;color:#8B7A66}
+.hint{font-size:11.5px;color:#A08D74;margin-top:7px;line-height:1.5}
+.pv{margin-top:26px}.pv .t{display:flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#A08D74;margin-bottom:10px}.pv .t:before,.pv .t:after{content:"";flex:1;height:1px;background:var(--line)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(252,249,243,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.bar .b{width:100%;justify-content:center}
+.err{color:#B4433A;font-size:12.5px;text-align:center;min-height:18px;margin-top:12px}
+/* мои */
+.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:14px;box-shadow:0 18px 40px -34px var(--ink)}
+.card h3{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:26px;line-height:1.1}
+.meta{color:var(--mut);font-size:12px;margin-top:4px}
+.mini{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.b.s{padding:10px 16px;font-size:10px;letter-spacing:.14em}
+.empty{text-align:center;color:var(--mut);padding:50px 14px;font-size:14px;line-height:1.6}
+/* панель */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.stat{border:1px solid var(--line);background:rgba(255,255,255,.6);border-radius:14px;padding:12px 10px;transition:.25s;cursor:pointer;font:inherit;text-align:left;color:inherit}
+.stat.on{background:#fff;box-shadow:0 0 0 1.5px var(--c) inset}
+.stat p{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#A08D74}.stat b{display:block;margin-top:5px;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:28px;line-height:1;color:var(--c)}
+.gl{margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.g{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:1px solid #F0E7D9}.g:last-child{border:0}
+.av{flex:none;width:36px;height:36px;border-radius:99px;background:#F5EBDB;color:#8A6A3B;display:grid;place-items:center;font-family:'Cormorant Garamond',serif;font-size:16px}
+.g .n{flex:1;min-width:0}.g .n b{display:block;font-weight:500;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 9px;font-size:11px;margin-top:4px}
+.chip.y{background:#E9F2EC;color:#2F6B52}.chip.n{background:#FBEDE9;color:#9C3B2A}.chip.p{background:#F4EFE7;color:#8A7B68}
+.ib{border:1px solid #E7DCCA;background:#fff;border-radius:10px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:#6E6152}
+.ib.ok{background:#EEF5F0;border-color:#B9D3C2;color:#2F6B52}
+.lk{display:flex;gap:8px;margin-top:12px}.lk input{font-size:12px}
+.done{text-align:center;padding:40px 0 10px}.done .ck{width:66px;height:66px;border-radius:99px;background:var(--ac);color:#fff;display:grid;place-items:center;margin:0 auto 16px;font-size:30px;animation:pop .6s cubic-bezier(.22,1,.36,1)}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+.view{animation:vin .5s cubic-bezier(.22,1,.36,1)}@keyframes vin{from{opacity:0;transform:translateY(14px)}}
 </style></head><body>
-<button class="lang" id="lg">RU · UZ</button>
-<div id="app"></div>
+<div id="glow"></div><div id="app"></div>
 <script type="module">
 import {TPL,pack} from './shared.js';
-const BOT='Taklifnomai_bot', OWNER_KEY='taklif_v1';
-const tg=window.Telegram&&Telegram.WebApp; if(tg){tg.ready();tg.expand();try{if(tg.isVersionAtLeast('6.1')){tg.setHeaderColor('#FCF9F3');tg.setBackgroundColor('#FCF9F3')}}catch(e){}}
-const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{};
-const OWNER=String(me.id||'');
-let LANG=(localStorage.getItem('lg')||(me.language_code||'ru').slice(0,2)); if(LANG!=='uz')LANG='ru';
-const S={ru:{sub:'Заполните детали — открытка соберётся сама.',tabNew:'Создать',tabMine:'Мои',tpl:'Шаблон',n1:'Имя',n2:'Второе имя',date:'Дата',time:'Время',place:'Место',addr:'Адрес',map:'Ссылка на карту',photos:'Фотографии',cover:'Обложка (ссылка на фото)',portrait:'Портрет (ссылка на фото)',gallery:'Галерея (по одной ссылке в строке, до 6)',photoHint:'Если оставить пустым, подберём фото под шаблон.',music:'Ссылка на MP3',text:'Текст приглашения',prog:'Программа вечера',addp:'+ Добавить пункт',dress:'Дресс-код',contact:'Контакт',save:'Создать приглашение',needs:'Укажите имя и дату',none:'Пока нет приглашений',open:'Открыть',guests:'Гости',addg:'Добавить гостей',addhint:'Каждое имя с новой строки',add:'Добавить',del:'Удалить',delc:'Удалить приглашение?',edit:'Изменить',back:'← Назад',share:'Отправить',general:'Общая ссылка',personal:'Личные ссылки гостей',copy:'Копировать',copied:'Скопировано',created:'Приглашение готово',createdSub:'Теперь добавьте гостей: у каждого будет личная ссылка с его именем.',toGuests:'Добавить гостей',empty:'Добавьте имена — для каждого гостя появится личная ссылка.',gcount:'гостей',ph:'Для личной ссылки нужно имя'},
-uz:{sub:"Tafsilotlarni kiriting — taklifnoma o'zi chiroyli bo'lib chiqadi.",tabNew:'Yaratish',tabMine:'Mening',tpl:'Shablon',n1:'Ism',n2:'Ikkinchi ism',date:'Sana',time:'Vaqt',place:'Joy',addr:'Manzil',map:'Xarita havolasi',photos:'Rasmlar',cover:'Muqova (rasm havolasi)',portrait:'Portret (rasm havolasi)',gallery:"Galereya (har qatorda bitta havola, 6 tagacha)",photoHint:"Bo'sh qoldirilsa, shablonga mos rasm tanlanadi.",music:'MP3 havolasi',text:'Taklifnoma matni',prog:'Kechqurun dasturi',addp:"+ Band qo'shish",dress:'Kiyim uslubi',contact:'Aloqa',save:'Taklifnoma yaratish',needs:'Ism va sanani kiriting',none:"Hozircha taklifnoma yo'q",open:'Ochish',guests:'Mehmonlar',addg:"Mehmon qo'shish",addhint:'Har bir ism yangi qatorda',add:"Qo'shish",del:"O'chirish",delc:"Taklifnoma o'chirilsinmi?",edit:"O'zgartirish",back:'← Orqaga',share:'Yuborish',general:'Umumiy havola',personal:'Mehmonlarning shaxsiy havolalari',copy:'Nusxa olish',copied:'Nusxa olindi',created:'Taklifnoma tayyor',createdSub:"Endi mehmonlarni qo'shing: har birida o'z ismi bilan shaxsiy havola bo'ladi.",toGuests:"Mehmon qo'shish",empty:"Ismlarni qo'shing — har biri uchun shaxsiy havola paydo bo'ladi.",gcount:'mehmon',ph:'Shaxsiy havola uchun ism kerak'}};
-const TP=[['wedding','Свадьба',"To'y",'#B28A50','#EADBC4'],['birthday','День рождения',"Tug'ilgan kun",'#D2705A','#F7D8CE'],['anniversary','Юбилей','Yubiley','#2F6B52','#D6E6D9'],['nikah','Никах','Nikoh','#7E8B63','#E3E6D1'],['navruz','Навруз',"Navro'z",'#1F8A6D','#D2EADF'],['other','Другой праздник','Boshqa bayram','#7B4A63','#EADCE5']];
-const t=k=>S[LANG][k],$=i=>document.getElementById(i);
+const BOT='Taklifnomai_bot', KEY='taklif_v2';
+const tg=window.Telegram&&Telegram.WebApp;
+const V=v=>{try{return tg&&tg.isVersionAtLeast&&tg.isVersionAtLeast(v)}catch(e){return false}};
+if(tg){try{tg.ready();tg.expand();if(V('6.1')){tg.setHeaderColor('#FCF9F3');tg.setBackgroundColor('#FCF9F3')}}catch(e){}}
+const me=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user)||{}; const OWNER=String(me.id||'');
+let LANG=localStorage.getItem('lg')||(me.language_code||'ru').slice(0,2); if(LANG!=='uz')LANG='ru';
+const TX={
+ru:{ey:'Приглашения ручной работы',h:'Приглашение, которое запомнят',sub:'Красивая открытка с обращением по имени для каждого гостя. А вы видите, кто открыл приглашение и кто придёт.',cta:'Создать приглашение',demo:'Посмотреть пример',f1:'Личная ссылка для каждого гостя',f2:'Живая открытка вместо PDF',f3:'Ответы «Приду» и «Не смогу» сразу',f4:'Фото, галерея и музыка внутри',tt:'Шаблоны для любого праздника',ts:'Свадьба, день рождения, юбилей, никах, Навруз и другие торжества.',how:'Как это работает',s1:'Выберите шаблон',s1d:'Свадьба, день рождения, юбилей, никах, Навруз — стиль подбирается сам.',s2:'Заполните детали',s2d:'Имена, дата и место, фотографии, музыка, программа вечера и слова для гостей.',s3:'Отправьте ссылки',s3d:'У каждого гостя своя ссылка с его именем. Открытия и ответы — в панели.',ft:'Сделано с любовью к деталям',prof:'Мои',opened:'Открыли',choose:'Выбрать',guestS:'Дильноза',
+ new:'Новое приглашение',edit:'Редактирование',fsub:'Заполните детали — открытка соберётся сама.',tpl:'Шаблон',n1:'Имя',n2:'Второе имя',date:'Дата',time:'Время',opt:'необязательно',place:'Место',addr:'Адрес',map:'Ссылка на карту',photos:'Фотографии',cover:'Обложка',portrait:'Портрет',gallery:'Галерея',photoHint:'Прямая https-ссылка на файл. Если пусто, подберём фото под шаблон.',galHint:'До 6 ссылок, по одной в строке.',music:'Музыка',musicHint:'Прямая ссылка на MP3. Если пусто, играет музыка шаблона.',text:'Текст приглашения',prog:'Программа вечера',what:'Что происходит',addp:'Добавить пункт',dress:'Дресс-код',contact:'Контакт для вопросов',pv:'Предпросмотр',save:'Создать приглашение',saveE:'Сохранить изменения',needs:'Заполните имя и дату',
+ none:'Пока нет приглашений',noneS:'Создайте первое — оно появится здесь.',open:'Открыть',edit2:'Изменить',panel:'Панель',back:'Назад',total:'Гостей',cOp:'Открыли',cYes:'Придут',cNo:'Не смогут',cPe:'Не ответили',addg:'Добавить гостей',addh:'Каждое имя с новой строки',add:'Добавить',gl:'Список гостей',emp:'Пока нет гостей',empS:'Добавьте имена — для каждого гостя появится личная ссылка.',st:{y:'Придёт',n:'Не сможет',p:'Не ответил'},openedAt:'открыл',share:'Отправить',copy:'Скопировать',copied:'Скопировано',gen:'Общая ссылка',del:'Удалить',delc:'Удалить приглашение?',created:'Приглашение готово',createdS:'Теперь добавьте гостей: у каждого будет личная ссылка с его именем.',toG:'Добавить гостей',stale:'Данные обновляются раз в минуту-две',gcount:'гостей'},
+uz:{ey:"Qo'l mehnati taklifnomalari",h:"Esda qoladigan taklifnoma",sub:"Har bir mehmonga ismi bilan murojaat qilingan chiroyli taklifnoma. Kim ochgani va kim kelishini ko'rasiz.",cta:'Taklifnoma yaratish',demo:"Namunani ko'rish",f1:'Har bir mehmon uchun shaxsiy havola',f2:"PDF o'rniga jonli taklifnoma",f3:"«Boraman» va «Kela olmayman» javoblari darhol",f4:'Rasm, galereya va musiqa ichida',tt:"Har qanday bayram uchun shablonlar",ts:"To'y, tug'ilgan kun, yubiley, nikoh, Navro'z va boshqa tantanalar.",how:'Qanday ishlaydi',s1:'Shablonni tanlang',s1d:"To'y, tug'ilgan kun, yubiley, nikoh, Navro'z — uslub o'zi tanlanadi.",s2:"Tafsilotlarni to'ldiring",s2d:"Ismlar, sana va joy, rasmlar, musiqa, kechqurun dasturi va mehmonlarga so'zlar.",s3:'Havolalarni yuboring',s3d:"Har bir mehmonda ismi bilan o'z havolasi bor. Ochilishlar va javoblar panelda.",ft:"Tafsilotlarga muhabbat bilan yaratilgan",prof:'Mening',opened:'Ochdi',choose:'Tanlash',guestS:'Dilnoza',
+ new:'Yangi taklifnoma',edit:'Tahrirlash',fsub:"Tafsilotlarni kiriting — taklifnoma o'zi yig'iladi.",tpl:'Shablon',n1:'Ism',n2:'Ikkinchi ism',date:'Sana',time:'Vaqt',opt:'ixtiyoriy',place:'Joy',addr:'Manzil',map:'Xarita havolasi',photos:'Rasmlar',cover:'Muqova',portrait:'Portret',gallery:'Galereya',photoHint:"Faylga to'g'ridan-to'g'ri https havola. Bo'sh bo'lsa, shablon rasmi qo'yiladi.",galHint:"6 tagacha havola, har qatorda bitta.",music:'Musiqa',musicHint:"MP3 ga to'g'ridan-to'g'ri havola. Bo'sh bo'lsa, shablon musiqasi ijro etiladi.",text:'Taklifnoma matni',prog:'Kechqurun dasturi',what:'Nima bo‘ladi',addp:"Band qo'shish",dress:'Kiyim uslubi',contact:"Savollar uchun aloqa",pv:"Ko'rib chiqish",save:'Taklifnoma yaratish',saveE:"O'zgarishlarni saqlash",needs:'Ism va sanani kiriting',
+ none:"Hozircha taklifnoma yo'q",noneS:"Birinchisini yarating — shu yerda paydo bo'ladi.",open:'Ochish',edit2:"O'zgartirish",panel:'Panel',back:'Orqaga',total:'Mehmonlar',cOp:'Ochdi',cYes:'Keladi',cNo:'Kela olmaydi',cPe:'Javob bermadi',addg:"Mehmon qo'shish",addh:'Har bir ism yangi qatorda',add:"Qo'shish",gl:"Mehmonlar ro'yxati",emp:"Hozircha mehmon yo'q",empS:"Ismlarni qo'shing — har biri uchun shaxsiy havola paydo bo'ladi.",st:{y:'Keladi',n:'Kela olmaydi',p:'Javob bermadi'},openedAt:'ochdi',share:'Yuborish',copy:'Nusxa olish',copied:'Nusxa olindi',gen:'Umumiy havola',del:"O'chirish",delc:"Taklifnoma o'chirilsinmi?",created:'Taklifnoma tayyor',createdS:"Endi mehmonlarni qo'shing: har birida o'z ismi bilan shaxsiy havola bo'ladi.",toG:"Mehmon qo'shish",stale:"Ma'lumotlar har 1-2 daqiqada yangilanadi",gcount:'mehmon'}};
+const t=k=>TX[LANG][k];
+const TP=['wedding','birthday','anniversary','nikah','navruz','other'];
+const SAMP={wedding:['Азиз','Дилноза','Слоновая кость и золото','Sutrang va tilla'],birthday:['Мадина','','Пудровый и коралловый','Pushti va marjon'],anniversary:['Бахтиёр','Нилуфар','Изумруд и золото','Zumrad va tilla'],nikah:['Иброхим','Зухра','Шалфей и крем','Shalfey va krem'],navruz:['Семья Рахимовых','','Весенняя бирюза','Bahor feruza'],other:['Шахзод','Камола','Слива и шампань','Olxo‘ri va shampan']};
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');
-const blank=()=>({id:Math.random().toString(36).slice(2,8),t:'wedding',l:LANG,a:'',b:'',d:'',h:'',pl:'',ad:'',m:'',x:'',dc:'',ct:'',u:'',c:'',o:'',g:'',pr:[['','']],guests:[]});
-const ST={tab:'new',items:[],draft:blank(),view:null,created:null};
+const uid=()=>Math.random().toString(36).slice(2,8);
+const blank=()=>({id:uid(),t:'wedding',l:LANG,a:'',b:'',d:'',h:'',pl:'',ad:'',m:'',x:'',dc:'',ct:'',u:'',c:'',o:'',g:'',pr:[['','']],guests:[]});
+const ST={view:'home',items:[],draft:blank(),cur:null,filter:'all',log:{},copied:null};
 
-// ---------- хранилище: Telegram CloudStorage (с запасом на localStorage) ----------
-const cs=(tg&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9'))?tg.CloudStorage:null;
-const local={get:()=>{try{return JSON.parse(localStorage.getItem(OWNER_KEY)||'[]')}catch{return[]}},set:a=>{try{localStorage.setItem(OWNER_KEY,JSON.stringify(a))}catch(e){}}};
+/* ---- хранилище ---- */
+const cs=V('6.9')?tg.CloudStorage:null;
+const L={get:()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}},set:a=>{try{localStorage.setItem(KEY,JSON.stringify(a))}catch(e){}}};
 const store={
- get:()=>new Promise(r=>{
-  const fb=()=>r(local.get()); if(!cs)return fb();
-  try{cs.getItem(OWNER_KEY,(e,v)=>{ if(e)return fb(); try{const a=JSON.parse(v||'[]'); r(Array.isArray(a)&&(a.length||!local.get().length)?a:local.get())}catch{fb()}})}catch(e){fb()}
-  setTimeout(fb,2500)}),
- set:(a)=>new Promise(r=>{ local.set(a); if(!cs)return r(); let done=false; const fin=()=>{if(!done){done=true;r()}};
-  try{cs.setItem(OWNER_KEY,JSON.stringify(a),fin)}catch(e){fin()} setTimeout(fin,2500)})
-};
+ get:()=>new Promise(r=>{let d=false;const f=v=>{if(!d){d=true;r(v)}};const fb=()=>f(L.get());if(!cs)return fb();
+  try{cs.getItem(KEY,(e,v)=>{if(e)return fb();try{const a=JSON.parse(v||'[]');f(Array.isArray(a)&&(a.length||!L.get().length)?a:L.get())}catch{fb()}})}catch(e){fb()}setTimeout(fb,2500)}),
+ set:a=>new Promise(r=>{L.set(a);if(!cs)return r();let d=false;const f=()=>{if(!d){d=true;r()}};try{cs.setItem(KEY,JSON.stringify(a),f)}catch(e){f()}setTimeout(f,2500)})};
 const persist=()=>store.set(ST.items);
+
+/* ---- ссылки (без сервера) ---- */
 const urls=s=>String(s||'').split('\n').map(x=>x.trim()).filter(x=>/^https:\/\//.test(x)).slice(0,6);
-
-// ---------- ссылки ----------
-function payload(it,guest){
+function payload(it,gIdx){
  const o={t:it.t,l:it.l,a:it.a,b:it.b,d:it.d,h:it.h,pl:it.pl,ad:it.ad,m:it.m,x:it.x,dc:it.dc,ct:it.ct,u:it.u,k:BOT,o:OWNER,i:it.id};
- const ph={}; if(/^https:/.test(it.c))ph.c=it.c; if(/^https:/.test(it.o))ph.o=it.o; const g=urls(it.g); if(g.length)ph.g=g; if(Object.keys(ph).length)o.p=ph;
- const pr=(it.pr||[]).filter(p=>p[1]&&p[1].trim()); if(pr.length)o.pr=pr;
- if(guest)o.g=guest; Object.keys(o).forEach(k=>(o[k]===''||o[k]==null)&&delete o[k]); return o}
-const linkFor=(it,guest)=>SITE+'i.html#'+pack(payload(it,guest));
+ const ph={};if(/^https:/.test(it.c))ph.c=it.c;if(/^https:/.test(it.o))ph.o=it.o;const g=urls(it.g);if(g.length)ph.g=g;if(Object.keys(ph).length)o.p=ph;
+ const pr=(it.pr||[]).filter(p=>p[1]&&p[1].trim());if(pr.length)o.pr=pr;
+ if(gIdx!=null){o.g=it.guests[gIdx].n;o.q=it.guests[gIdx].k}
+ Object.keys(o).forEach(k=>(o[k]===''||o[k]==null)&&delete o[k]);return o}
+const linkFor=(it,gIdx)=>SITE+'i.html#'+pack(payload(it,gIdx));
+const gname=g=>typeof g==='string'?g:g.n;
+function normGuests(it){it.guests=(it.guests||[]).map(g=>typeof g==='string'?{n:g,k:uid()}:g);return it}
 
-// ---------- отрисовка ----------
-const ORN='<svg viewBox="0 0 200 24" width="150" height="18" fill="none" stroke="#B28A50" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 12H74"/><path d="M126 12H182"/><path d="M74 12c6-8 16-8 22 0-6 8-16 8-22 0Z"/><path d="M126 12c-6-8-16-8-22 0 6 8 16 8 22 0Z"/><path d="M100 3.5 108.5 12 100 20.5 91.5 12Z"/><circle cx="18" cy="12" r="1.6"/><circle cx="182" cy="12" r="1.6"/></svg>';
-function head(){return '<div class="brand"><small>Marhabo</small><h1 class="fd">'+(LANG==='uz'?'Taklifnoma':'Приглашение')+'</h1></div><div class="orn">'+ORN+'</div><p class="sub">'+t('sub')+'</p><div class="tabs"><button class="'+(ST.tab==='new'?'on':'')+'" data-tab="new">'+t('tabNew')+'</button><button class="'+(ST.tab==='mine'?'on':'')+'" data-tab="mine">'+t('tabMine')+(ST.items.length?' ('+ST.items.length+')':'')+'</button></div>'}
-function render(){let h=head(); if(ST.created)h+=doneView(); else if(ST.tab==='new')h+=form(); else h+=ST.view?panel():mine(); $('app').innerHTML=h; bind()}
-function form(){const d=ST.draft;
- let h='<div class="lbl">'+t('tpl')+'</div><div class="tpls">'+TP.map(x=>'<button class="tpl '+(d.t===x[0]?'on':'')+'" data-tpl="'+x[0]+'"><b>'+(LANG==='uz'?x[2]:x[1])+'</b><div class="sw"><i style="background:'+x[3]+'"></i><i style="background:'+x[4]+'"></i></div></button>').join('')+'</div>';
- h+='<div class="row"><div><div class="lbl">'+t('n1')+'</div><input data-f="a" value="'+esc(d.a)+'" maxlength="60"></div><div><div class="lbl">'+t('n2')+'</div><input data-f="b" value="'+esc(d.b)+'" maxlength="60"></div></div>';
- h+='<div class="row"><div><div class="lbl">'+t('date')+'</div><input type="date" data-f="d" value="'+esc(d.d)+'"></div><div><div class="lbl">'+t('time')+'</div><input type="time" data-f="h" value="'+esc(d.h)+'"></div></div>';
- h+='<div class="lbl">'+t('place')+'</div><input data-f="pl" value="'+esc(d.pl)+'" maxlength="90"><div class="lbl">'+t('addr')+'</div><input data-f="ad" value="'+esc(d.ad)+'" maxlength="120"><div class="lbl">'+t('map')+'</div><input data-f="m" value="'+esc(d.m)+'" placeholder="https://" maxlength="300">';
- h+='<div class="lbl">'+t('photos')+'</div><input data-f="c" value="'+esc(d.c)+'" placeholder="'+t('cover')+'"><div style="height:8px"></div><input data-f="o" value="'+esc(d.o)+'" placeholder="'+t('portrait')+'"><div style="height:8px"></div><textarea data-f="g" placeholder="'+t('gallery')+'">'+esc(d.g)+'</textarea><p class="hint">'+t('photoHint')+'</p>';
- h+='<div class="lbl">'+t('music')+'</div><input data-f="u" value="'+esc(d.u)+'" placeholder="https://…mp3">';
- h+='<div class="lbl">'+t('text')+'</div><textarea data-f="x" maxlength="600">'+esc(d.x)+'</textarea>';
- h+='<div class="lbl">'+t('prog')+'</div>'+d.pr.map((p,i)=>'<div class="prow"><input type="time" data-p="'+i+'" data-k="0" value="'+esc(p[0])+'"><input data-p="'+i+'" data-k="1" value="'+esc(p[1])+'" maxlength="80"><button class="x" data-px="'+i+'">×</button></div>').join('')+(d.pr.length<10?'<button class="btn g s" data-addp>'+t('addp')+'</button>':'');
- h+='<div class="lbl">'+t('dress')+'</div><input data-f="dc" value="'+esc(d.dc)+'" maxlength="80"><div class="lbl">'+t('contact')+'</div><input data-f="ct" value="'+esc(d.ct)+'" maxlength="60">';
- return h+'<p class="err" id="er"></p><div class="bar"><button class="btn" id="sv">'+t('save')+'</button></div>'}
-function mine(){if(!ST.items.length)return '<div class="empty">'+t('none')+'</div>'; return ST.items.map(it=>'<div class="card"><h3 class="fd">'+esc(it.a)+(it.b?' & '+esc(it.b):'')+'</h3><div class="meta">'+esc(it.d)+' · '+it.guests.length+' '+t('gcount')+'</div><div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn s" data-view="'+it.id+'">'+t('guests')+'</button><button class="btn g s" data-open="'+it.id+'">'+t('open')+'</button><button class="btn g s" data-edit="'+it.id+'">'+t('edit')+'</button></div></div>').join('')}
-function doneView(){const it=ST.items.find(x=>x.id===ST.created); return '<div class="done" style="margin-top:20px"><div class="ck">✓</div><h3 class="fd" style="font-size:30px;font-weight:500">'+t('created')+'</h3><p class="sub">'+t('createdSub')+'</p></div><div class="bar"><button class="btn" id="tog">'+t('toGuests')+'</button></div>'}
-function panel(){const it=ST.items.find(x=>x.id===ST.view); if(!it){ST.view=null;return mine()}
- let h='<button class="btn g s" data-back style="margin:10px 0">'+t('back')+'</button><div class="card"><h3 class="fd">'+esc(it.a)+(it.b?' & '+esc(it.b):'')+'</h3><div class="meta">'+esc(it.d)+'</div><div class="lk"><input readonly value="'+esc(linkFor(it))+'" id="gl"><button class="btn s" data-shg="'+it.id+'">'+t('share')+'</button></div><p class="hint">'+t('general')+'</p></div>';
- h+='<div class="lbl">'+t('addg')+'</div><textarea id="gn" placeholder="'+t('addhint')+'"></textarea><div style="margin-top:8px"><button class="btn s" id="ga">'+t('add')+'</button></div><div class="lbl">'+t('personal')+'</div>';
- h+=it.guests.length?it.guests.map((g,i)=>'<div class="g"><div class="n"><b>'+esc(g)+'</b></div><button class="btn s" data-sh="'+i+'">'+t('share')+'</button><button class="x" style="width:38px;height:38px" data-gd="'+i+'">×</button></div>').join(''):'<div class="empty">'+t('empty')+'</div>';
- return h+'<button class="btn g" data-del="'+it.id+'" style="margin-top:26px;color:#B4433A;border-color:#E8C9C4">'+t('del')+'</button>'}
-const share=(url,text)=>{ if(tg)tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(text||'')); else{navigator.clipboard&&navigator.clipboard.writeText(url)} };
+/* ---- статистика гостей (из docs/data/<owner>.json, пишет бот) ---- */
+async function loadLog(){ if(!OWNER)return; try{const r=await fetch(SITE+'data/'+OWNER+'.json?_='+Date.now(),{cache:'no-store'});if(r.ok)ST.log=await r.json()}catch(e){} }
+const gstat=(it,g)=>{const e=ST.log[it.id+':'+g.k]||{};return {s:e.s||'p',o:e.o||null,w:e.w}};
+const counts=it=>{let o=0,y=0,n=0;it.guests.forEach(g=>{const s=gstat(it,g);if(s.o)o++;if(s.s==='y')y++;if(s.s==='n')n++});return {total:it.guests.length,o,y,n,p:it.guests.length-y-n}};
+
+/* ---- иконки / орнамент ---- */
+const IC={chk:'<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',arr:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',cp:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg>',ok:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',ex:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/></svg>',sh:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>',tr:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',eye:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>'};
+const ORN='<svg viewBox="0 0 200 24" width="130" height="16" fill="none" stroke="#B28A50" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="display:block;margin:0 auto"><path d="M18 12H74"/><path d="M126 12H182"/><path d="M74 12c6-8 16-8 22 0-6 8-16 8-22 0Z"/><path d="M126 12c-6-8-16-8-22 0 6 8 16 8 22 0Z"/><path d="M100 3.5 108.5 12 100 20.5 91.5 12Z"/><circle cx="18" cy="12" r="1.6"/><circle cx="182" cy="12" r="1.6"/></svg>';
+const fmtD=s=>{const m=(s||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return'';const M=LANG==='uz'?['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr']:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];return(+m[3])+' '+M[+m[2]-1]+' '+m[1]};
+const initials=it=>{const p=[it.a,it.b].filter(Boolean).join(' ').split(/\s+/).filter(Boolean);return p.length?(p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+p[1][0]).toUpperCase()):'M'};
+
+/* ---- шапка ---- */
+function top(){return '<div class="top"><div class="logo fd">Marhabo<small>invitations</small></div><div class="nav"><button class="l" data-go="mine">'+t('prof')+(ST.items.length?' ('+ST.items.length+')':'')+'</button><div class="lang"><button data-lg="ru" class="'+(LANG==='ru'?'on':'')+'">RU</button><button data-lg="uz" class="'+(LANG==='uz'?'on':'')+'">UZ</button></div></div></div>'}
+
+/* ---- лендинг ---- */
+function home(){const th=TPL.wedding.theme;
+ let h=top()+'<div class="eb">'+t('ey')+'</div><h1 class="hero">'+t('h')+'</h1><p class="sub">'+t('sub')+'</p>';
+ h+='<div class="cta"><button class="b d" data-new="wedding">'+t('cta')+IC.arr+'</button><button class="b o" data-demo>'+t('demo')+'</button></div>';
+ h+='<ul class="feat">'+['f1','f2','f3','f4'].map(k=>'<li><i>'+IC.chk+'</i>'+t(k)+'</li>').join('')+'</ul>';
+ h+='<div class="demo"><div class="dwrap"><div class="dcard"><div class="in"></div><div class="dcov"><img src="'+TPL.wedding.photos.cover+'" alt=""></div>'
+  +'<p class="up" style="font-size:8px;letter-spacing:.4em;color:'+th.muted+'">'+(LANG==='uz'?"To'y":'Свадьба')+'</p><div style="margin-top:12px">'+ORN+'</div>'
+  +'<p class="up" style="margin-top:18px;font-size:8px;letter-spacing:.28em;color:'+th.muted+'">'+(LANG==='uz'?'Shaxsiy taklifnoma':'Персональное приглашение')+'</p><p class="fd" style="font-style:italic;font-size:22px">'+t('guestS')+'</p>'
+  +'<p class="fd" style="margin-top:10px;font-size:30px;line-height:1.1">Азиз<span style="margin:0 5px;font-style:italic;color:'+th.accent+'">&amp;</span>Дилноза</p>'
+  +'<p class="up" style="margin-top:8px;font-size:10px;letter-spacing:.22em;color:'+th.accent+'">12 '+(LANG==='uz'?'iyun':'июня')+' 2027</p>'
+  +'<div class="dchips"><span style="background:'+th.accent+';color:#fff">'+(LANG==='uz'?'Boraman':'Приду')+'</span><span style="border:1px solid '+th.accent+';color:'+th.accent+'">'+(LANG==='uz'?'Kela olmayman':'Не смогу')+'</span></div></div>'
+  +'<div class="dstat"><p>'+t('opened')+'</p><b>24 / 32</b></div></div></div>';
+ h+='<section class="sec rv"><h2>'+t('tt')+'</h2><p>'+t('ts')+'</p><div class="tg">'+TP.map((id,i)=>{const T=TPL[id],th=T.theme,s=SAMP[id];
+  return '<button class="tc rv" style="background:'+th.page+';border-color:'+th.accentSoft+';--tb:'+th.base+';transition-delay:'+(i%2*.08)+'s" data-new="'+id+'"><div class="im"><img loading="lazy" src="'+T.photos.cover.replace('w=1400','w=600')+'" alt=""><span class="tag" style="color:'+th.ink+'">'+T.label[LANG]+'</span></div><div class="tx"><span class="nm" style="color:'+th.ink+'">'+s[0]+(s[1]?'<i style="font-style:italic;color:'+th.accent+'">&amp;</i>'+s[1]:'')+'</span><span class="ht" style="color:'+th.muted+'">'+s[LANG==='uz'?3:2]+'</span></div></button>'}).join('')+'</div></section>';
+ h+='<section class="sec rv"><h2>'+t('how')+'</h2><div class="steps">'+[['I','s1'],['II','s2'],['III','s3']].map(x=>'<div class="rv"><span class="n">'+x[0]+'</span><h3>'+t(x[1])+'</h3><p>'+t(x[1]+'d')+'</p></div>').join('')+'</div></section>';
+ h+='<section class="sec rv" style="text-align:center;border:0"><h2>'+t('h')+'</h2><div class="cta" style="justify-content:center"><button class="b d" data-new="wedding">'+t('cta')+IC.arr+'</button></div></section>';
+ h+='<div class="foot rv"><div class="fd">Marhabo</div><p>'+t('ft')+'</p></div>';
+ return h}
+
+/* ---- форма с предпросмотром ---- */
+function preview(d){const T=TPL[d.t],th=T.theme,cover=/^https:/.test(d.c)?d.c:T.photos.cover;
+ return '<div class="dcard" style="animation:none;background:'+th.card+';border-color:'+th.accentSoft+'"><div class="in" style="border-color:'+th.accentSoft+'"></div><div class="dcov" style="height:120px"><img src="'+esc(cover)+'" alt=""><i style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),'+th.base+')"></i></div>'
+  +'<p class="up" style="font-size:8px;letter-spacing:.4em;color:'+th.muted+'">'+T.label[LANG]+'</p><div style="margin-top:10px">'+ORN+'</div>'
+  +'<p class="fd" style="margin-top:12px;font-size:28px;line-height:1.1;color:'+th.ink+'">'+(esc(d.a)||'Азиз')+(d.b||!d.a?'<span style="margin:0 5px;font-style:italic;color:'+th.accent+'">&amp;</span>'+(esc(d.b)||(d.a?'':'Дилноза')):'')+'</p>'
+  +'<p class="up" style="margin-top:8px;font-size:10px;letter-spacing:.22em;color:'+th.accent+'">'+(fmtD(d.d)||'—')+(d.h?' · '+esc(d.h):'')+'</p>'
+  +(d.pl?'<p class="fd" style="margin-top:10px;font-size:17px;color:'+th.ink+'">'+esc(d.pl)+'</p>':'')+'</div>'}
+function form(){const d=ST.draft,isE=ST.items.some(x=>x.id===d.id);
+ let h='<div class="view"><div class="ph"><button class="back" data-go="home">←</button><h2>'+(isE?t('edit'):t('new'))+'</h2></div><p class="hint" style="margin:2px 0 0 48px">'+t('fsub')+'</p>';
+ h+='<div class="lbl">'+t('tpl')+'</div><div class="tpls">'+TP.map(id=>{const T=TPL[id];return '<button class="tp '+(d.t===id?'on':'')+'" data-tpl="'+id+'"><img src="'+T.photos.cover.replace('w=1400','w=300')+'" alt=""><b>'+T.label[LANG]+'</b><s><i style="background:'+T.theme.accent+'"></i><i style="background:'+T.theme.accentSoft+'"></i></s></button>'}).join('')+'</div>';
+ h+='<div class="row"><div><div class="lbl">'+t('n1')+'</div><input data-f="a" value="'+esc(d.a)+'" maxlength="60"></div><div><div class="lbl">'+t('n2')+'<em>'+t('opt')+'</em></div><input data-f="b" value="'+esc(d.b)+'" maxlength="60"></div></div>';
+ h+='<div class="row"><div><div class="lbl">'+t('date')+'</div><input type="date" data-f="d" value="'+esc(d.d)+'"></div><div><div class="lbl">'+t('time')+'<em>'+t('opt')+'</em></div><input type="time" data-f="h" value="'+esc(d.h)+'"></div></div>';
+ h+='<div class="lbl">'+t('place')+'<em>'+t('opt')+'</em></div><input data-f="pl" value="'+esc(d.pl)+'" maxlength="90" placeholder="Ресторан «Версаль»"><div class="lbl">'+t('addr')+'<em>'+t('opt')+'</em></div><input data-f="ad" value="'+esc(d.ad)+'" maxlength="120" placeholder="ул. Амира Темура, 12"><div class="lbl">'+t('map')+'<em>'+t('opt')+'</em></div><input data-f="m" value="'+esc(d.m)+'" placeholder="https://" maxlength="300">';
+ h+='<div class="lbl">'+t('photos')+'</div><input data-f="c" value="'+esc(d.c)+'" placeholder="'+t('cover')+' · https://"><div style="height:8px"></div><input data-f="o" value="'+esc(d.o)+'" placeholder="'+t('portrait')+' · https://"><div style="height:8px"></div><textarea data-f="g" placeholder="'+t('gallery')+' · '+t('galHint')+'">'+esc(d.g)+'</textarea><p class="hint">'+t('photoHint')+'</p>';
+ h+='<div class="lbl">'+t('music')+'<em>'+t('opt')+'</em></div><input data-f="u" value="'+esc(d.u)+'" placeholder="https://…mp3"><p class="hint">'+t('musicHint')+'</p>';
+ h+='<div class="lbl">'+t('text')+'<em>'+t('opt')+'</em></div><textarea data-f="x" maxlength="600" placeholder="'+esc(TPL[d.t].greeting[LANG])+'">'+esc(d.x)+'</textarea>';
+ h+='<div class="lbl">'+t('prog')+'</div><div id="prl">'+d.pr.map((p,i)=>'<div class="prow"><input type="time" data-p="'+i+'" data-k="0" value="'+esc(p[0])+'"><input data-p="'+i+'" data-k="1" value="'+esc(p[1])+'" maxlength="80" placeholder="'+t('what')+'"><button class="x" data-px="'+i+'">×</button></div>').join('')+'</div>'+(d.pr.length<10?'<button class="b o s" data-addp>+ '+t('addp')+'</button>':'');
+ h+='<div class="lbl">'+t('dress')+'<em>'+t('opt')+'</em></div><input data-f="dc" value="'+esc(d.dc)+'" maxlength="80"><div class="lbl">'+t('contact')+'<em>'+t('opt')+'</em></div><input data-f="ct" value="'+esc(d.ct)+'" maxlength="60" placeholder="+998 90 000 00 00">';
+ h+='<div class="pv"><div class="t">'+t('pv')+'</div><div id="pvb">'+preview(d)+'</div></div><p class="err" id="er"></p></div><div class="bar"><button class="b d" id="sv">'+(isE?t('saveE'):t('save'))+'</button></div>';
+ return top()+h}
+
+/* ---- мои ---- */
+function mine(){let h=top()+'<div class="view"><div class="ph"><button class="back" data-go="home">←</button><h2>'+t('prof')+'</h2></div>';
+ if(!ST.items.length)h+='<div class="empty">'+t('none')+'<br><span style="opacity:.8">'+t('noneS')+'</span><div class="cta" style="justify-content:center"><button class="b d" data-new="wedding">'+t('cta')+IC.arr+'</button></div></div>';
+ else h+=ST.items.map(it=>{const c=counts(it),th=TPL[it.t].theme;return '<div class="card"><h3 class="fd">'+esc(it.a)+(it.b?' <span style="font-style:italic;color:'+th.accent+'">&amp;</span> '+esc(it.b):'')+'</h3><div class="meta">'+TPL[it.t].label[LANG]+' · '+fmtD(it.d)+'</div><div class="meta" style="margin-top:8px">'+c.total+' '+t('gcount')+' · '+c.y+' '+t('cYes').toLowerCase()+' · '+c.n+' '+t('cNo').toLowerCase()+'</div><div class="mini"><button class="b d s" data-view="'+it.id+'">'+t('panel')+'</button><button class="b o s" data-open="'+it.id+'">'+t('open')+'</button><button class="b o s" data-edit="'+it.id+'">'+t('edit2')+'</button></div></div>'}).join('');
+ return h+'</div><div class="bar"><button class="b d" data-new="wedding">'+t('cta')+IC.arr+'</button></div>'}
+function done(){return top()+'<div class="done view"><div class="ck">✓</div><h2 class="fd" style="font-weight:500;font-size:34px">'+t('created')+'</h2><p class="sub" style="margin:10px auto 0;text-align:center">'+t('createdS')+'</p></div><div class="bar"><button class="b d" id="tog">'+t('toG')+'</button></div>'}
+
+/* ---- панель хозяина ---- */
+function panel(){const it=ST.items.find(x=>x.id===ST.cur);if(!it){ST.view='mine';return mine()}const c=counts(it),th=TPL[it.t].theme;
+ const FL=[['all',t('total'),c.total,'#8A7B68'],['o',t('cOp'),c.o,'#B28A50'],['y',t('cYes'),c.y,'#2F6B52'],['n',t('cNo'),c.n,'#9C3B2A'],['p',t('cPe'),c.p,'#8A7B68']];
+ let rows=it.guests.map((g,i)=>({g,i,s:gstat(it,g)})).filter(x=>ST.filter==='all'||(ST.filter==='o'&&x.s.o)||(ST.filter==='y'&&x.s.s==='y')||(ST.filter==='n'&&x.s.s==='n')||(ST.filter==='p'&&x.s.s==='p'));
+ let h=top()+'<div class="view"><div class="ph"><button class="back" data-go="mine">←</button><h2>'+esc(it.a)+(it.b?' & '+esc(it.b):'')+'</h2></div><p class="hint" style="margin:0 0 0 48px">'+fmtD(it.d)+'</p>';
+ h+='<div class="stats">'+FL.slice(0,3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'</div><div class="stats" style="margin-top:8px">'+FL.slice(3).map(f=>'<button class="stat '+(ST.filter===f[0]?'on':'')+'" style="--c:'+f[3]+'" data-fl="'+f[0]+'"><p>'+f[1]+'</p><b>'+f[2]+'</b></button>').join('')+'<div></div></div><p class="hint">'+t('stale')+'</p>';
+ h+='<div class="card" style="margin-top:16px"><div class="meta" style="margin:0 0 8px">'+t('gen')+'</div><div class="lk"><input readonly value="'+esc(linkFor(it))+'"><button class="ib" data-shg="'+it.id+'" title="'+t('share')+'">'+IC.sh+'</button></div></div>';
+ h+='<div class="lbl">'+t('addg')+'</div><textarea id="gn" placeholder="Дильноза&#10;Азиз&#10;Семья Каримовых" style="min-height:96px"></textarea><p class="hint">'+t('addh')+'</p><div style="margin-top:10px"><button class="b d s" id="ga">'+t('add')+'</button></div>';
+ h+='<div class="lbl">'+t('gl')+'</div>';
+ h+=rows.length?'<div class="gl">'+rows.map(({g,i,s})=>'<div class="g"><span class="av">'+esc((g.n||'?').trim().charAt(0).toUpperCase())+'</span><div class="n"><b>'+esc(g.n)+'</b><span class="chip '+s.s+'">'+(s.s==='y'?IC.ok:'')+t('st')[s.s]+'</span>'+(s.o?'<span style="margin-left:8px;font-size:11px;color:#9C8B74;display:inline-flex;align-items:center;gap:4px">'+IC.eye+t('openedAt')+'</span>':'')+'</div><button class="ib '+(ST.copied===g.k?'ok':'')+'" data-cp="'+i+'">'+(ST.copied===g.k?IC.ok:IC.cp)+'</button><button class="ib" data-sh="'+i+'">'+IC.sh+'</button><button class="ib" data-gd="'+i+'" style="color:#B3A492">'+IC.tr+'</button></div>').join('')+'</div>':'<div class="empty">'+(it.guests.length?'—':t('emp')+'<br><span style="opacity:.8">'+t('empS')+'</span>')+'</div>';
+ h+='<button class="b o" data-del="'+it.id+'" style="width:100%;justify-content:center;margin-top:28px;color:#B4433A;border-color:#E8C9C4">'+t('del')+'</button></div>';
+ return h}
+
+function render(){const v=ST.view;$('#app').innerHTML=v==='home'?home():v==='form'?form():v==='mine'?mine():v==='done'?done():panel();bind();observe();if(v!=='form')scrollTo(0,0)}
+function observe(){const els=$$('.rv');if(!('IntersectionObserver' in window)){els.forEach(e=>e.classList.add('on'));return}
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{rootMargin:'-30px 0px'});els.forEach(e=>io.observe(e))}
+const share=(url,txt)=>{const u='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(txt||'');if(tg&&V('6.1'))tg.openTelegramLink(u);else window.open(u,'_blank')};
+const copy=async s=>{try{await navigator.clipboard.writeText(s);return true}catch{const a=document.createElement('textarea');a.value=s;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch{}a.remove();return ok}};
+const openUrl=u=>{if(tg&&V('6.1'))tg.openLink(u);else window.open(u,'_blank')};
+const hap=()=>{try{V('6.1')&&tg.HapticFeedback.notificationOccurred('success')}catch(e){}};
+
 function bind(){
- document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ST.tab=b.dataset.tab;ST.view=null;ST.created=null;render()});
- document.querySelectorAll('[data-tpl]').forEach(b=>b.onclick=()=>{ST.draft.t=b.dataset.tpl;render()});
- document.querySelectorAll('[data-f]').forEach(i=>i.oninput=()=>{ST.draft[i.dataset.f]=i.value});
- document.querySelectorAll('[data-p]').forEach(i=>i.oninput=()=>{ST.draft.pr[+i.dataset.p][+i.dataset.k]=i.value});
- document.querySelectorAll('[data-px]').forEach(b=>b.onclick=()=>{ST.draft.pr.splice(+b.dataset.px,1);if(!ST.draft.pr.length)ST.draft.pr.push(['','']);render()});
- const ap=document.querySelector('[data-addp]'); if(ap)ap.onclick=()=>{ST.draft.pr.push(['','']);render()};
- const sv=$('sv'); if(sv)sv.onclick=async()=>{const d=ST.draft; if(!d.a.trim()||!d.d){$('er').textContent=t('needs');return} d.l=LANG; const i=ST.items.findIndex(x=>x.id===d.id); if(i>=0)ST.items[i]=d; else ST.items.unshift(d); await persist(); ST.created=d.id; ST.draft=blank(); try{tg&&tg.isVersionAtLeast('6.1')&&tg.HapticFeedback.notificationOccurred('success')}catch(e){} render()};
- const tog=$('tog'); if(tog)tog.onclick=()=>{ST.view=ST.created;ST.created=null;ST.tab='mine';render()};
- document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ST.view=b.dataset.view;render()});
- document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.open); const u=linkFor(it); tg?tg.openLink(u):window.open(u)});
- document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.edit); ST.draft=JSON.parse(JSON.stringify(it)); if(!ST.draft.pr||!ST.draft.pr.length)ST.draft.pr=[['','']]; ST.tab='new'; render()});
- const bk=document.querySelector('[data-back]'); if(bk)bk.onclick=()=>{ST.view=null;render()};
- const ga=$('ga'); if(ga)ga.onclick=async()=>{const v=$('gn').value.split('\n').map(x=>x.trim()).filter(Boolean).slice(0,100); if(!v.length)return; const it=ST.items.find(x=>x.id===ST.view); it.guests=it.guests.concat(v).slice(0,300); await persist(); render()};
- document.querySelectorAll('[data-gd]').forEach(b=>b.onclick=async()=>{const it=ST.items.find(x=>x.id===ST.view); it.guests.splice(+b.dataset.gd,1); await persist(); render()});
- document.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===ST.view); const g=it.guests[+b.dataset.sh]; share(linkFor(it,g), g)});
- document.querySelectorAll('[data-shg]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.shg); share(linkFor(it), it.a+(it.b?' & '+it.b:''))});
- document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{ST.items=ST.items.filter(x=>x.id!==b.dataset.del); await persist(); ST.view=null; render()}; tg&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
+ $$('[data-lg]').forEach(b=>b.onclick=()=>{LANG=b.dataset.lg;localStorage.setItem('lg',LANG);ST.draft.l=LANG;render()});
+ $$('[data-go]').forEach(b=>b.onclick=()=>{ST.view=b.dataset.go;render()});
+ $$('[data-new]').forEach(b=>b.onclick=()=>{ST.draft=blank();ST.draft.t=b.dataset.new;ST.draft.l=LANG;ST.view='form';render()});
+ const dm=$('[data-demo]');if(dm)dm.onclick=()=>{const it=blank();Object.assign(it,{a:'Азиз',b:'Дилноза',d:'2027-06-12',h:'18:00',pl:'Ресторан «Версаль»',ad:'ул. Амира Темура, 12',pr:[['18:00','Встреча гостей'],['19:00','Церемония'],['20:00','Праздничный ужин']]});openUrl(linkFor(it,null).replace('#','#')+'')};
+ $$('[data-tpl]').forEach(b=>b.onclick=()=>{ST.draft.t=b.dataset.tpl;$$('.tp').forEach(x=>x.classList.toggle('on',x===b));const pb=$('#pvb');if(pb)pb.innerHTML=preview(ST.draft);const ta=$('[data-f=x]');if(ta)ta.placeholder=TPL[ST.draft.t].greeting[LANG]});
+ $$('[data-f]').forEach(i=>i.oninput=()=>{ST.draft[i.dataset.f]=i.value;const pb=$('#pvb');if(pb)pb.innerHTML=preview(ST.draft)});
+ $$('[data-p]').forEach(i=>i.oninput=()=>{ST.draft.pr[+i.dataset.p][+i.dataset.k]=i.value});
+ $$('[data-px]').forEach(b=>b.onclick=()=>{ST.draft.pr.splice(+b.dataset.px,1);if(!ST.draft.pr.length)ST.draft.pr.push(['','']);render()});
+ const ap=$('[data-addp]');if(ap)ap.onclick=()=>{ST.draft.pr.push(['','']);render()};
+ const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';render()};
+ const tog=$('#tog');if(tog)tog.onclick=()=>{ST.view='panel';render()};
+ $$('[data-view]').forEach(b=>b.onclick=()=>{ST.cur=b.dataset.view;ST.filter='all';ST.view='panel';render();loadLog().then(()=>ST.view==='panel'&&render())});
+ $$('[data-open]').forEach(b=>b.onclick=()=>openUrl(linkFor(ST.items.find(x=>x.id===b.dataset.open))));
+ $$('[data-edit]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.edit);ST.draft=JSON.parse(JSON.stringify(it));if(!ST.draft.pr||!ST.draft.pr.length)ST.draft.pr=[['','']];ST.view='form';render()});
+ $$('[data-fl]').forEach(b=>b.onclick=()=>{ST.filter=ST.filter===b.dataset.fl?'all':b.dataset.fl;render()});
+ const ga=$('#ga');if(ga)ga.onclick=async()=>{const v=$('#gn').value.split(/[\n,;]+/).map(x=>x.trim()).filter(Boolean).slice(0,100);if(!v.length)return;const it=ST.items.find(x=>x.id===ST.cur);it.guests=it.guests.concat(v.map(n=>({n,k:uid()}))).slice(0,300);await persist();render()};
+ $$('[data-gd]').forEach(b=>b.onclick=async()=>{const it=ST.items.find(x=>x.id===ST.cur);it.guests.splice(+b.dataset.gd,1);await persist();render()});
+ $$('[data-sh]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===ST.cur),i=+b.dataset.sh;share(linkFor(it,i),it.guests[i].n)});
+ $$('[data-cp]').forEach(b=>b.onclick=async()=>{const it=ST.items.find(x=>x.id===ST.cur),i=+b.dataset.cp;await copy(linkFor(it,i));ST.copied=it.guests[i].k;render();setTimeout(()=>{ST.copied=null;ST.view==='panel'&&render()},1600)});
+ $$('[data-shg]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.shg);share(linkFor(it),it.a+(it.b?' & '+it.b:''))});
+ $$('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{ST.items=ST.items.filter(x=>x.id!==b.dataset.del);await persist();ST.view='mine';render()};V('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
 }
-$('lg').onclick=()=>{LANG=LANG==='ru'?'uz':'ru';localStorage.setItem('lg',LANG);ST.draft.l=LANG;render()};
-store.get().then(a=>{ST.items=Array.isArray(a)?a:[]; if(ST.items.length)ST.tab='mine'; render()});
+store.get().then(a=>{ST.items=(Array.isArray(a)?a:[]).map(normGuests);ST.view='home';render();loadLog()});
 </script></body></html>

@@ -64,7 +64,7 @@ input.nt{margin-top:16px;width:100%;border-radius:12px;background:transparent;pa
 .hint{margin-top:10px;text-align:center;font-size:11px}
 </style></head><body>
 <div id="bg"></div><div id="fx"></div><div id="wrap"><div id="root"></div></div>
-<div id="lb"><img id="lbi" alt=""></div><audio id="au" loop preload="auto"></audio>
+<div id="lb"></div><audio id="au" loop preload="auto"></audio>
 <script type="module">
 import {TPL,unpack} from './shared.js';
 const $=i=>document.getElementById(i);
@@ -99,7 +99,7 @@ function prog(){if(!I.prog.length)return'';return'<div style="margin-top:32px"><
 function gal(){const a=gallery[0],o=gallery.slice(1);return'<div style="margin-top:36px">'+lh(T.gallery)+'<div class="gal"><button style="border-color:'+th.accentSoft+'" data-i="0"><img src="'+esc(a)+'" style="height:190px" alt=""></button>'+(o.length?'<div class="g3">'+o.map((x,i)=>'<button style="border-color:'+th.accentSoft+'" data-i="'+(i+1)+'"><img src="'+esc(x)+'" alt=""></button>').join('')+'</div>':'')+'</div></div>'}
 const music_='<div style="margin-top:36px;text-align:center">'+lh(T.music)+'<button class="mb" id="mb" style="color:'+th.ink+';background:'+th.accentSoft+'55;border:1px solid '+th.accentSoft+'"><span class="eq">'+[0,1,2].map(()=>'<s style="background:'+th.accent+'"></s>').join('')+'</span>'+IC.note+'<span id="mt">'+T.musicOn+'</span></button></div>';
 const BOT=D.k||'';
-function rsvp(){if(!BOT||!D.o)return'';const base='https://t.me/'+BOT+'?start=';const code=(s)=>base+encodeURIComponent('r'+s+'_'+D.o+'_'+(D.i||''));return'<div style="margin-top:28px"><div style="text-align:center"><p class="fd" style="font-size:22px;color:'+th.ink+'">'+T.rsvpTitle+'</p><p style="margin-top:4px;font-size:12px;color:'+th.muted+'">'+T.rsvpSub+'</p></div><div class="bt"><a href="'+code('y')+'" style="background:'+th.accent+';color:#fff;box-shadow:0 12px 24px -16px '+th.accent+'">'+T.yes+'</a><a href="'+code('n')+'" style="border:1px solid '+th.accent+';color:'+th.accent+'">'+T.no+'</a></div><p class="hint" style="color:'+th.muted+'">'+T.hint+'</p></div>'}
+function rsvp(){if(!BOT||!D.o)return'';const base='https://t.me/'+BOT+'?start=';const code=(s)=>base+'r'+s+'_'+D.o+'_'+(D.i||'x')+'_'+(D.q||'g');return'<div style="margin-top:28px"><div style="text-align:center"><p class="fd" style="font-size:22px;color:'+th.ink+'">'+T.rsvpTitle+'</p><p style="margin-top:4px;font-size:12px;color:'+th.muted+'">'+T.rsvpSub+'</p></div><div class="bt"><a href="'+code('y')+'" style="background:'+th.accent+';color:#fff;box-shadow:0 12px 24px -16px '+th.accent+'">'+T.yes+'</a><a href="'+code('n')+'" style="border:1px solid '+th.accent+';color:'+th.accent+'">'+T.no+'</a></div><p class="hint" style="color:'+th.muted+'">'+T.hint+'</p></div>'}
 let h='<div class="card" id="card" style="background:'+th.card+';border:1px solid '+th.accentSoft+';box-shadow:0 40px 90px -60px '+th.ink+'"><div class="in" style="border:1px solid '+th.accentSoft+'"></div><div class="st" id="st">';
 h+='<div style="text-align:center"><p class="up" style="font-size:9px;letter-spacing:.38em;color:'+th.muted+'">'+esc(tp.label[lang])+'</p><div class="mt" style="margin-top:16px">'+motif(th.accent,160)+'</div>'+(G?'<p class="up" style="margin-top:24px;font-size:9px;letter-spacing:.3em;color:'+th.muted+'">'+T.personal+'</p><p class="fd" style="margin-top:4px;font-size:26px;font-style:italic;line-height:1.15;color:'+th.ink+'">'+esc(G)+'</p>':'')+'</div>';
 h+='<div style="margin-top:28px"><div class="arch" style="border:1px solid '+th.accentSoft+';box-shadow:0 26px 50px -40px '+th.ink+'"><img src="'+esc(portrait)+'" alt=""></div></div>';
@@ -119,7 +119,7 @@ const setPlay=p=>{const b=$('mb');b.classList.toggle('playing',p);$('mt').textCo
 $('seal').onclick=()=>{$('gate').classList.add('out');setTimeout(()=>{$('gate').style.display='none';$('card').classList.add('show');[...$('st').children].forEach((c,i)=>c.style.animationDelay=(.15+i*.11)+'s');scrollTo(0,0);au.play().then(()=>setPlay(true)).catch(()=>setPlay(false))},450)};
 $('mb').onclick=()=>{au.paused?au.play().then(()=>setPlay(true)).catch(()=>{}):(au.pause(),setPlay(false))};
 au.onpause=()=>setPlay(false);au.onplay=()=>setPlay(true);
-const lbClose=()=>$('lb').classList.remove('on');$('lb').addEventListener('click',lbClose);addEventListener('keydown',e=>{if(e.key==='Escape')lbClose()});
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.gal button');if(b){$('lbi').src=gallery[+b.dataset.i];$('lb').classList.add('on')}});
+const lbClose=()=>{$('lb').classList.remove('on');$('lb').innerHTML=''};$('lb').addEventListener('click',lbClose);addEventListener('keydown',e=>{if(e.key==='Escape')lbClose()});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.gal button');if(b){$('lb').innerHTML='<img alt="" src="'+esc(gallery[+b.dataset.i])+'">';$('lb').classList.add('on')}});
 }
 </script></body></html>
