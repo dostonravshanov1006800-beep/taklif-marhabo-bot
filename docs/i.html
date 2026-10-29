@@ -64,7 +64,7 @@ input.nt{margin-top:16px;width:100%;border-radius:12px;background:transparent;pa
 .hint{margin-top:10px;text-align:center;font-size:11px}
 </style></head><body>
 <div id="bg"></div><div id="fx"></div><div id="wrap"><div id="root"></div></div>
-<div id="lb"></div><audio id="au" loop preload="auto"></audio>
+<div id="lb"></div><audio id="au" loop preload="none"></audio>
 <script type="module">
 import {TPL,unpack} from './shared.js';
 const $=i=>document.getElementById(i);
@@ -75,15 +75,20 @@ ru:{personal:'Персональное приглашение',open:'Откры�
 uz:{personal:'Shaxsiy taklifnoma',open:'Taklifnomani ochish',tap:'muhrni bosing',where:'Qayerda',program:'Dastur',map:'Xaritani ochish',countdown:'Bayramgacha',day:'kun',hour:'soat',min:'daq',sec:'son',rsvpTitle:'Siz kelasizmi?',rsvpSub:'Javobingiz egasiga Telegramda boradi',yes:'Boraman',no:'Kela olmayman',gallery:'Lahzalar',music:'Musiqa',musicOn:'Musiqani yoqish',musicOff:"Musiqani o'chirish",dress:'Kiyim uslubi',nf:'Taklifnoma topilmadi',nfs:"Havola noto'g'ri yoki buzilgan bo'lishi mumkin.",hint:"Bot bilan chat ochiladi, «Start» ni bosing",
  months:['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'],days:['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba']}};
 const QS=new URLSearchParams(location.search);
-const SLUG=(QS.get('s')||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);
+let SLUG=(QS.get('s')||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);
 const raw=location.hash.replace(/^#\/?/,'');
 let D=null;
+const BL=(QS.get('l')||((navigator.language||'ru').toLowerCase().startsWith('uz')?'uz':'ru'))==='uz'?'uz':'ru';
 if(SLUG){
-  try{const r=await fetch('inv/'+SLUG+'.json?_='+Math.floor(Date.now()/30000),{cache:'no-store'});if(r.ok)D=await r.json()}catch(e){}
+  // сайт после публикации пересобирается 1-2 минуты: пробуем несколько раз, показывая «загружается», а не ошибку
+  for(let tries=0;tries<12&&!D;tries++){
+    try{const r=await fetch('inv/'+SLUG+'.json?_='+Math.floor(Date.now()/30000),{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&j.r&&tries<3){SLUG=j.r;continue}D=j}else if(r.status!==404)throw 0}catch(e){}
+    if(!D){if(tries===0){const rt=document.getElementById('root');if(rt)rt.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;text-align:center;font-family:Georgia,serif;color:#7A6A57;font-size:15px">'+(BL==='uz'?'Yuklanmoqda…':'Загружается…')+'</div>'}await new Promise(r=>setTimeout(r,tries<2?1200:4000))}
+  }
   if(D){const g=(QS.get('g')||'').replace(/\s+/g,' ').trim().slice(0,60),q=(QS.get('q')||'').replace(/[^a-z0-9]/gi,'').slice(0,12);if(g){D.g=g;D.q=q}}
 }else D=unpack(raw);
 function fail(l){const t=X[l||'ru'];document.body.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;text-align:center;font-family:Georgia,serif;color:#2B2219"><div><h2 style="font-weight:400;font-size:26px">'+t.nf+'</h2><p style="color:#7A6A57;font-size:13px;margin-top:6px">'+t.nfs+'</p></div></div>'}
-if(!D||!D.a){fail()}else{
+if(!D||!D.a){fail(BL)}else{
 const lang=D.l==='uz'?'uz':'ru',T=X[lang],tp=TPL[D.t]||TPL.wedding,th=tp.theme,mo=tp.motif;
 document.documentElement.lang=lang;document.body.style.background=th.page;
 const SITE=location.origin+location.pathname.replace(/[^/]*$/,'');const abs=u=>u?(/^https:\/\//.test(u)?u:(/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav)$/i.test(u)?SITE+u:'')):'';const ph=D.p||{};const cover=abs(ph.c)||tp.photos.cover,portrait=abs(ph.o)||tp.photos.portrait,gallery=(ph.g&&ph.g.map(abs).filter(Boolean).length)?ph.g.map(abs).filter(Boolean):tp.photos.gallery,music=abs(D.u)||tp.music;

@@ -9,7 +9,7 @@ const RUN_MINUTES = Number(process.env.RUN_MINUTES || 340);
 if (!TOKEN || !APP_URL) { console.error('BOT_TOKEN и APP_URL обязательны'); process.exit(1); }
 
 const API = `https://api.telegram.org/bot${TOKEN}`;
-const OFFSET_FILE = '/tmp/offset.txt';
+const OFFSET_FILE = 'docs/data/_offset.txt';   // в репозитории: не теряется при пересоздании раннера
 
 // ---- Журнал ответов гостей: docs/data/<ownerId>.json, публикуется вместе с сайтом ----
 const DATA_DIR = 'docs/data';
@@ -48,7 +48,12 @@ function publish() {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
     execSync('git add docs/data docs/media docs/inv docs/i');
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
-    execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' });
+    try { execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' }); }
+    catch (e1) {
+      // конфликт или сеть: убираем застрявший rebase и пробуем ещё раз, иначе все следующие публикации падали бы
+      try { execSync('git rebase --abort', { stdio: 'ignore' }); } catch {}
+      execSync('git pull --rebase -X theirs -q origin main && git push -q origin main', { stdio: 'ignore' });
+    }
     dirty.clear();
     console.log('published rsvp');
     // коммиты GITHUB_TOKEN не запускают Pages сами: запускаем сайт явно, чтобы данные появились через минуту
@@ -59,15 +64,18 @@ function publish() {
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
 async function tg(method, body = {}) {
-  for (let i = 0; i < 3; i++) {
+  // getUpdates держит соединение до 45 с, остальным хватает 30 с
+  const ms = method === 'getUpdates' ? 70000 : 30000;
+  for (let i = 0; i < 4; i++) {
     try {
-      const r = await fetch(`${API}/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const r = await fetch(`${API}/${method}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(ms) });
       const j = await r.json();
       if (j.ok) return j.result;
       if (j.error_code === 429) { await sleep((j.parameters?.retry_after || 2) * 1000); continue; }
+      if (j.error_code === 409 || j.error_code >= 500) { await sleep(4000 + i * 2000); continue; } // два запуска бота пересеклись / сбой Telegram
       console.error(method, j.description);
       return null;
-    } catch (e) { await sleep(1500); }
+    } catch (e) { await sleep(1500 + i * 1500); }
   }
   return null;
 }
@@ -77,12 +85,19 @@ const T = {
   ru: {
     start:
       '🌿 <b>Marhabo</b>\n<i>Приглашения на свадьбу и праздники</i>\n\n' +
-      'Красивая открытка с обращением по имени для каждого гостя.\n' +
-      '• Шесть шаблонов: свадьба, никах, юбилей, день рождения, Навруз\n' +
-      '• Личная ссылка для каждого гостя\n' +
-      '• Ответы «Приду / Не смогу» приходят вам сюда\n\n' +
-      'Нажмите синюю кнопку <b>Marhabo</b> внизу или кнопку ниже.',
-    btn: '✨ Создать приглашение',
+      'Красивая открытка, где каждый гость видит своё имя. Ответы «Приду / Не смогу» приходят вам сюда.\n\n' +
+      'Нажмите <b>Старт</b>, чтобы создать приглашение за минуту.',
+    info:
+      '📖 <b>Как это работает</b>\n\n' +
+      '1️⃣ Нажмите <b>Старт</b> и выберите шаблон: свадьба, никах, юбилей, день рождения, Навруз.\n' +
+      '2️⃣ Впишите имена, дату и место. Добавьте фото и музыку: отправьте файл прямо в этот чат.\n' +
+      '3️⃣ Нажмите <b>Сохранить</b>: откроется этот чат с готовым сообщением, просто нажмите «Отправить».\n' +
+      '4️⃣ Получите красивую ссылку вида <code>/i/имя-пары</code> и личную для каждого гостя.\n\n' +
+      '🔔 Ответы гостей придут сюда сразу.\n' +
+      '🆓 Бесплатно, работает круглосуточно.',
+    btn: '✨ Старт',
+    btnInfo: 'ℹ️ Информация',
+    btnBack: '‹ Назад',
     yes: (n) => `✅ <b>${n}</b> придёт`,
     no: (n) => `❌ <b>${n}</b> не сможет прийти`,
     thanksYes: '🌿 Спасибо! Ваш ответ «Приду» отправлен хозяину приглашения. До встречи на празднике!',
@@ -97,12 +112,19 @@ const T = {
   uz: {
     start:
       "🌿 <b>Marhabo</b>\n<i>To'y va bayramlar uchun taklifnomalar</i>\n\n" +
-      "Har bir mehmonga o'z ismi bilan murojaat qilingan chiroyli taklifnoma.\n" +
-      "• Oltita shablon: to'y, nikoh, yubiley, tug'ilgan kun, Navro'z\n" +
-      "• Har bir mehmon uchun shaxsiy havola\n" +
-      "• «Boraman / Kela olmayman» javoblari shu yerga keladi\n\n" +
-      "Pastdagi ko'k <b>Marhabo</b> tugmasini yoki quyidagi tugmani bosing.",
-    btn: '✨ Taklifnoma yaratish',
+      "Chiroyli taklifnoma: har bir mehmon o'z ismini ko'radi. «Boraman / Kela olmayman» javoblari shu yerga keladi.\n\n" +
+      "Bir daqiqada taklifnoma yaratish uchun <b>Boshlash</b> tugmasini bosing.",
+    info:
+      "📖 <b>Bu qanday ishlaydi</b>\n\n" +
+      "1️⃣ <b>Boshlash</b> tugmasini bosing va shablonni tanlang: to'y, nikoh, yubiley, tug'ilgan kun, Navro'z.\n" +
+      "2️⃣ Ism, sana va joyni yozing. Rasm va musiqani shu chatga fayl qilib yuboring.\n" +
+      "3️⃣ <b>Saqlash</b> tugmasini bosing: shu chat tayyor xabar bilan ochiladi, «Yuborish» ni bosing.\n" +
+      "4️⃣ <code>/i/juftlik-ismi</code> ko'rinishidagi chiroyli havola va har bir mehmon uchun shaxsiy havolani oling.\n\n" +
+      "🔔 Mehmonlar javobi darhol shu yerga keladi.\n" +
+      "🆓 Bepul, kechayu kunduz ishlaydi.",
+    btn: '✨ Boshlash',
+    btnInfo: 'ℹ️ Ma\'lumot',
+    btnBack: '‹ Orqaga',
     yes: (n) => `✅ <b>${n}</b> keladi`,
     no: (n) => `❌ <b>${n}</b> kela olmaydi`,
     thanksYes: "🌿 Rahmat! «Boraman» javobingiz taklifnoma egasiga yuborildi. Bayramda ko'rishguncha!",
@@ -182,7 +204,7 @@ function previewPage(slug, o) {
 <script>var q=location.search?'&'+location.search.slice(1):'';location.replace('../../i.html?s=${slug}'+q)</script></body></html>`;
 }
 let BOT_NAME = 'Taklifnomai_bot';
-const TR = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:'o',қ:'q',ғ:'g',ҳ:'h',ʼ:'',"'":'' };
+const TR = { 'ʻ':'','’':'','`':'','ʹ':'','‘':'', а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:'o',қ:'q',ғ:'g',ҳ:'h',ʼ:'',"'":'' };
 const slugPart = (x) => String(x || '').toLowerCase().split('').map((c) => (c in TR ? TR[c] : c)).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24);
 function makeSlug(d, owner, invId) {
   let base = [slugPart(d.a), slugPart(d.b)].filter(Boolean).join('-') || 'taklif';
@@ -223,6 +245,16 @@ function saveInvitation(raw, owner) {
   const o = sanitizeInv(d, owner);
   if (!o) return { error: 'data' };
   const slug = makeSlug(o, owner, o.i);
+  // имена поменяли: старый адрес не должен отдавать устаревшие данные, переводим его на новый
+  try {
+    const ix0 = JSON.parse(readFileSync(`${INV_DIR}/_${owner}.json`, 'utf8'));
+    const old = ix0[o.i];
+    if (old && old !== slug && /^[a-z0-9-]{1,40}$/.test(old)) {
+      writeFileSync(`${INV_DIR}/${old}.json`, JSON.stringify(Object.assign({}, o, { r: slug })));
+      mkdirSync(`${PREV_DIR}/${old}`, { recursive: true });
+      writeFileSync(`${PREV_DIR}/${old}/index.html`, previewPage(slug, o));
+    }
+  } catch {}
   writeFileSync(`${INV_DIR}/${slug}.json`, JSON.stringify(o));
   mkdirSync(`${PREV_DIR}/${slug}`, { recursive: true });
   writeFileSync(`${PREV_DIR}/${slug}/index.html`, previewPage(slug, o));
@@ -277,8 +309,10 @@ async function onMessage(m) {
     const guest = rs[4] || 'g';
     const name = [m.from.first_name, m.from.last_name].filter(Boolean).join(' ') || t.guest;
     const handle = m.from.username ? ` (@${esc(m.from.username)})` : '';
+    const before = (loadLog(owner)[`${inv}:${guest}`] || {}).s;
     record(owner, inv, guest, kind, name);
     if (kind === 'o') { publish(); return; }
+    if (before === kind) { await tg('sendMessage', { chat_id: chat, text: kind === 'y' ? t.thanksYes : t.thanksNo, parse_mode: 'HTML' }); return; } // повторное нажатие: владельцу не дублируем
     const yes = kind === 'y';
     const ownerInfo = await tg('getChat', { chat_id: owner });
     const ol = T[(ownerInfo && ownerInfo.language_code) ? langOf(ownerInfo) : 'ru'];
@@ -288,25 +322,54 @@ async function onMessage(m) {
     return;
   }
 
-  // /start (и любое другое сообщение): красивый текст + кнопка мини-приложения
-  if (text.startsWith('/start') || text) {
-    await tg('sendMessage', {
-      chat_id: chat, text: t.start, parse_mode: 'HTML',
-      reply_markup: { inline_keyboard: [[{ text: t.btn, web_app: { url: APP_URL } }]] },
-    });
-  }
+  // /start, /info и любое другое сообщение: баннер + «Старт» и «Информация»
+  if (/^\/info\b/i.test(text)) { await sendInfo(chat, lang); return; }
+  await sendStart(chat, lang);
+}
+
+const startKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { url: APP_URL } }], [{ text: T[lang].btnInfo, callback_data: 'info' }]] });
+const infoKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { url: APP_URL } }], [{ text: T[lang].btnBack, callback_data: 'back' }]] });
+const bannerUrl = (lang) => `${APP_URL.replace(/\/?$/, '/')}brand/banner_${lang}.jpg`;
+
+async function sendStart(chat, lang) {
+  const r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) });
+  if (!r) await tg('sendMessage', { chat_id: chat, text: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) }); // запасной путь без картинки
+}
+async function sendInfo(chat, lang) {
+  await tg('sendMessage', { chat_id: chat, text: T[lang].info, parse_mode: 'HTML', reply_markup: infoKb(lang) });
+}
+// нажатия «Информация» / «Назад»: правим то же сообщение, чат не засоряется
+async function onCallback(q) {
+  const lang = langOf(q.from), m = q.message;
+  await tg('answerCallbackQuery', { callback_query_id: q.id });
+  if (!m || m.chat.type !== 'private') return;
+  const photo = !!(m.photo && m.photo.length);
+  const text = q.data === 'info' ? T[lang].info : q.data === 'back' ? T[lang].start : null;
+  if (!text) return;
+  const kb = q.data === 'info' ? infoKb(lang) : startKb(lang);
+  const body = { chat_id: m.chat.id, message_id: m.message_id, parse_mode: 'HTML', reply_markup: kb };
+  const ok = photo ? await tg('editMessageCaption', { ...body, caption: text }) : await tg('editMessageText', { ...body, text });
+  if (!ok) { if (q.data === 'info') await sendInfo(m.chat.id, lang); else await sendStart(m.chat.id, lang); }
 }
 
 async function setup() {
   await tg('deleteWebhook', { drop_pending_updates: false });
   await tg('setChatMenuButton', { menu_button: { type: 'web_app', text: 'Marhabo', web_app: { url: APP_URL } } });
-  await tg('setMyCommands', { commands: [{ command: 'start', description: 'Старт / Boshlash' }] });
-  await tg('setMyCommands', { language_code: 'uz', commands: [{ command: 'start', description: 'Boshlash' }] });
-  await tg('setMyCommands', { language_code: 'ru', commands: [{ command: 'start', description: 'Старт' }] });
+  await tg('setMyCommands', { commands: [{ command: 'start', description: 'Старт / Boshlash' }, { command: 'info', description: 'Информация / Ma\'lumot' }] });
+  await tg('setMyCommands', { language_code: 'uz', commands: [{ command: 'start', description: 'Boshlash' }, { command: 'info', description: 'Ma\'lumot' }] });
+  await tg('setMyCommands', { language_code: 'ru', commands: [{ command: 'start', description: 'Старт' }, { command: 'info', description: 'Информация' }] });
+  // описание на экране бота до первого нажатия «Start» и короткое описание в профиле
+  await tg('setMyDescription', { description: 'Marhabo: красивые приглашения на свадьбу и праздники. Личное имя для каждого гостя, ответы «Приду / Не смогу» в чате. Бесплатно.' });
+  await tg('setMyDescription', { language_code: 'ru', description: 'Marhabo: красивые приглашения на свадьбу и праздники. Личное имя для каждого гостя, ответы «Приду / Не смогу» в чате. Бесплатно.' });
+  await tg('setMyDescription', { language_code: 'uz', description: "Marhabo: to'y va bayramlar uchun chiroyli taklifnomalar. Har bir mehmonga o'z ismi, «Boraman / Kela olmayman» javoblari chatda. Bepul." });
+  await tg('setMyShortDescription', { short_description: 'Приглашения на свадьбу и праздники / To\'y taklifnomalari' });
+  await tg('setMyShortDescription', { language_code: 'ru', short_description: 'Красивые приглашения на свадьбу и праздники. Бесплатно.' });
+  await tg('setMyShortDescription', { language_code: 'uz', short_description: "To'y va bayramlar uchun chiroyli taklifnomalar. Bepul." });
 }
 
 let stopping = false;
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { stopping = true; });
+process.on('unhandledRejection', (e) => console.error('unhandled', e && e.message));
 
 async function main() {
   await setup();
@@ -317,19 +380,20 @@ async function main() {
   let lastPub = Date.now();
   console.log(`polling, offset=${offset}, until ${new Date(stopAt).toISOString()}`);
   while (Date.now() < stopAt && !stopping) {
-    const updates = await tg('getUpdates', { offset, timeout: 45, allowed_updates: ['message'] });
+    const updates = await tg('getUpdates', { offset, timeout: 45, allowed_updates: ['message', 'callback_query'] });
     if (!updates) { await sleep(3000); continue; }
     for (const u of updates) {
       offset = u.update_id + 1;
-      try { if (u.message) await onMessage(u.message); } catch (e) { console.error('update error', e.message); }
+      try { if (u.message) await onMessage(u.message); else if (u.callback_query) await onCallback(u.callback_query); } catch (e) { console.error('update error', e.message); }
     }
-    if (updates.length) writeFileSync(OFFSET_FILE, String(offset));
+    if (updates.length) { try { mkdirSync(DATA_DIR, { recursive: true }); } catch {} writeFileSync(OFFSET_FILE, String(offset)); dirty.add('offset'); }
     if (dirty.size && Date.now() - lastPub > 20000) { publish(); lastPub = Date.now(); }
     if (pagesPending && Date.now() - lastPages >= 90000) triggerPages();
   }
-  writeFileSync(OFFSET_FILE, String(offset));
+  try { mkdirSync(DATA_DIR, { recursive: true }); } catch {}
+  writeFileSync(OFFSET_FILE, String(offset)); dirty.add('offset');
   if (offset) await tg('getUpdates', { offset, timeout: 0, limit: 1 }); // подтвердить обработанное Telegram
   publish();
   console.log('finished, offset', offset);
 }
-main();
+main().catch((e) => { console.error('fatal', e && e.message); try { publish(); } catch {} process.exit(1); });

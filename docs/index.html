@@ -201,10 +201,10 @@ function payload(it,gIdx){
  Object.keys(o).forEach(k=>(o[k]===''||o[k]==null)&&delete o[k]);return o}
 /* публикация: бот кладёт docs/inv/<slug>.json и пишет индекс docs/inv/_<owner>.json (id -> slug) */
 ST.pub={};
-async function loadPub(){ if(!OWNER)return; try{const r=await fetch(SITE+'inv/_'+OWNER+'.json?_='+Date.now(),{cache:'no-store'});if(r.ok)ST.pub=await r.json()}catch(e){} }
+async function loadPub(){ if(!OWNER)return; try{const r=await fetch(SITE+'inv/_'+OWNER+'.json?_='+Date.now(),{cache:'no-store'});if(r.ok){ST.pub=await r.json();try{localStorage.setItem('mh_pub_'+OWNER,JSON.stringify(ST.pub))}catch(e){}}}catch(e){try{const c=JSON.parse(localStorage.getItem('mh_pub_'+OWNER)||'null');if(c&&!Object.keys(ST.pub||{}).length)ST.pub=c}catch(e2){}} }
 const sig=it=>{const o=payload(it);delete o.g;delete o.q;const j=JSON.stringify(o);let h=5381;for(let i=0;i<j.length;i++)h=((h<<5)+h+j.charCodeAt(i))|0;return (h>>>0).toString(36)};
 const slugOf=it=>ST.pub[it.id]||'';
-const isFresh=it=>!!slugOf(it)&&it.ps===sig(it);
+const isFresh=it=>!!slugOf(it)&&it.ps===sig(it)&&!pendingFor(it);
 const longLink=(it,gIdx)=>SITE+'i.html#'+pack(payload(it,gIdx));
 const linkFor=(it,gIdx)=>{const s=slugOf(it);if(!s)return longLink(it,gIdx);const base=SITE+'i/'+s;if(gIdx==null)return base;const g=it.guests[gIdx];return base+'?g='+encodeURIComponent(g.n.trim())+'&q='+g.k};
 const publishText=it=>'#taklif '+pack(payload(it));
