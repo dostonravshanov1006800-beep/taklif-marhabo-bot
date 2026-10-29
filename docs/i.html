@@ -62,7 +62,7 @@ input.nt{margin-top:16px;width:100%;border-radius:12px;background:transparent;pa
 .bt{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .bt a{display:block;text-align:center;text-decoration:none;border-radius:12px;padding:13px 0;font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-family:inherit}
 .hint{margin-top:10px;text-align:center;font-size:11px}
-</style></head><body>
+</style><link rel="stylesheet" href="fx.css"></head><body>
 <div id="bg"></div><div id="fx"></div><div id="wrap"><div id="root"></div></div>
 <div id="lb"></div><audio id="au" loop preload="none"></audio>
 <script type="module">
@@ -71,8 +71,10 @@ const $=i=>document.getElementById(i);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const X={
 ru:{personal:'Персональное приглашение',open:'Открыть приглашение',tap:'нажмите на печать',where:'Где',program:'Программа',map:'Открыть карту',countdown:'До праздника',day:'дн',hour:'ч',min:'мин',sec:'сек',rsvpTitle:'Вы придёте?',rsvpSub:'Ваш ответ придёт хозяину в Telegram',yes:'Приду',no:'Не смогу',gallery:'Мгновения',music:'Музыка',musicOn:'Включить музыку',musicOff:'Выключить музыку',dress:'Дресс-код',nf:'Приглашение не найдено',nfs:'Возможно, ссылка неверна или повреждена.',hint:'Откроется чат с ботом, нажмите «Старт»',
+today:'Сегодня наш день',addCal:'Добавить в календарь',route:'Маршрут',yandex:'Яндекс Карты',taxi:'Вызвать такси',
  months:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],days:['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота']},
 uz:{personal:'Shaxsiy taklifnoma',open:'Taklifnomani ochish',tap:'muhrni bosing',where:'Qayerda',program:'Dastur',map:'Xaritani ochish',countdown:'Bayramgacha',day:'kun',hour:'soat',min:'daq',sec:'son',rsvpTitle:'Siz kelasizmi?',rsvpSub:'Javobingiz egasiga Telegramda boradi',yes:'Boraman',no:'Kela olmayman',gallery:'Lahzalar',music:'Musiqa',musicOn:'Musiqani yoqish',musicOff:"Musiqani o'chirish",dress:'Kiyim uslubi',nf:'Taklifnoma topilmadi',nfs:"Havola noto'g'ri yoki buzilgan bo'lishi mumkin.",hint:"Bot bilan chat ochiladi, «Start» ni bosing",
+today:'Bugun bizning kunimiz',addCal:'Kalendarga qo\'shish',route:'Marshrut',yandex:'Yandeks xaritalar',taxi:'Taksi chaqirish',
  months:['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'],days:['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba']}};
 const QS=new URLSearchParams(location.search);
 let SLUG=(QS.get('s')||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);
@@ -123,6 +125,7 @@ if(I.dress)h+='<div style="margin-top:32px;text-align:center"><p class="up" styl
 h+=rsvp();
 h+='<div style="margin-top:36px;text-align:center"><div class="mt">'+motif(th.accent,120)+'</div><p class="fd" style="margin-top:16px;font-size:15px;color:'+th.ink+';opacity:.7">'+esc(ini())+(I.date?' · '+fmtD(I.date):'')+'</p>'+(I.contact?'<p style="margin-top:12px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:'+th.muted+'">'+IC.phone+esc(I.contact)+'</p>':'')+'</div></div></div>';
 $('root').innerHTML=gate+h;
+window.__INV={I,T,th,tp,lang,type:(D.t&&TPL[D.t]?D.t:'wedding'),gallery,ini:ini(),id:D.i||'',cover,portrait};try{window.__fxBoot&&window.__fxBoot()}catch(e){}
 const cd=()=>{if(!I.date)return;const d=new Date(I.date+'T'+(I.time||'12:00').slice(0,5)+':00')-new Date();if(isNaN(d)||d<=0){$('cdw').innerHTML='';return}const v=[Math.floor(d/864e5),Math.floor(d%864e5/36e5),Math.floor(d%36e5/6e4),Math.floor(d%6e4/1e3)],l=[T.day,T.hour,T.min,T.sec];$('cdw').innerHTML='<div style="margin-top:28px"><p class="up" style="text-align:center;font-size:10px;letter-spacing:.32em;color:'+th.muted+'">'+T.countdown+'</p><div class="cd">'+v.map((x,i)=>'<div style="border:1px solid '+th.accentSoft+';background:'+th.accentSoft+'33"><b class="fd" style="color:'+th.ink+'">'+String(x).padStart(2,'0')+'</b><small style="color:'+th.muted+'">'+l[i]+'</small></div>').join('')+'</div></div>'};
 cd();setInterval(cd,1000);
 const au=$('au');au.src=music;au.volume=.45;
@@ -133,4 +136,4 @@ au.onpause=()=>setPlay(false);au.onplay=()=>setPlay(true);
 const lbClose=()=>{$('lb').classList.remove('on');$('lb').innerHTML=''};$('lb').addEventListener('click',lbClose);addEventListener('keydown',e=>{if(e.key==='Escape')lbClose()});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.gal button');if(b){$('lb').innerHTML='<img alt="" src="'+esc(gallery[+b.dataset.i])+'">';$('lb').classList.add('on')}});
 }
-</script></body></html>
+</script><script src="fx.js" defer></script></body></html>

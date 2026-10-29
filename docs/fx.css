@@ -1,0 +1,166 @@
+/* Marhabo FX: слой реализма поверх страницы гостя. Подключается отдельно, ничего не ломает без него. */
+
+/* ---------- 1. Бумага: тонкая фактура и тиснёная рамка ---------- */
+.card{
+  --paper:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .36  0 0 0 0 .24  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.9) inset,
+    0 -1px 0 rgba(120,90,50,.08) inset,
+    0 2px 4px -1px rgba(60,40,15,.10),
+    0 18px 36px -18px rgba(60,40,15,.28),
+    0 60px 90px -60px rgba(60,40,15,.45) !important;
+}
+.card::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background-image:var(--paper);opacity:.07;mix-blend-mode:multiply;
+}
+.card::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(120% 60% at 50% -10%,rgba(255,255,255,.55),transparent 55%),
+    radial-gradient(90% 40% at 50% 112%,rgba(120,85,40,.10),transparent 60%);
+}
+.card>*{position:relative;z-index:1}
+/* тиснёная внутренняя рамка */
+.card .in{
+  box-shadow:0 1px 0 rgba(255,255,255,.85),0 -1px 0 rgba(90,65,30,.10) inset,0 1px 1px rgba(90,65,30,.10) inset;
+}
+
+/* ---------- 1. Золотая фольга на именах и акцентах ---------- */
+.fx-foil{
+  background:linear-gradient(105deg,var(--fa1,#8a6a35) 0%,var(--fa2,#e6c98a) 22%,var(--fa1,#8a6a35) 40%,var(--fa3,#f6e3b4) 54%,var(--fa1,#8a6a35) 70%,var(--fa2,#e6c98a) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
+  animation:foil 7s ease-in-out infinite;
+  filter:drop-shadow(0 1px 0 rgba(255,255,255,.55)) drop-shadow(0 2px 3px rgba(90,60,20,.18));
+}
+@keyframes foil{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+
+/* ---------- 1. Печать из воска ---------- */
+.seal{overflow:visible !important;filter:drop-shadow(0 10px 10px rgba(60,10,10,.35)) drop-shadow(0 2px 2px rgba(60,10,10,.35))}
+.seal .d{
+  border-radius:48% 52% 50% 50% / 52% 48% 52% 48% !important;
+  background:
+    radial-gradient(circle at 32% 26%,rgba(255,255,255,.55) 0,rgba(255,255,255,0) 22%),
+    radial-gradient(circle at 70% 78%,rgba(0,0,0,.30) 0,rgba(0,0,0,0) 45%),
+    radial-gradient(circle at 50% 50%,var(--wx2,#a8323a) 0,var(--wx1,#7d1f27) 70%,var(--wx0,#5e141b) 100%) !important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.06) inset,0 0 0 5px var(--wx0,#5e141b) inset,0 0 14px rgba(0,0,0,.35) inset !important;
+}
+/* неровные подтёки воска по краю */
+.seal::before{
+  content:"";position:absolute;inset:-5px;z-index:0;border-radius:44% 56% 52% 48% / 56% 44% 56% 44%;
+  background:radial-gradient(circle at 50% 50%,var(--wx1,#7d1f27) 62%,transparent 63%);
+  transform:rotate(-8deg);
+}
+.seal::after{
+  content:"";position:absolute;inset:-9px;z-index:-1;border-radius:52% 48% 46% 54% / 46% 54% 50% 50%;
+  background:radial-gradient(circle at 50% 50%,var(--wx0,#5e141b) 58%,transparent 60%);
+  transform:rotate(14deg);opacity:.9;
+}
+.seal .d{z-index:1}
+.seal span.i{
+  z-index:3;font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:25px !important;letter-spacing:.04em;
+  color:rgba(255,230,200,.30) !important;
+  text-shadow:0 -1px 0 rgba(0,0,0,.55),0 1px 0 rgba(255,225,190,.35);
+}
+.seal .r{display:none !important}
+.seal.fx-press{animation:pressWax .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pressWax{0%{transform:scale(1)}35%{transform:scale(.88)}100%{transform:scale(1)}}
+.seal.fx-crack{animation:crackWax .55s ease forwards}
+@keyframes crackWax{0%{transform:scale(1) rotate(0)}30%{transform:scale(.9) rotate(-3deg)}100%{transform:scale(1.5) rotate(8deg);opacity:0;filter:blur(2px)}}
+/* пульс-подсказка */
+.seal .fxh{position:absolute;inset:-14px;border-radius:999px;border:1px solid rgba(180,60,60,.35);animation:ring 2.6s ease-out infinite;pointer-events:none}
+
+/* ---------- 3. Появление блоков при прокрутке ---------- */
+.fx-rv{opacity:0;transform:translateY(26px) scale(.985);filter:blur(3px);
+  transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),filter .9s ease}
+.fx-rv.fx-in{opacity:1;transform:none;filter:none}
+.fx-rv.fx-d1{transition-delay:.08s}.fx-rv.fx-d2{transition-delay:.16s}.fx-rv.fx-d3{transition-delay:.24s}
+/* прорисовка орнамента */
+.fx-draw path,.fx-draw circle,.fx-draw line{stroke-dasharray:var(--l,260);stroke-dashoffset:var(--l,260);transition:stroke-dashoffset 2.2s cubic-bezier(.4,0,.2,1)}
+.fx-draw.fx-in path,.fx-draw.fx-in circle,.fx-draw.fx-in line{stroke-dashoffset:0}
+/* параллакс арки */
+.arch{will-change:transform}
+.arch img{will-change:transform;transform:scale(1.12) translate3d(0,var(--py,0px),0);transition:transform .12s linear}
+.arch::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:0 0 0 1px rgba(255,255,255,.35) inset,0 -40px 50px -30px rgba(40,25,10,.25) inset,0 30px 40px -30px rgba(255,255,255,.35) inset}
+/* глянец на фото галереи */
+.gal button{position:relative;box-shadow:0 10px 20px -14px rgba(60,40,15,.45)}
+.gal button::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.28) 0%,transparent 38%)}
+
+/* ---------- 2. Механическое табло отсчёта ---------- */
+.cd>div{position:relative;overflow:hidden;padding:0 !important;height:66px;border-radius:10px !important;
+  background:linear-gradient(180deg,var(--cdt,#fff) 0%,var(--cdt,#fff) 49%,var(--cdb,#f3ead9) 51%,var(--cdb,#f3ead9) 100%) !important;
+  box-shadow:0 6px 10px -6px rgba(60,40,15,.45),0 1px 0 rgba(255,255,255,.9) inset}
+.cd>div::before{content:"";position:absolute;left:0;right:0;top:calc(50% - 6px);height:12px;z-index:3;
+  background:linear-gradient(180deg,rgba(0,0,0,.0),rgba(0,0,0,.22),rgba(0,0,0,.0));opacity:.35}
+.cd>div::after{content:"";position:absolute;left:5px;right:5px;top:calc(50% - 4.5px);height:9px;z-index:3;pointer-events:none;
+  background:radial-gradient(circle at 0 50%,rgba(0,0,0,.35) 0 2px,transparent 2.4px) left/auto 100% no-repeat,radial-gradient(circle at 100% 50%,rgba(0,0,0,.35) 0 2px,transparent 2.4px) right/auto 100% no-repeat}
+.cd .fp{position:absolute;left:0;right:0;height:50%;overflow:hidden;display:flex;justify-content:center;font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;line-height:66px;font-variant-numeric:tabular-nums}
+.cd .fp>span{display:block;height:66px}
+.cd .fp.t{top:0;align-items:flex-start}.cd .fp.b{bottom:0;align-items:flex-end}.cd .fp.b>span{margin-top:-33px}
+.cd .fp.fl{z-index:2;backface-visibility:hidden;transform-origin:50% 100%}
+.cd .fp.fl.t{animation:flipT .38s ease-in forwards}
+.cd .fp.fl.b{transform-origin:50% 0;transform:rotateX(90deg);animation:flipB .38s .34s ease-out forwards}
+@keyframes flipT{to{transform:rotateX(-90deg)}}
+@keyframes flipB{to{transform:rotateX(0)}}
+.cd small{position:absolute;left:0;right:0;bottom:3px;z-index:4;margin:0 !important;font-size:7.5px !important}
+.cd>div{perspective:260px}
+.fx-today{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;text-align:center;padding:14px 0}
+
+/* ---------- 4. Галерея: просмотр со свайпом и зумом ---------- */
+#lb{touch-action:none;user-select:none;-webkit-user-select:none;background:rgba(10,7,4,.92) !important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#lb .fxs{position:relative;width:100%;max-width:460px;height:82vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#lb .fxs img{position:absolute;max-width:100%;max-height:100%;width:auto !important;object-fit:contain;border-radius:14px;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.7);will-change:transform;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .3s}
+#lb .fxs img.dr{transition:none}
+#lb .fxc{position:absolute;top:max(14px,env(safe-area-inset-top));left:0;right:0;text-align:center;color:rgba(255,255,255,.75);font-size:12px;letter-spacing:.2em;font-family:Manrope,sans-serif}
+#lb .fxx{position:absolute;top:max(8px,env(safe-area-inset-top));right:10px;width:44px;height:44px;border:0;background:none;color:#fff;font-size:26px;cursor:pointer;opacity:.85}
+#lb .fxa{position:absolute;top:50%;width:44px;height:64px;margin-top:-32px;border:0;background:none;color:#fff;font-size:30px;cursor:pointer;opacity:.7}
+#lb .fxa.l{left:2px}#lb .fxa.r{right:2px}
+@media(hover:none){#lb .fxa{display:none}}
+#lb .fxd{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;gap:7px}
+#lb .fxd i{width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.35);transition:all .3s}
+#lb .fxd i.on{width:18px;background:#fff}
+
+/* ---------- 5. Лепестки и конфетти ---------- */
+#fxc{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;height:100%}
+#fxp{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+#fx .pt{display:none}
+
+/* ---------- 6. Календарь, маршрут, такси ---------- */
+.fx-act{margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fx-act a,.fx-act button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 10px;border-radius:12px;text-decoration:none;cursor:pointer;
+  font:600 10.5px/1.2 Manrope,sans-serif;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--fb,#EADBC4);color:var(--fi,#2B2219);background:var(--fg,rgba(234,219,196,.28));
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 6px 12px -8px rgba(60,40,15,.45);transition:transform .15s,box-shadow .15s}
+.fx-act a:active,.fx-act button:active{transform:translateY(1px) scale(.985);box-shadow:0 1px 0 rgba(255,255,255,.7) inset}
+.fx-act svg{flex:none}
+.fx-act .wide{grid-column:1/-1}
+
+/* ---------- 10. Музыка: эквалайзер и громкость ---------- */
+.mb{position:relative;overflow:hidden}
+.mb.playing::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{to{transform:translateX(120%)}}
+.mv{display:none;margin:12px auto 0;max-width:220px;align-items:center;gap:10px;color:inherit}
+.playing~.mv,.mv.on{display:flex}
+.mv input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:3px;border-radius:9px;background:var(--fb,#EADBC4);outline:none}
+.mv input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--fa,#B28A50);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.mv input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:var(--fa,#B28A50)}
+
+/* ---------- 7. Особенности тем ---------- */
+body[data-th=birthday] .card{--paper:none}
+body[data-th=nikah] .card::before{opacity:.05}
+.fx-th-geo{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0;opacity:.07;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%237E8B63' stroke-width='1'><path d='M30 4 56 30 30 56 4 30Z'/><path d='M30 14 46 30 30 46 14 30Z'/><circle cx='30' cy='30' r='4'/></g></svg>")}
+.fx-th-lines{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0;opacity:.10;
+  background-image:repeating-linear-gradient(135deg,transparent 0 22px,rgba(210,112,90,.5) 22px 23px)}
+.fx-th-adras{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:0;opacity:.09;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='none' stroke='%231F8A6D' stroke-width='1.2'><path d='M0 40Q20 10 40 40T80 40'/><path d='M0 60Q20 30 40 60T80 60' opacity='.6'/><path d='M0 20Q20 -10 40 20T80 20' opacity='.6'/></g></svg>")}
+
+/* ---------- Доступность ---------- */
+@media(prefers-reduced-motion:reduce){
+  .fx-rv{opacity:1;transform:none;filter:none;transition:none}
+  .fx-foil,.mb.playing::before,.seal .fxh{animation:none}
+  .cd .fp.fl{animation-duration:.01s !important}
+  #fxp{display:none}
+}
