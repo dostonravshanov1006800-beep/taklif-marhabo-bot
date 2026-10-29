@@ -15,8 +15,14 @@ a{display:inline-block;margin-top:22px;padding:12px 22px;border-radius:12px;back
 <p>Страница обновляется. Это займёт несколько секунд.<br><span style="opacity:.8">Sahifa yangilanmoqda, bir necha soniya kuting.</span></p>
 <div class="sp"></div><a href="./">Обновить / Yangilash</a>
 <script>
-// Автоповтор: после публикации сайта страница сама откроется. Не больше 20 попыток.
+// 1) красивые адреса: /i/<slug>?g=..&q=.. -> i.html?s=<slug>&g=..&q=..
+var base=location.pathname.replace(/\/i\/[^\/]*\/?$/,'/');
+var m=location.pathname.match(/\/i\/([a-z0-9-]{1,40})\/?$/i);
+if(m){location.replace(base+'i.html?s='+m[1].toLowerCase()+(location.search?'&'+location.search.slice(1):''))}
+else{
+// 2) после публикации сайта страница сама откроется. Не больше 20 попыток.
 var n=+(sessionStorage.getItem('r404')||0);
 if(n<20){sessionStorage.setItem('r404',n+1);setTimeout(function(){location.replace(location.pathname.replace(/[^\/]*$/,'')+(location.search||''))},3000)}
 else{sessionStorage.removeItem('r404')}
+}
 </script></div></body></html>

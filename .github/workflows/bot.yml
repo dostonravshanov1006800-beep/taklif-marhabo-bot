@@ -28,6 +28,8 @@ jobs:
       - name: Run bot (long polling)
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           APP_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
           RUN_MINUTES: '340'
         run: node bot/bot.mjs

@@ -34,15 +34,25 @@ function record(owner, inv, guest, kind, who) {
   log[key] = e;
   saveLog(owner, log);
 }
+let lastPages = 0, pagesPending = false;
+function triggerPages() {
+  if (!process.env.GH_TOKEN || !process.env.GH_REPO) return;
+  if (Date.now() - lastPages < 90000) { pagesPending = true; return; }
+  lastPages = Date.now(); pagesPending = false;
+  try { execSync(`gh workflow run pages.yml --repo "${process.env.GH_REPO}"`, { stdio: 'ignore' }); console.log('pages triggered'); }
+  catch (e) { console.error('pages trigger failed'); }
+}
 function publish() {
   if (!dirty.size) return;
   try {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
-    execSync('git add docs/data docs/media');
+    execSync('git add docs/data docs/media docs/inv');
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' });
     dirty.clear();
     console.log('published rsvp');
+    // коммиты GITHUB_TOKEN не запускают Pages сами: запускаем сайт явно, чтобы данные появились через минуту
+    triggerPages();
   } catch (e) { console.error('publish failed', String(e.message).slice(0, 120)); }
 }
 
@@ -79,6 +89,8 @@ const T = {
     thanksNo: 'Спасибо за ответ. Мы сообщили хозяину приглашения.',
     mediaOk: (kb) => `✅ Файл сохранён (${kb} КБ). Ссылка ниже. Он появится в форме через 1-2 минуты. Вернитесь в Marhabo и нажмите «Проверить файлы».`,
     mediaBig: '⚠️ Файл больше 19 МБ. Сожмите его и отправьте снова.',
+    pubOk: (n) => `✅ Приглашение <b>${n}</b> опубликовано. Ссылка ниже заработает через 1-2 минуты. Вернитесь в Marhabo: гостевые ссылки станут короткими.`,
+    pubBad: '⚠️ Не удалось прочитать приглашение. Вернитесь в Marhabo и нажмите «Опубликовать» ещё раз.',
     mediaBad: '⚠️ Нужны фото (JPG, PNG, WebP) или музыка (MP3, M4A, OGG, WAV). Отправьте как фото или как файл.',
     guest: 'Гость',
   },
@@ -97,6 +109,8 @@ const T = {
     thanksNo: 'Javobingiz uchun rahmat. Taklifnoma egasiga xabar berdik.',
     mediaOk: (kb) => `✅ Fayl saqlandi (${kb} KB). Havola pastda. U 1-2 daqiqada shaklda paydo bo'ladi. Marhabo'ga qaytib «Fayllarni tekshirish» tugmasini bosing.`,
     mediaBig: '⚠️ Fayl 19 MB dan katta. Siqib, qayta yuboring.',
+    pubOk: (n) => `✅ <b>${n}</b> taklifnomasi e'lon qilindi. Havola 1-2 daqiqada ishlaydi. Marhabo'ga qaytsangiz, mehmon havolalari qisqa bo'ladi.`,
+    pubBad: '⚠️ Taklifnomani o‘qib bo‘lmadi. Marhabo\'ga qaytib «E\'lon qilish» ni yana bosing.',
     mediaBad: '⚠️ Rasm (JPG, PNG, WebP) yoki musiqa (MP3, M4A, OGG, WAV) kerak. Rasm yoki fayl sifatida yuboring.',
     guest: 'Mehmon',
   },
@@ -139,12 +153,80 @@ async function saveMedia(m) {
   return { url: `${APP_URL.replace(/\/?$/, '/')}media/${m.from.id}/${id}.${ext}`, kind, kb: Math.round(buf.length / 1024) };
 }
 
+// ---- Публикация приглашений: #taklif <данные> -> docs/inv/<slug>.json, короткая ссылка /i/<slug> ----
+const INV_DIR = 'docs/inv';
+let BOT_NAME = 'Taklifnomai_bot';
+const TR = { а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:'o',қ:'q',ғ:'g',ҳ:'h',ʼ:'',"'":'' };
+const slugPart = (x) => String(x || '').toLowerCase().split('').map((c) => (c in TR ? TR[c] : c)).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 24);
+function makeSlug(d, owner, invId) {
+  let base = [slugPart(d.a), slugPart(d.b)].filter(Boolean).join('-') || 'taklif';
+  mkdirSync(INV_DIR, { recursive: true });
+  let slug = base, n = 1;
+  for (;;) {
+    const f = `${INV_DIR}/${slug}.json`;
+    if (!existsSync(f)) return slug;
+    try { const cur = JSON.parse(readFileSync(f, 'utf8')); if (String(cur.o) === String(owner) && cur.i === invId) return slug; } catch {}
+    n += 1; slug = `${base}-${n}`;
+    if (n > 99) return `${base}-${Math.random().toString(36).slice(2, 6)}`;
+  }
+}
+const cleanStr = (v, max) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
+const okUrl = (u) => (/^https:\/\/[^\s<>"']{3,400}$/i.test(u || '') ? u : '');
+const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav)$/i.test(u || '') ? u : (okUrl(u)));
+function sanitizeInv(d, owner) {
+  if (!d || typeof d !== 'object') return null;
+  const o = { t: ['wedding','birthday','jubilee','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: d.l === 'uz' ? 'uz' : 'ru',
+    a: cleanStr(d.a, 60), b: cleanStr(d.b, 60), d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
+    pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), ct: cleanStr(d.ct, 40),
+    k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
+  if (!o.a || !o.i) return null;
+  if (d.u) { const u = okMedia(d.u); if (u) o.u = u; }
+  if (d.p && typeof d.p === 'object') {
+    const p = {}; const c = okMedia(d.p.c), q = okMedia(d.p.o);
+    if (c) p.c = c; if (q) p.o = q;
+    if (Array.isArray(d.p.g)) { const g = d.p.g.map(okMedia).filter(Boolean).slice(0, 6); if (g.length) p.g = g; }
+    if (Object.keys(p).length) o.p = p;
+  }
+  if (Array.isArray(d.pr)) { const pr = d.pr.slice(0, 10).map((r) => [cleanStr(r && r[0], 5), cleanStr(r && r[1], 80)]).filter((r) => r[1]); if (pr.length) o.pr = pr; }
+  Object.keys(o).forEach((k) => (o[k] === '' || o[k] == null) && delete o[k]);
+  return o;
+}
+function saveInvitation(raw, owner) {
+  let d;
+  try { d = JSON.parse(Buffer.from(raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); } catch { return { error: 'parse' }; }
+  const o = sanitizeInv(d, owner);
+  if (!o) return { error: 'data' };
+  const slug = makeSlug(o, owner, o.i);
+  writeFileSync(`${INV_DIR}/${slug}.json`, JSON.stringify(o));
+  // индекс владельца: id приглашения -> slug (мини-апп по нему узнаёт короткую ссылку)
+  const ixf = `${INV_DIR}/_${owner}.json`;
+  let ix = {};
+  try { ix = JSON.parse(readFileSync(ixf, 'utf8')); } catch {}
+  ix[o.i] = slug;
+  writeFileSync(ixf, JSON.stringify(ix));
+  dirty.add('inv');
+  return { slug, name: [o.a, o.b].filter(Boolean).join(' & ') };
+}
+
 async function onMessage(m) {
   const chat = m.chat.id;
   const text = (m.text || '').trim();
   if (m.chat.type !== 'private') return;
   const lang = langOf(m.from);
   const t = T[lang];
+
+
+  // публикация приглашения от владельца: "#taklif <base64url>"
+  const pub = text.match(/^#taklif\s+([A-Za-z0-9_-]{20,3900})$/);
+  if (pub) {
+    const r = saveInvitation(pub[1], m.from.id);
+    if (r.error) { await tg('sendMessage', { chat_id: chat, text: t.pubBad, parse_mode: 'HTML' }); return; }
+    publish();
+    const url = `${APP_URL.replace(/\/?$/, '/')}i/${r.slug}`;
+    await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML' });
+    await tg('sendMessage', { chat_id: chat, text: url, disable_web_page_preview: true });
+    return;
+  }
 
   // файлы от владельца
   if (m.photo || m.audio || m.document) {
@@ -201,6 +283,8 @@ for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { stopping = true
 
 async function main() {
   await setup();
+  const me = await tg('getMe', {});
+  if (me && me.username) BOT_NAME = me.username;
   let offset = existsSync(OFFSET_FILE) ? Number(readFileSync(OFFSET_FILE, 'utf8')) || 0 : 0;
   const stopAt = Date.now() + RUN_MINUTES * 60 * 1000;
   let lastPub = Date.now();
@@ -214,6 +298,7 @@ async function main() {
     }
     if (updates.length) writeFileSync(OFFSET_FILE, String(offset));
     if (dirty.size && Date.now() - lastPub > 20000) { publish(); lastPub = Date.now(); }
+    if (pagesPending && Date.now() - lastPages >= 90000) triggerPages();
   }
   writeFileSync(OFFSET_FILE, String(offset));
   if (offset) await tg('getUpdates', { offset, timeout: 0, limit: 1 }); // подтвердить обработанное Telegram

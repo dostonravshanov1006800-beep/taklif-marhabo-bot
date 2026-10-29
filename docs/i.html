@@ -53,7 +53,7 @@ body{font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .lh{display:flex;align-items:center;justify-content:center;gap:10px}.lh i{display:block;height:1px;width:28px}
 #lb{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);padding:16px}
 #lb.on{display:flex}#lb img{max-width:460px;width:100%;max-height:82vh;object-fit:contain;border-radius:16px}
-.mb{display:inline-flex;align-items:center;gap:8px;margin-top:16px;border-radius:999px;padding:10px 16px;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-family:inherit}
+.mb{display:inline-flex;align-items:center;gap:8px;margin-top:16px;border-radius:999px;padding:0 18px;min-height:44px;-webkit-tap-highlight-color:transparent;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;font-family:inherit}
 .eq{display:none;height:12px;align-items:flex-end;gap:2.5px}.eq s{display:block;width:2px;border-radius:99px;animation:eq 1.3s ease-in-out infinite}
 .eq s:nth-child(2){animation-delay:.16s}.eq s:nth-child(3){animation-delay:.32s}
 @keyframes eq{0%,100%{height:4px}25%{height:11px}50%{height:5px}75%{height:13px}}
@@ -74,8 +74,14 @@ ru:{personal:'Персональное приглашение',open:'Откры�
  months:['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],days:['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота']},
 uz:{personal:'Shaxsiy taklifnoma',open:'Taklifnomani ochish',tap:'muhrni bosing',where:'Qayerda',program:'Dastur',map:'Xaritani ochish',countdown:'Bayramgacha',day:'kun',hour:'soat',min:'daq',sec:'son',rsvpTitle:'Siz kelasizmi?',rsvpSub:'Javobingiz egasiga Telegramda boradi',yes:'Boraman',no:'Kela olmayman',gallery:'Lahzalar',music:'Musiqa',musicOn:'Musiqani yoqish',musicOff:"Musiqani o'chirish",dress:'Kiyim uslubi',nf:'Taklifnoma topilmadi',nfs:"Havola noto'g'ri yoki buzilgan bo'lishi mumkin.",hint:"Bot bilan chat ochiladi, «Start» ni bosing",
  months:['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'],days:['yakshanba','dushanba','seshanba','chorshanba','payshanba','juma','shanba']}};
+const QS=new URLSearchParams(location.search);
+const SLUG=(QS.get('s')||'').toLowerCase().replace(/[^a-z0-9-]/g,'').slice(0,40);
 const raw=location.hash.replace(/^#\/?/,'');
-const D=unpack(raw);
+let D=null;
+if(SLUG){
+  try{const r=await fetch('inv/'+SLUG+'.json?_='+Math.floor(Date.now()/30000),{cache:'no-store'});if(r.ok)D=await r.json()}catch(e){}
+  if(D){const g=(QS.get('g')||'').replace(/\s+/g,' ').trim().slice(0,60),q=(QS.get('q')||'').replace(/[^a-z0-9]/gi,'').slice(0,12);if(g){D.g=g;D.q=q}}
+}else D=unpack(raw);
 function fail(l){const t=X[l||'ru'];document.body.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;text-align:center;font-family:Georgia,serif;color:#2B2219"><div><h2 style="font-weight:400;font-size:26px">'+t.nf+'</h2><p style="color:#7A6A57;font-size:13px;margin-top:6px">'+t.nfs+'</p></div></div>'}
 if(!D||!D.a){fail()}else{
 const lang=D.l==='uz'?'uz':'ru',T=X[lang],tp=TPL[D.t]||TPL.wedding,th=tp.theme,mo=tp.motif;
