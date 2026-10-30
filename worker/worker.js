@@ -60,6 +60,22 @@ async function hmac(keyBytes, data) {
   return new Uint8Array(await crypto.subtle.sign('HMAC', k, typeof data === 'string' ? enc.encode(data) : data));
 }
 const hex = (u8) => [...u8].map((b) => b.toString(16).padStart(2, '0')).join('');
+async function whyInit(initData, botToken) {
+  try {
+    if (!botToken) return 'no_bot_token_on_worker';
+    if (!initData) return 'init_empty';
+    const p = new URLSearchParams(initData);
+    if (!p.get('hash')) return 'init_has_no_hash';
+    const keys = [...p.keys()].filter((k) => k !== 'hash').sort().join(',');
+    const hash = p.get('hash'); p.delete('hash');
+    const str = [...p.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([k, v]) => `${k}=${v}`).join('\n');
+    const secret = await hmac(enc.encode('WebAppData'), botToken);
+    const calc = hex(await hmac(secret, str));
+    if (calc !== hash) return 'signature_mismatch(keys=' + keys + ',len=' + initData.length + ',tokenId=' + botToken.split(':')[0] + ')';
+    const age = Math.floor(Date.now() / 1000) - Number(p.get('auth_date') || 0);
+    return age >= -60 && age < 86400 * 7 ? 'ok' : 'expired(age=' + age + ')';
+  } catch (e) { return 'error:' + e.message; }
+}
 async function verifyInit(initData, botToken) {
   try {
     if (!initData || !botToken || initData.length > 4096) return null;
@@ -139,8 +155,9 @@ export default {
       // сохранить приглашение
       if (path === '/api/inv' && req.method === 'POST') {
         const body = await readBody(req);
-        const owner = await verifyInit(body.init || req.headers.get('x-tg-init') || '', env.BOT_TOKEN);
-        if (!owner) return J({ error: 'auth' }, 401);
+        const _init = body.init || req.headers.get('x-tg-init') || '';
+        const owner = await verifyInit(_init, env.BOT_TOKEN);
+        if (!owner) return J({ error: 'auth', why: await whyInit(_init, env.BOT_TOKEN) }, 401);
         // не больше 30 запросов в час на владельца
         const rk = 'rl:' + owner + ':' + Math.floor(Date.now() / 3600000);
         const rc = Number(await env.INV.get(rk)) || 0;
