@@ -66,6 +66,7 @@ function publish() {
 
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
+const KBCHATS = new Set(); // чаты, где сейчас висит клавиатура «Опубликовать»
 async function tg(method, body = {}) {
   // getUpdates держит соединение до 45 с, остальным хватает 30 с
   const ms = method === 'getUpdates' ? 70000 : 30000;
@@ -458,6 +459,7 @@ async function onMessage(m) {
       publish();
       const url = `${APP_URL.replace(/\/?$/, '/')}i/${r.slug}`;
       await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: { remove_keyboard: true } });
+      KBCHATS.delete(chat);
       await tg('sendMessage', { chat_id: chat, text: url, disable_web_page_preview: true });
       return;
     }
@@ -466,6 +468,7 @@ async function onMessage(m) {
   if (/^\/(publish|start publish)(@\w+)?$/i.test(text)) {
     const PB = { ru: ['📤 Опубликовать приглашение', 'Нажмите кнопку внизу, выберите приглашение и «Отправить боту». Вставлять ничего не нужно.'], uz: ["📤 Taklifnomani e'lon qilish", "Pastdagi tugmani bosing, taklifnomani tanlang va «Botga yuborish» ni bosing. Hech narsa qo'yish shart emas."], en: ['📤 Publish invitation', 'Tap the button below, pick the invitation and press "Send to bot". No pasting needed.'], kk: ['📤 Шақыруды жариялау', 'Төмендегі батырманы басып, шақыруды таңдаңыз да «Ботқа жіберу» басыңыз. Қоюдың қажеті жоқ.'] }[lang];
     await tg('sendMessage', { chat_id: chat, text: PB[1], reply_markup: { keyboard: [[{ text: PB[0], web_app: { url: APP_URL.replace(/\/?$/, '/') + '?send=1' } }]], resize_keyboard: true, one_time_keyboard: true } });
+    KBCHATS.add(chat);
     return;
   }
 
@@ -619,6 +622,8 @@ async function onMessage(m) {
     if (ok) return;
   }
 
+  // если этому чату показывали клавиатуру «Опубликовать», убираем её (служебное сообщение сразу удаляется)
+  if (KBCHATS.has(chat)) { KBCHATS.delete(chat); try { const rk = await tg('sendMessage', { chat_id: chat, text: '\u2060', reply_markup: { remove_keyboard: true } }); if (rk && rk.message_id) tg('deleteMessage', { chat_id: chat, message_id: rk.message_id }); } catch (_) {} }
   // /start, /info и любое другое сообщение: баннер + «Старт» и «Информация»
   if (/^\/info\b/i.test(text)) { await sendInfo(chat, lang); return; }
   if (/^\/(audit|done|report)\b/i.test(text)) { await tg('sendMessage', { chat_id: chat, text: auditText(lang), parse_mode: 'HTML' }); return; }
