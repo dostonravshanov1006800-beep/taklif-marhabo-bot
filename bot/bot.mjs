@@ -66,6 +66,10 @@ function publish() {
 
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
+// постоянная кнопка под полем ввода: открывает мини-апп в режиме отправки, публикация идёт в один шаг
+const PERM = { ru: '✨ Открыть Marhabo', uz: '✨ Marhabo ni ochish', en: '✨ Open Marhabo', kk: '✨ Marhabo ашу' };
+const permKb = (lang) => ({ keyboard: [[{ text: PERM[lang] || PERM.ru, web_app: { url: APP_URL.replace(/\/?$/, '/') + '?send=1' } }]], resize_keyboard: true, is_persistent: true });
+const PERMSHOWN = new Set(); // чатам, где постоянная кнопка уже показана в этом запуске
 const KBCHATS = new Set(); // чаты, где сейчас висит клавиатура «Опубликовать»
 async function tg(method, body = {}) {
   // getUpdates держит соединение до 45 с, остальным хватает 30 с
@@ -458,7 +462,7 @@ async function onMessage(m) {
       if (r.error) { await tg('sendMessage', { chat_id: chat, text: t.pubBad, parse_mode: 'HTML' }); return; }
       publish();
       const url = `${APP_URL.replace(/\/?$/, '/')}i/${r.slug}`;
-      await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: { remove_keyboard: true } });
+      await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: permKb(lang) });
       KBCHATS.delete(chat);
       await tg('sendMessage', { chat_id: chat, text: url, disable_web_page_preview: true });
       return;
@@ -622,8 +626,6 @@ async function onMessage(m) {
     if (ok) return;
   }
 
-  // если этому чату показывали клавиатуру «Опубликовать», убираем её (служебное сообщение сразу удаляется)
-  if (KBCHATS.has(chat)) { KBCHATS.delete(chat); try { const rk = await tg('sendMessage', { chat_id: chat, text: '\u2060', reply_markup: { remove_keyboard: true } }); if (rk && rk.message_id) tg('deleteMessage', { chat_id: chat, message_id: rk.message_id }); } catch (_) {} }
   // /start, /info и любое другое сообщение: баннер + «Старт» и «Информация»
   if (/^\/info\b/i.test(text)) { await sendInfo(chat, lang); return; }
   if (/^\/(audit|done|report)\b/i.test(text)) { await tg('sendMessage', { chat_id: chat, text: auditText(lang), parse_mode: 'HTML' }); return; }
@@ -668,6 +670,7 @@ const infoKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { u
 const bannerUrl = (lang) => `${APP_URL.replace(/\/?$/, '/')}brand/banner_${lang}.jpg`;
 
 async function sendStart(chat, lang) {
+  if (!PERMSHOWN.has(chat)) { PERMSHOWN.add(chat); await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Кнопка внизу открывает Marhabo и публикует приглашение в один шаг', uz: '👇 Pastdagi tugma Marhabo ni ochadi va taklifnomani bir qadamda e\'lon qiladi', en: '👇 The button below opens Marhabo and publishes in one step', kk: '👇 Төмендегі түйме Marhabo ашады және бір қадамда жариялайды' })[lang] || '', reply_markup: permKb(lang) }); }
   const r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) });
   if (!r) await tg('sendMessage', { chat_id: chat, text: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) }); // запасной путь без картинки
 }
