@@ -36,7 +36,7 @@ body{font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased
 .seal .d{position:absolute;inset:0;border-radius:999px}.seal .r{position:absolute;inset:0;border-radius:999px;animation:ring 2.6s ease-out infinite}
 @keyframes ring{from{transform:scale(1);opacity:.55}to{transform:scale(1.22);opacity:0}}
 .seal span.i{position:relative;color:#fff;font-size:22px;letter-spacing:.03em}
-.card{padding:52px 24px 44px;display:none}@media(min-width:640px){.card{padding:56px 36px 44px}}
+.card{padding:40px 24px 36px;display:none}@media(min-width:640px){.card{padding:44px 36px 36px}}
 .card.show{display:block;animation:cin .85s cubic-bezier(.22,1,.36,1) both}
 @keyframes cin{from{opacity:0;transform:translateY(34px) scale(.985)}to{opacity:1;transform:none}}
 .card .in{position:absolute;inset:8px;border-radius:21px;pointer-events:none}
@@ -104,7 +104,7 @@ input.nt{margin-top:16px;width:100%;border-radius:12px;background:transparent;pa
 </style><link rel="stylesheet" href="fx.css"><link rel="stylesheet" href="curtain.css"></head><body>
 <div id="bg"></div><div id="fx"></div><div id="wrap"><div id="root"></div></div>
 <div id="lb"></div><audio id="au" loop preload="none"></audio>
-<script src="curtain.js"></script><script src="lines.js"></script>
+<script src="curtain.js"></script>
 <script type="module">
 import {TPL,unpack, THEMES} from './shared.js';
 const $=i=>document.getElementById(i);
@@ -195,9 +195,7 @@ const DPL=(Array.isArray(D.dp)?D.dp:[]).filter(c=>/^#[0-9A-Fa-f]{6}$/.test(c)).s
 if(I.dress||DPL.length)h+='<div style="margin-top:32px;text-align:center"><p class="up" style="font-size:11px;letter-spacing:.32em;color:'+th.muted+'">'+T.dress+'</p>'+(I.dress?'<p class="fd" style="margin-top:6px;font-size:17px;font-style:italic;color:'+th.ink+'">'+esc(I.dress)+'</p>':'')+(DPL.length?'<div class="dpv" role="list" aria-label="'+esc(T.dress)+'">'+DPL.map(c=>'<span class="dpd" role="listitem" style="background:'+c+'"></span>').join('')+'</div>':'')+'</div>';
 h+=rsvp();
 h+=contacts()+finale()+'</div></div>';
-try{window.GoldLines&&GoldLines.apply(th.accent,th.base)}catch(_){}
 $('root').innerHTML=gate+h;
-try{window.GoldLines&&GoldLines.decorate()}catch(_){}
 window.__INV={I,T,th,tp,lang,type:(D.t&&TPL[D.t]?D.t:'wedding'),gallery,ini:ini(),id:D.i||'',cover,portrait};try{window.__fxBoot&&window.__fxBoot()}catch(e){}
 try{window.__curtainInit&&window.__curtainInit(D,D.th||'',lang,SITE)}catch(_){}
 
