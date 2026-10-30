@@ -17,6 +17,7 @@
     document.body.setAttribute('data-th', c.type);
     var acc = th.accent;
     root.style.setProperty('--fa', acc);
+    root.style.setProperty('--fat', th.accentText || acc);
     root.style.setProperty('--fb', th.accentSoft);
     root.style.setProperty('--fi', th.ink);
     root.style.setProperty('--fm', th.muted);
@@ -58,6 +59,24 @@
     // амперсанд оставляем акцентным, он внутри span и тоже получает фольгу
     var nm = document.querySelector('#gate .nm'); if (nm) nm.classList.add('fx-foil');
     var lh = document.querySelectorAll('#card .mt svg'); lh.forEach(function (s) { s.classList.add('fx-draw'); s.style.setProperty('--l', 320); });
+  });
+
+  /* ---------- 2b. Карточки подарков и пожеланий: плавное появление, в том числе для динамически добавленных ---------- */
+  var setupCards = safe(function () {
+    var sel = '.gc, .wc';
+    var show = function (el) { el.classList.add('shown'); };
+    if (RM || !('IntersectionObserver' in window)) { document.querySelectorAll(sel).forEach(show); return; }
+    var io2 = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { show(e.target); io2.unobserve(e.target); } });
+    }, { threshold: 0.15, rootMargin: '0px 0px -4% 0px' });
+    var watch = function (root) { (root.querySelectorAll ? root.querySelectorAll(sel) : []).forEach(function (el) { if (!el.classList.contains('shown')) io2.observe(el); }); };
+    watch(document);
+    var host = document.getElementById('card');
+    if (host && 'MutationObserver' in window) {
+      new MutationObserver(function (ms) {
+        ms.forEach(function (m) { m.addedNodes.forEach(function (n) { if (n.nodeType === 1) { if (n.matches && n.matches(sel)) io2.observe(n); watch(n); } }); });
+      }).observe(host, { childList: true, subtree: true });
+    }
   });
 
   /* ---------- 3. Появление при прокрутке + параллакс ---------- */
@@ -107,7 +126,7 @@
       if (d <= 0) {
         if (!w.querySelector('.fx-today')) {
           var sameDay = new Date(I.date + 'T00:00:00').toDateString() === new Date().toDateString();
-          w.innerHTML = sameDay ? '<div class="fx-today" style="color:' + c.th.accent + '">' + c.T.today + '</div>' : '';
+          w.innerHTML = sameDay ? '<div class="fx-today" style="color:' + (c.th.accentText || c.th.accent) + '">' + c.T.today + '</div>' : '';
         }
         return;
       }
@@ -226,7 +245,7 @@
     var y = +m[1], mo = +m[2] - 1, d = +m[3];
     var first = new Date(y, mo, 1).getDay(), dim = new Date(y, mo + 1, 0).getDate();
     var lead = (first + 6) % 7; // неделя с понедельника
-    var wd = [1, 2, 3, 4, 5, 6, 0].map(function (i) { return '<i>' + esc(T.days[i].slice(0, 2)) + '</i>'; }).join('');
+    var wd = [1, 2, 3, 4, 5, 6, 0].map(function (i) { return '<i>' + esc((T.dw && T.dw[i]) || T.days[i].slice(0, 2)) + '</i>'; }).join('');
     var cells = '', i;
     for (i = 0; i < lead; i++) cells += '<b class="e"></b>';
     for (i = 1; i <= dim; i++) cells += i === d ? '<b class="on"><span>' + i + '</span></b>' : '<b>' + i + '</b>';
@@ -274,7 +293,7 @@
     var endH = (parseInt(tm[1], 10) + 4) % 24, endDay = m[1] + m[2] + m[3];
     if (parseInt(tm[1], 10) + 4 >= 24) { var dd = new Date(+m[1], +m[2] - 1, +m[3] + 1); endDay = dd.getFullYear() + pad(dd.getMonth() + 1) + pad(dd.getDate()); }
     var en = endDay + 'T' + pad(endH) + tm[2] + '00';
-    var title = [I.n1, I.n2].filter(Boolean).join(' & ') + ' · ' + c.tp.label[c.lang];
+    var title = [I.n1, I.n2].filter(Boolean).join(' & ') + ' · ' + (c.tp.label[c.lang] || c.tp.label.ru);
     var uid = (c.id || Math.random().toString(36).slice(2)) + '@marhabo';
     var now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Marhabo//Invitation//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + now,
@@ -409,7 +428,7 @@
   var boot = safe(function () {
     if (!getCtx()) return;
     applyThemeVars(); setupSeal();
-    if ($('card')) { setupTheme(); setupFoil(); setupCountdown(); setupMusic(); setupGallery(); setupRsvp(); }
+    if ($('card')) { setupTheme(); setupFoil(); setupCountdown(); setupMusic(); setupGallery(); setupRsvp(); setupCards(); }
     if ($('st') && $('st').children.length) { setupActions(); setupReveal(); setupParallax(); }
     bootDone = !!($('seal') && $('st') && $('st').children.length);
   });

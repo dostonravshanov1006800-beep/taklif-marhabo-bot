@@ -1,6 +1,6 @@
 // Telegram-бот Marhabo. Без зависимостей. Работает как long polling внутри GitHub Actions.
 // Умеет только: /start (красивый текст + кнопка мини-приложения) и приём ответа гостя.
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
 const TOKEN = process.env.BOT_TOKEN;
@@ -46,7 +46,7 @@ function publish() {
   if (!dirty.size) return;
   try {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
-    execSync('git add docs/data docs/media docs/inv docs/i');
+    execSync('git add docs/data docs/media docs/inv docs/i docs/wishes bot-state');
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     try { execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' }); }
     catch (e1) {
@@ -196,26 +196,36 @@ const PREV_DIR = 'docs/i';
 // запасные обложки по шаблонам (те же, что на странице гостя), чтобы у превью всегда была картинка
 const COVER = { wedding: 'photo-1606800052052-a08af7148866', birthday: 'photo-1530103862676-de8c9debad1d', jubilee: 'photo-1522673607200-164d1b6ce486', anniversary: 'photo-1522673607200-164d1b6ce486', nikoh: 'photo-1519741497674-611481863552', nikah: 'photo-1519741497674-611481863552', navruz: 'photo-1490750967868-88aa4486c946', other: 'photo-1492684223066-81342ee5ff30' };
 const MONTHS = { ru: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], uz: ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'] };
+MONTHS.en = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+MONTHS.kk = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
+const LGS = ['ru', 'uz', 'en', 'kk'];
+const lgOf = (o) => (o && LGS.includes(o.l) ? o.l : 'ru');
+const LX = {
+  ru: { inv: 'Приглашение', hi: (n) => `Дорогой(ая) <b>${n}</b>,\nвас приглашают`, hiN: 'Вас приглашают', open: '💌 Открыть приглашение', wishOk: '💌 Спасибо! Ваше пожелание отправлено и скоро появится на странице.', wishOff: '⚠️ Пожелания для этого приглашения выключены.', wishLim: '⚠️ Вы уже оставили максимум пожеланий для этого приглашения.', wishBad: '⚠️ Не удалось прочитать пожелание. Откройте приглашение и отправьте ещё раз.', wishNew: (n, m) => `💌 Новое пожелание от <b>${n}</b>:\n${m}` },
+  uz: { inv: 'Taklifnoma', hi: (n) => `Hurmatli <b>${n}</b>,\nsizni taklif qilamiz`, hiN: 'Sizni taklif qilamiz', open: '💌 Taklifnomani ochish', wishOk: "💌 Rahmat! Tilagingiz yuborildi va tez orada sahifada ko'rinadi.", wishOff: "⚠️ Bu taklifnoma uchun tilaklar o'chirilgan.", wishLim: "⚠️ Siz bu taklifnoma uchun tilaklarning maksimal sonini qoldirgansiz.", wishBad: "⚠️ Tilakni o'qib bo'lmadi. Taklifnomani oching va qayta yuboring.", wishNew: (n, m) => `💌 <b>${n}</b> dan yangi tilak:\n${m}` },
+  en: { inv: 'Invitation', hi: (n) => `Dear <b>${n}</b>,\nyou are invited`, hiN: 'You are invited', open: '💌 Open invitation', wishOk: '💌 Thank you! Your wish was sent and will appear on the page soon.', wishOff: '⚠️ Guest wishes are turned off for this invitation.', wishLim: '⚠️ You have already left the maximum number of wishes for this invitation.', wishBad: '⚠️ Could not read the wish. Open the invitation and send it again.', wishNew: (n, m) => `💌 New wish from <b>${n}</b>:\n${m}` },
+  kk: { inv: 'Шақыру', hi: (n) => `Құрметті <b>${n}</b>,\nсізді шақырамыз`, hiN: 'Сізді шақырамыз', open: '💌 Шақыруды ашу', wishOk: '💌 Рахмет! Тілегіңіз жіберілді, жақында бетте көрінеді.', wishOff: '⚠️ Бұл шақыру үшін тілектер өшірілген.', wishLim: '⚠️ Сіз бұл шақыру үшін тілектің ең көп санын қалдырдыңыз.', wishBad: '⚠️ Тілекті оқу мүмкін болмады. Шақыруды ашып, қайта жіберіңіз.', wishNew: (n, m) => `💌 <b>${n}</b> жіберген жаңа тілек:\n${m}` },
+};
 const attr = (x) => String(x == null ? '' : x).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function previewPage(slug, o) {
-  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const lang = lgOf(o);
   const names = [o.a, o.b].filter(Boolean).join(' & ') || 'Marhabo';
   let when = '';
   const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(o.d || '');
   if (dm) when = `${+dm[3]} ${MONTHS[lang][+dm[2] - 1] || ''} ${dm[1]}`.replace(/\s+/g, ' ') + (o.h ? `, ${o.h}` : '');
   const title = names;
-  const desc = [lang === 'ru' ? 'Приглашение' : 'Taklifnoma', when, o.pl].filter(Boolean).join(' · ');
+  const desc = [LX[lang].inv, when, o.pl].filter(Boolean).join(' · ');
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c)
     ? `${APP_URL.replace(/\/?$/, '/')}${o.p.c}`
     : `https://images.unsplash.com/${COVER[o.t] || COVER.wedding}?auto=format&fit=crop&w=1200&q=70`;
   const base = APP_URL.replace(/\/?$/, '/');
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>${attr(title)}</title><meta name="description" content="${attr(desc)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Taklifnoma"><meta property="og:title" content="${attr(title)}"><meta property="og:description" content="${attr(desc)}">
 <meta property="og:image" content="${attr(cover)}"><meta property="og:url" content="${attr(base + 'i/' + slug + '/')}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${attr(title)}"><meta name="twitter:image" content="${attr(cover)}">
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#FCF9F3;color:#2B2219;font-family:Georgia,serif;text-align:center}a{color:#B28A50}</style>
-</head><body><div><p style="letter-spacing:.3em;font-size:11px;text-transform:uppercase;color:#A08D74">Taklifnoma</p><h1 style="font-weight:500">${attr(names)}</h1><p><a id="go" href="../../i.html?s=${attr(slug)}">${lang === 'ru' ? 'Открыть приглашение' : 'Taklifnomani ochish'}</a></p></div>
+</head><body><div><p style="letter-spacing:.3em;font-size:11px;text-transform:uppercase;color:#A08D74">Taklifnoma</p><h1 style="font-weight:500">${attr(names)}</h1><p><a id="go" href="../../i.html?s=${attr(slug)}">${LX[lang].open.replace('💌 ', '')}</a></p></div>
 <script>var q=location.search?'&'+location.search.slice(1):'';location.replace('../../i.html?s=${slug}'+q)</script></body></html>`;
 }
 let BOT_NAME = 'Taklifnomai_bot';
@@ -236,13 +246,39 @@ function makeSlug(d, owner, invId) {
 const cleanStr = (v, max) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '');
 const okUrl = (u) => (/^https:\/\/[^\s<>"']{3,400}$/i.test(u || '') ? u : '');
 const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav|mp4|webm)$/i.test(u || '') ? u : (okUrl(u)));
+
+// найти опубликованное приглашение по внутреннему id (поле i)
+function findInvById(id) {
+  try {
+    for (const f of readdirSync(INV_DIR)) {
+      if (!f.endsWith('.json') || f.startsWith('_')) continue;
+      let o; try { o = JSON.parse(readFileSync(`${INV_DIR}/${f}`, 'utf8')); } catch { continue; }
+      if (o && o.i === id && !o.r) return { slug: f.slice(0, -5), o };
+    }
+  } catch {}
+  return null;
+}
 function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
-  const o = { t: ['wedding','birthday','jubilee','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: d.l === 'uz' ? 'uz' : 'ru',
+  const o = { t: ['wedding','birthday','jubilee','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60), d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
     pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), ct: cleanStr(d.ct, 40),
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
   if (!o.a || !o.i) return null;
+  if (d.w === 1 || d.w === true) o.w = 1;
+  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green'].includes(d.th)) o.th = d.th;
+  // тойона: до 3 карт [[16 цифр, имя, банк]]; карта с другим числом цифр отбрасывается
+  if (Array.isArray(d.tc)) {
+    const BANKS = ['Uzcard', 'Humo', 'Visa', 'Mastercard'];
+    const tc = d.tc.slice(0, 8).map((c) => {
+      if (!Array.isArray(c)) return null;
+      const num = String(c[0] == null ? '' : c[0]).replace(/\D/g, '');
+      if (!/^\d{16}$/.test(num)) return null;
+      const bank = BANKS.find((b) => b.toLowerCase() === String(c[2] || '').toLowerCase()) || 'Karta';
+      return [num, cleanStr(c[1], 40), bank];
+    }).filter(Boolean).slice(0, 3);
+    if (tc.length) o.tc = tc;
+  }
   if (d.u) { const u = okMedia(d.u); if (u) o.u = u; }
   if (d.p && typeof d.p === 'object') {
     const p = {}; const c = okMedia(d.p.c), q = okMedia(d.p.o);
@@ -296,6 +332,54 @@ async function onMessage(m) {
   const t = T[lang];
 
 
+
+  // ---- пожелания гостей: "#wish <invId> <base64url JSON {n,m,k}>" ----
+  const wsh = text.match(/^#wish\s+([a-z0-9]{3,12})\s+([A-Za-z0-9_-]{4,1500})$/i);
+  if (wsh) {
+    const found = findInvById(wsh[1].toLowerCase());
+    const lg = found ? lgOf(found.o) : (LGS.includes(lang) ? lang : 'ru');
+    const L = LX[lg] || LX.ru;
+    let d = null;
+    try { d = JSON.parse(Buffer.from(wsh[2].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); } catch {}
+    const msg = d && typeof d === 'object' ? cleanStr(d.m, 300) : '';
+    const nm = (d && typeof d === 'object' ? cleanStr(d.n, 40) : '') || '—';
+    if (!found || found.o.w !== 1) { await tg('sendMessage', { chat_id: chat, text: L.wishOff }); return; }
+    if (!msg) { await tg('sendMessage', { chat_id: chat, text: L.wishBad }); return; }
+    // не более 3 пожеланий с одного аккаунта на одно приглашение; счётчик лежит вне docs/, чтобы Telegram-id не публиковался
+    mkdirSync('bot-state', { recursive: true });
+    const cf = `bot-state/wishes_f_${found.o.i}.json`;
+    let cnt = {}; try { cnt = JSON.parse(readFileSync(cf, 'utf8')); } catch {}
+    const who = String(m.from.id);
+    if ((cnt[who] || 0) >= 3) { await tg('sendMessage', { chat_id: chat, text: L.wishLim }); return; }
+    cnt[who] = (cnt[who] || 0) + 1; writeFileSync(cf, JSON.stringify(cnt));
+    mkdirSync('docs/wishes', { recursive: true });
+    const wf = `docs/wishes/${found.o.i}.json`;
+    let arr = []; try { arr = JSON.parse(readFileSync(wf, 'utf8')); } catch {}
+    if (!Array.isArray(arr)) arr = [];
+    arr.unshift({ n: nm, m: msg, t: new Date().toISOString(), h: 0 });
+    writeFileSync(wf, JSON.stringify(arr.slice(0, 200)));
+    dirty.add('inv');
+    await tg('sendMessage', { chat_id: chat, text: L.wishOk });
+    const ol = LX[lgOf(found.o)] || LX.ru;
+    if (found.o.o) await tg('sendMessage', { chat_id: Number(found.o.o), text: ol.wishNew(esc(nm), esc(msg)), parse_mode: 'HTML' });
+    publish();
+    return;
+  }
+  // владелец скрывает или возвращает пожелание: "#wishhide <invId> <номер>" / "#wishshow <invId> <номер>"
+  const wh = text.match(/^#wish(hide|show)\s+([a-z0-9]{3,12})\s+(\d{1,3})$/i);
+  if (wh) {
+    const found = findInvById(wh[2].toLowerCase());
+    if (!found || String(found.o.o) !== String(m.from.id)) { await tg('sendMessage', { chat_id: chat, text: '⚠️' }); return; }
+    const wf = `docs/wishes/${found.o.i}.json`;
+    let arr = []; try { arr = JSON.parse(readFileSync(wf, 'utf8')); } catch {}
+    const ix = Number(wh[3]);
+    if (!Array.isArray(arr) || !arr[ix]) { await tg('sendMessage', { chat_id: chat, text: '⚠️' }); return; }
+    arr[ix].h = wh[1].toLowerCase() === 'hide' ? 1 : 0;
+    writeFileSync(wf, JSON.stringify(arr)); dirty.add('inv');
+    await tg('sendMessage', { chat_id: chat, text: arr[ix].h ? '🙈 OK' : '👁 OK' });
+    publish();
+    return;
+  }
   // публикация приглашения от владельца: "#taklif <base64url>"
   const pub = text.match(/^#taklif\s+([A-Za-z0-9_-]{20,3900})$/);
   if (pub) {
@@ -361,23 +445,23 @@ function readInv(slug) {
   try { return JSON.parse(readFileSync(`${INV_DIR}/${slug}.json`, 'utf8')); } catch { return null; }
 }
 function cardCaption(o, guestName) {
-  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const lang = lgOf(o);
   const names = [o.a, o.b].filter(Boolean).map(esc).join(' &amp; ');
   let when = '';
   const dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(o.d || '');
   if (dm) when = `${+dm[3]} ${MONTHS[lang][+dm[2] - 1] || ''} ${dm[1]}` + (o.h ? `, ${esc(o.h)}` : '');
-  const hi = guestName ? (lang === 'ru' ? `Дорогой(ая) <b>${esc(guestName)}</b>,\nвас приглашают` : `Hurmatli <b>${esc(guestName)}</b>,\nsizni taklif qilamiz`) : (lang === 'ru' ? 'Вас приглашают' : 'Sizni taklif qilamiz');
+  const hi = guestName ? LX[lang].hi(esc(guestName)) : LX[lang].hiN;
   return `💌 ${hi}\n\n<b>${names}</b>` + (when ? `\n📅 ${when}` : '') + (o.pl ? `\n📍 ${esc(o.pl)}` : '');
 }
 async function sendInviteCard(chat, slug, guestKey, from) {
   const o = readInv(slug);
   if (!o) return false;
-  const lang = o.l === 'ru' ? 'ru' : 'uz';
+  const lang = lgOf(o);
   const base = APP_URL.replace(/\/?$/, '/');
   // имя берём из профиля Telegram того, кто открыл ссылку: список гостей в репозитории не публикуем
   const gname = from ? [from.first_name].filter(Boolean).join(' ').slice(0, 40) : '';
   const url = `${base}i/${slug}/` + (guestKey ? `?q=${encodeURIComponent(guestKey)}` + (gname ? `&g=${encodeURIComponent(gname)}` : '') : (gname ? `?g=${encodeURIComponent(gname)}` : ''));
-  const kb = { inline_keyboard: [[{ text: lang === 'ru' ? '💌 Открыть приглашение' : '💌 Taklifnomani ochish', web_app: { url } }]] };
+  const kb = { inline_keyboard: [[{ text: LX[lang].open, web_app: { url } }]] };
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c) ? `${base}${o.p.c}` : null;
   const caption = cardCaption(o, gname);
   let r = cover ? await tg('sendPhoto', { chat_id: chat, photo: cover, caption, parse_mode: 'HTML', reply_markup: kb }) : null;
