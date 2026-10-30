@@ -19,7 +19,7 @@ for (const lc of ['ru','uz','en','kk']) {
   const kb=JSON.stringify(b.reply_markup||{});
   ok(`${lc}: старт по ссылке отдаёт карточку (фото или текст)`, !!m, r.map(x=>x.m).join());
   ok(`${lc}: в карточке имена пары`, /Javohir/.test(b.caption||b.text||'') && /Aziza/.test(b.caption||b.text||''), (b.caption||b.text||'').slice(0,80));
-  ok(`${lc}: кнопка «Открыть» ведёт на короткий адрес /i/javohir-aziza`, /\/i\/javohir-aziza/.test(kb), kb.slice(0,140));
+  ok(`${lc}: кнопка «Открыть» ведёт на короткий адрес /i/javohir-aziza`, /\/i\/javohir-aziza/.test(kb), kb);
   ok(`${lc}: приветствие на языке пользователя`, /Dear|Hurmatli|Құрметті|Дорогой|Sizni|Сізді|invited|Вас/.test(b.caption||b.text||''));
 }
 const r0=await say(7,'/start i_net-takogo','ru'); ok('несуществующая ссылка не ломает бота (обычный старт)', r0.length>0);

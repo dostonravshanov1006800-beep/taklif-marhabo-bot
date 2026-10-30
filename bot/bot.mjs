@@ -688,12 +688,12 @@ async function sendInviteCard(chat, slug, guestKey, from) {
   const gname = from ? [from.first_name].filter(Boolean).join(' ').slice(0, 40) : '';
   let vv = typeof o.v === 'string' ? o.v : ''; if (!vv) { try { const vx = JSON.parse(readFileSync(`${INV_DIR}/_${o.o}.v.json`, 'utf8')); vv = vx[o.i] || ''; } catch {} }
   const vq = vv && /^[a-z0-9]{1,12}$/.test(vv) ? 'v=' + vv : '';
-  // i.html?s=<имя> есть на сайте всегда, а страница /i/<имя>/ появляется только после пересборки: поэтому ведём на i.html
   const ex = [];
   if (guestKey) ex.push('q=' + encodeURIComponent(guestKey));
   if (gname) ex.push('g=' + encodeURIComponent(gname));
   if (vq) ex.push(vq);
-  const url = `${base}i.html?s=${encodeURIComponent(slug)}` + (ex.length ? '&' + ex.join('&') : '');
+  // данные приглашения берутся из API, поэтому короткий адрес /i/<имя>/ работает сразу (его обслуживает 404.html)
+  const url = `${base}i/${encodeURIComponent(slug)}/` + (ex.length ? '?' + ex.join('&') : '');
   const kb = { inline_keyboard: [[{ text: LX[lang].open, web_app: { url } }]] };
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c) ? `${base}${o.p.c}` : null;
   const caption = cardCaption(o, gname);

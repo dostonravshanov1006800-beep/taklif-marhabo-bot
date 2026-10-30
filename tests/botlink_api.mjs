@@ -15,7 +15,7 @@ let ok = 0, bad = 0; const T = (n, c, e = '') => { c ? ok++ : bad++; console.log
 const say = async (text) => { sent.length = 0; await onMessage({ chat: { id: 42, type: 'private' }, from: { id: 42, first_name: 'Гость', language_code: 'ru' }, text }); return [...sent]; };
 let r = await say('/start i_doston-diyora'); let all = JSON.stringify(r);
 T('карточка из API (на диске файла нет)', /Doston/.test(all) && /Diyora/.test(all), all.slice(0, 250));
-T('есть кнопка открыть приглашение', /web_app/.test(all) && /i\.html/.test(all));
+T('кнопка открывает короткий адрес /i/<имя>/, а не i.html', /web_app/.test(all) && /\/i\/doston-diyora\//.test(all) && !/i\.html\?s=/.test(all));
 T('приветствие с именем гостя', /Гость/.test(all));
 r = await say('/start i_net-takogo-zzz'); all = JSON.stringify(r); T('несуществующая ссылка не ломает бота', r.length > 0 && !/Javohir/.test(all));
 console.log(`ИТОГО ${ok}/${ok + bad}`); process.exit(bad ? 1 : 0);
