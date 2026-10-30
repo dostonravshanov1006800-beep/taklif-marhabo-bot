@@ -334,6 +334,7 @@ function sanitizeSvc(d, owner) {
   if (/^\+?\d{7,15}$/.test(tel)) o.p = tel.startsWith('+') ? tel : '+' + tel;
   if (tg.length >= 4) o.t = tg;
   const pr = Math.floor(Number(d.pr)); if (Number.isFinite(pr) && pr > 0 && pr < 1e10) o.pr = pr;
+  const cap = Math.floor(Number(d.cap)); if (Number.isFinite(cap) && cap > 0 && cap <= 100000) o.cap = cap;
   const ph = d.ph && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(d.ph) ? d.ph : ''; if (ph) o.ph = ph;
   if (d.ig) { const ig = String(d.ig).replace(/^@/, '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 30); if (ig.length >= 2) o.ig = ig; }
   o.d = new Date().toISOString().slice(0, 10);
@@ -367,7 +368,7 @@ function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
   const o = { t: ['wedding','birthday','anniversary','jubilee','nikah','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60), d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
-    pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), ct: cleanStr(d.ct, 40),
+    pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), dp: (Array.isArray(d.dp) ? d.dp : []).map((c) => String(c).toUpperCase()).filter((c) => /^#[0-9A-F]{6}$/.test(c)).slice(0, 6), ct: cleanStr(d.ct, 40),
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
   if (!o.a || !o.i) return null;
   if (d.w === 1 || d.w === true) o.w = 1;
@@ -397,6 +398,7 @@ function sanitizeInv(d, owner) {
     }
     if (Object.keys(p).length) o.p = p;
   }
+  if (Array.isArray(d.st)) { const st = d.st.slice(0, 5).map((r) => [cleanStr(r && r[0], 24), cleanStr(r && r[1], 160)]).filter((r) => r[1]); if (st.length) o.st = st; } // «Наша история»
   if (Array.isArray(d.pr)) { const pr = d.pr.slice(0, 10).map((r) => [cleanStr(r && r[0], 5), cleanStr(r && r[1], 80)]).filter((r) => r[1]); if (pr.length) o.pr = pr; }
   Object.keys(o).forEach((k) => (o[k] === '' || o[k] == null) && delete o[k]);
   return o;

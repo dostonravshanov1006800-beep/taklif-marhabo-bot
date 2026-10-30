@@ -16,7 +16,7 @@
     try {
       if (!D || D.cu !== 1 || RM) return;
       if (D.t !== 'wedding' && D.t !== 'nikah' && D.t !== 'nikoh') return; // заставка только для свадьбы и никаха
-      if (window.__PREVIEW || window.parent !== window) return; // предпросмотр владельца (iframe) без заставки
+      if (window.__PREVIEW || location.hash.replace(/^#\/?/, '') === 'preview') return; // предпросмотр владельца без заставки (iframe самого Telegram не считается предпросмотром)
       var key = 'curtain_' + (D.i || (D.a || '') + (D.b || ''));
       try { if (sessionStorage.getItem(key) === '1') return; } catch (_) {}
       var L = TXT[lang] || TXT.ru;
