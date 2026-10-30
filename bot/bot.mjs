@@ -47,7 +47,9 @@ function publish() {
   if (!dirty.size) return;
   try {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
-    execSync('git add docs/data docs/media docs/inv docs/i docs/wishes docs/services bot-state');
+    // добавляем только существующие папки: если одной нет (например bot-state), git add падал и ничего не сохранялось
+    const paths = ['docs/data', 'docs/media', 'docs/inv', 'docs/i', 'docs/wishes', 'docs/services', 'bot-state'].filter((d) => existsSync(d));
+    if (paths.length) execSync('git add ' + paths.join(' '));
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     try { execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' }); }
     catch (e1) {
