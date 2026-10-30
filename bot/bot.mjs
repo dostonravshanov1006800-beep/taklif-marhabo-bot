@@ -667,7 +667,7 @@ const AUDIT = [
   ['gift',    { ru: 'Подарок: 3D-коробка, номер карты скрыт до нажатия (до 3 карт)', uz: "Sovg'a: 3D quti, karta raqami bosilguncha yashirin (3 tagacha)", en: 'Gift: 3D box, card number hidden until tapped (up to 3 cards)', kk: 'Сыйлық: 3D қорап, карта нөмірі басқанға дейін жасырын (3-ке дейін)' },
     () => has('docs/i.html', /gf/) && has('bot/bot.mjs', /\\d\{16\}/)],
   ['wishes',  { ru: 'Пожелания гостей с модерацией', uz: "Mehmonlar tilaklari moderatsiya bilan", en: 'Guest wishes with moderation', kk: 'Қонақ тілектері модерациямен' },
-    () => has('bot/bot.mjs', /#wishhide/) && existsSync('docs/wishes')],
+    () => has('bot/bot.mjs', /#wish\(hide\|show\)/) && has('bot/bot.mjs', /mkdirSync\('docs\/wishes'/) && has('docs/i.html', /wishes\//)],
   ['themes',  { ru: '7 тем оформления с проверенным контрастом', uz: "Kontrasti tekshirilgan 7 ta mavzu", en: '7 themes with verified contrast', kk: 'Контрасты тексерілген 7 тақырып' },
     () => ['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].every((n) => has('docs/shared.js', new RegExp(n)) && has('bot/bot.mjs', new RegExp("'" + n + "'"))) && has('docs/shared.js', /accentText/)],
   ['wizard',  { ru: 'Мастер готовых текстов приглашения', uz: "Tayyor taklif matnlari ustasi", en: 'Ready-made invitation text wizard', kk: 'Дайын шақыру мәтіндері шебері' },
