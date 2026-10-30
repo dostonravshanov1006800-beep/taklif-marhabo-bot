@@ -278,23 +278,27 @@ const store={
  async get(){
   const loc=L.get(); if(!cs)return loc;
   try{
-   const idx=JSON.parse(await csGet('idx')||'null'); if(!Array.isArray(idx))return loc;
+   const idx=JSON.parse(await csGet('idx')||'null');
    const out=[];
-   for(const e of idx){let s='';for(let n=0;n<e.n;n++){const part=await csGet('inv_'+e.id+'_'+n);if(part==null){s=null;break}s+=part}
-    if(s){try{out.push(JSON.parse(s))}catch(x){}}}
+   if(Array.isArray(idx)){
+    for(const e of idx){let s='';for(let n=0;n<e.n;n++){const part=await csGet('inv_'+e.id+'_'+n);if(part==null||part===''){s=null;break}s+=part}
+     if(s){try{out.push(JSON.parse(s))}catch(x){}}}}
+   // приглашения из локальной копии, которых нет в облаке (запись не успела), НЕ теряем: добавляем и потом дозапишем
+   for(const l of loc){if(l&&l.id&&!out.some(o=>o.id===l.id))out.push(l)}
    // локальные копии содержат превью — берём их, если id совпал
    return out.map(o=>{const l=loc.find(x=>x.id===o.id);return l?{...o,pv:l.pv||{},gl:(l.gl&&l.gl.length>=(o.gl||[]).length)?l.gl:o.gl}:o});
   }catch(e){return loc}},
  async set(items){
-  L.set(items); if(!cs)return;
+  L.set(items); if(!cs)return;   // локальная копия пишется первой и всегда
   let old=[];try{old=JSON.parse(await csGet('idx')||'[]')||[]}catch(e){}
   const idx=[];
   for(const it of items){const js=JSON.stringify(clean(it));const parts=[];for(let i=0;i<js.length;i+=CH)parts.push(js.slice(i,i+CH));
    let ok=true;for(let n=0;n<parts.length;n++){if(!await csSet('inv_'+it.id+'_'+n,parts[n])){ok=false;break}}
-   if(ok)idx.push({id:it.id,n:parts.length})}
+   if(ok)idx.push({id:it.id,n:parts.length});
+   else{const o=old.find(x=>x.id===it.id); if(o)idx.push(o)}}   // запись не удалась: оставляем прежнюю запись в облаке, а полная копия есть в localStorage
   await csSet('idx',JSON.stringify(idx));
-  // убрать устаревшие ключи (удалённые приглашения и лишние части)
-  const drop=[];for(const e of old){const cur=idx.find(x=>x.id===e.id);for(let n=cur?cur.n:0;n<e.n;n++)drop.push('inv_'+e.id+'_'+n)}
+  // удаляем ключи только у приглашений, которые пользователь удалил сам, и лишние части успешно записанных
+  const drop=[];for(const e of old){const cur=idx.find(x=>x.id===e.id);const still=items.some(x=>x.id===e.id);if(!still||(cur&&cur.n<e.n)){for(let n=cur?cur.n:0;n<e.n;n++)drop.push('inv_'+e.id+'_'+n)}}
   await csDel(drop)}};
 const persist=()=>store.set(ST.items);
 
