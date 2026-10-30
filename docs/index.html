@@ -301,6 +301,25 @@ const store={
   const drop=[];for(const e of old){const cur=idx.find(x=>x.id===e.id);const still=items.some(x=>x.id===e.id);if(!still||(cur&&cur.n<e.n)){for(let n=cur?cur.n:0;n<e.n;n++)drop.push('inv_'+e.id+'_'+n)}}
   await csDel(drop)}};
 const persist=()=>store.set(ST.items);
+/* ---- автосохранение: каждое изменение формы сразу пишется на устройство, без кнопок ----
+   Запоминаем и открытую форму (какой экран, какое приглашение), поэтому «Старт», сворачивание и перезапуск ничего не стирают. */
+const DK='taklif_draft_v1';
+let _asT=null,_cloudT=null;
+const saveDraftNow=()=>{try{
+ if(ST.view==='form'&&ST.draft){
+  const d=ST.draft;
+  // если имя и дата уже есть, приглашение сразу живёт в списке (его не нужно «сохранять»)
+  if(String(d.a||'').trim()&&d.d){const i=ST.items.findIndex(x=>x.id===d.id);if(i<0)ST.items.unshift(d);else ST.items[i]=d;L.set(ST.items)}
+  localStorage.setItem(DK,JSON.stringify({v:'form',draft:JSON.parse(JSON.stringify(d,(k,v)=>k==='pv'?undefined:v)),t:Date.now()}));
+ }}catch(e){}};
+const autoSave=()=>{saveDraftNow();clearTimeout(_cloudT);_cloudT=setTimeout(()=>{try{const d=ST.draft;if(d&&String(d.a||'').trim()&&d.d)store.set(ST.items)}catch(e){}},1200)};
+const clearDraft=()=>{try{localStorage.removeItem(DK)}catch(e){}};
+// записать немедленно, когда Telegram сворачивает или закрывает мини-апп
+['pagehide','visibilitychange','beforeunload'].forEach(ev=>addEventListener(ev,()=>{if(ev==='visibilitychange'&&!document.hidden)return;saveDraftNow();try{L.set(ST.items)}catch(e){}}));
+try{if(tg&&tg.onEvent){tg.onEvent('viewportChanged',()=>{});}}catch(e){}
+// любой ввод в форме = сохранение
+document.addEventListener('input',e=>{if(ST.view==='form'&&e.target&&e.target.closest&&e.target.closest('#app'))autoSave()},true);
+document.addEventListener('change',e=>{if(ST.view==='form'&&e.target&&e.target.closest&&e.target.closest('#app'))autoSave()},true);
 
 /* ---- ссылки (без сервера) ---- */
 const urls=s=>String(s||'').split('\n').map(x=>x.trim()).filter(x=>/^https:\/\//.test(x)).slice(0,6);
@@ -702,7 +721,7 @@ function bind(){
  {const as=$('[data-adds]');if(as)as.onclick=()=>{(ST.draft.st=ST.draft.st||[]).push(['','']);render()}}
  $$('[data-px]').forEach(b=>b.onclick=()=>{ST.draft.pr.splice(+b.dataset.px,1);if(!ST.draft.pr.length)ST.draft.pr.push(['','']);render()});
  const ap=$('[data-addp]');if(ap)ap.onclick=()=>{ST.draft.pr.push(['','']);render()};
- const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=['ru','uz','en','kk'].includes(d.l)?d.l:LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';try{await Promise.race([probeSlug(d),new Promise(r=>setTimeout(r,1500))])}catch(e){}render();{const sv2=ST.items.find(x=>x.id===d.id);if(sv2&&!isFresh(sv2)&&!pendingFor(sv2)){setTimeout(()=>doPublish(sv2),450)}}};
+ const sv=$('#sv');if(sv)sv.onclick=async()=>{const d=ST.draft;if(!d.a.trim()||!d.d){$('#er').textContent=t('needs');return}d.l=['ru','uz','en','kk'].includes(d.l)?d.l:LANG;normGuests(d);const i=ST.items.findIndex(x=>x.id===d.id);const isNew=i<0;if(isNew)ST.items.unshift(d);else ST.items[i]=d;await persist();clearDraft();hap();ST.cur=d.id;ST.draft=blank();ST.view=isNew?'done':'panel';try{await Promise.race([probeSlug(d),new Promise(r=>setTimeout(r,1500))])}catch(e){}render();{const sv2=ST.items.find(x=>x.id===d.id);if(sv2&&!isFresh(sv2)&&!pendingFor(sv2)){setTimeout(()=>doPublish(sv2),450)}}};
  const tog=$('#tog');if(tog)tog.onclick=()=>{ST.view='panel';render()};
  $$('[data-view]').forEach(b=>b.onclick=()=>{ST.cur=b.dataset.view;{const x=ST.items.find(i=>i.id===b.dataset.view);if(x&&!slugOf(x))probeSlug(x).then(()=>ST.view==='panel'&&render())}ST.filter='all';ST.view='panel';render();loadLog().then(()=>ST.view==='panel'&&render())});
  $$('[data-open]').forEach(b=>b.onclick=()=>openUrl(linkFor(ST.items.find(x=>x.id===b.dataset.open))));
@@ -716,7 +735,9 @@ function bind(){
  loadWishes();
  $$('[data-wl]').forEach(b=>b.onclick=()=>{ST.wl=b.dataset.wl==='1';render()});
  $$('[data-shg]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.shg);share(linkFor(it),it.a+(it.b?' & '+it.b:''))});
- $$('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{ST.items=ST.items.filter(x=>x.id!==b.dataset.del);await persist();ST.view='mine';render()};V('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
+ $$('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{ST.items=ST.items.filter(x=>x.id!==b.dataset.del);clearDraft();await persist();ST.view='mine';render()};V('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
 }
-store.get().then(a=>{ST.items=(Array.isArray(a)?a:[]).map(normGuests);ST.items.forEach(i=>{i.gl=i.gl||[];i.pv=i.pv||{}});ST.view='home';render();loadLog();loadLib();loadPub().then(render)});
+store.get().then(a=>{ST.items=(Array.isArray(a)?a:[]).map(normGuests);ST.items.forEach(i=>{i.gl=i.gl||[];i.pv=i.pv||{}});ST.view='home';
+ try{const D=JSON.parse(localStorage.getItem(DK)||'null');if(D&&D.v==='form'&&D.draft&&Date.now()-(D.t||0)<30*864e5){const dr=normGuests(D.draft);dr.gl=dr.gl||[];dr.pv=dr.pv||{};if(!dr.pr||!dr.pr.length)dr.pr=[['','']];const ex=ST.items.find(x=>x.id===dr.id);ST.draft=ex?Object.assign({},ex,dr):dr;ST.view='form'}}catch(e){}
+ render();loadLog();loadLib();loadPub().then(render)});
 </script></body></html>
