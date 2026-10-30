@@ -752,7 +752,11 @@ function bind(){
  loadWishes();
  $$('[data-wl]').forEach(b=>b.onclick=()=>{ST.wl=b.dataset.wl==='1';render()});
  $$('[data-shg]').forEach(b=>b.onclick=()=>{const it=ST.items.find(x=>x.id===b.dataset.shg);share(linkFor(it),it.a+(it.b?' & '+it.b:''))});
- $$('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{ST.items=ST.items.filter(x=>x.id!==b.dataset.del);clearDraft();await persist();ST.view='mine';render()};V('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
+ $$('[data-del]').forEach(b=>b.onclick=()=>{const go=async()=>{const id=b.dataset.del,it=ST.items.find(x=>x.id===id);
+   if(OWNER&&INIT&&it&&slugOf(it)){b.disabled=true;let okDel=false;try{const r=await fetch(API+'/api/del',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({init:INIT,id}),cache:'no-store'});const j=await r.json().catch(()=>({}));okDel=r.ok&&j.ok}catch(e){}
+    if(!okDel){b.disabled=false;try{alert(LANG==='uz'?"O'chirib bo'lmadi. Internetni tekshiring va qayta urining":'Не удалось удалить. Проверьте интернет и попробуйте ещё раз')}catch(e){}return}
+    if(ST.pub)delete ST.pub[id];if(ST.ver)delete ST.ver[id];try{localStorage.setItem('mh_pub_'+OWNER,JSON.stringify(ST.pub||{}))}catch(e){}}
+   ST.items=ST.items.filter(x=>x.id!==id);clearDraft();await persist();ST.view='mine';render()};V('6.2')?tg.showConfirm(t('delc'),ok=>{if(ok)go()}):(confirm(t('delc'))&&go())});
 }
 store.get().then(a=>{ST.items=(Array.isArray(a)?a:[]).map(normGuests);ST.items.forEach(i=>{i.gl=i.gl||[];i.pv=i.pv||{}});ST.view='home';
  try{const D=JSON.parse(localStorage.getItem(DK)||'null');if(D&&D.v==='form'&&D.draft&&Date.now()-(D.t||0)<30*864e5){const dr=normGuests(D.draft);dr.gl=dr.gl||[];dr.pv=dr.pv||{};if(!dr.pr||!dr.pr.length)dr.pr=[['','']];const ex=ST.items.find(x=>x.id===dr.id);ST.draft=ex?Object.assign({},ex,dr):dr;ST.view='form'}}catch(e){}

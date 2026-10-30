@@ -195,6 +195,32 @@ export default {
         return J({ ok: true }, 200, { 'cache-control': 'no-store' });
       }
 
+      // удалить приглашение (только владелец): запись, редиректы старых имён, индекс и обратный ключ
+      if (path === '/api/del' && req.method === 'POST') {
+        const body = await readBody(req, 4000);
+        const owner = await verifyInit(body.init || req.headers.get('x-tg-init') || '', env.BOT_TOKEN);
+        if (!owner) return J({ error: 'auth' }, 401);
+        const id = String(body.id || '').replace(/[^a-z0-9]/gi, '').slice(0, 12);
+        if (!id) return J({ error: 'data' }, 400);
+        const own = (await env.INV.get('own:' + owner, 'json')) || {};
+        const slug = own[id];
+        if (!slug) return J({ ok: true, removed: 0 }, 200, { 'cache-control': 'no-store' });
+        let removed = 0;
+        const cur = await env.INV.get('inv:' + slug, 'json');
+        if (cur && String(cur.o) === String(owner)) { await env.INV.delete('inv:' + slug); removed++; }
+        // старые имена этого приглашения ведут на него редиректом: убираем и их
+        const list = await env.INV.list({ prefix: 'inv:' });
+        for (const k of list.keys || []) {
+          if (k.name === 'inv:' + slug) continue;
+          const o = await env.INV.get(k.name, 'json');
+          if (o && o.r === slug && String(o.o) === String(owner)) { await env.INV.delete(k.name); removed++; }
+        }
+        await env.INV.delete('id:' + id);
+        delete own[id];
+        await env.INV.put('own:' + owner, JSON.stringify(own));
+        return J({ ok: true, removed }, 200, { 'cache-control': 'no-store' });
+      }
+
       // сохранить приглашение
       if (path === '/api/inv' && req.method === 'POST') {
         const body = await readBody(req);

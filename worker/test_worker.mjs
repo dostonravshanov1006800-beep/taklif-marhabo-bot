@@ -70,4 +70,19 @@ T('qr для браузера: ссылка на сайт', /github\.io\/taklif-
 for (let i = 0; i < 12; i++) r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: PNG });
 T('qr: лимит в час → 429', r.status === 429);
 globalThis.fetch = realFetch;
+
+// ---- удаление ----
+const kvDel = (k) => kv.delete(k); env.INV.delete = async (k) => { kv.delete(k); };
+env.INV.list = async ({ prefix }) => ({ keys: [...kv.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) });
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'del001', a: 'Удал', b: 'Ённый' }, v: 'd1' }); j = await r.json(); const dslug = j.slug;
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'del001', a: 'Удал2', b: 'Ённый' }, v: 'd2' }); j = await r.json(); const dslug2 = j.slug;
+T('перед удалением: старое имя редиректит на новое', dslug !== dslug2 && JSON.parse(kv.get('inv:' + dslug)).r === dslug2);
+r = await call('POST', '/api/del', { id: 'del001' }); T('удаление без подписи → 401', r.status === 401);
+r = await call('POST', '/api/del', { init: sign(u2), id: 'del001' }); j = await r.json(); T('чужой не удалит (ничего не найдено)', r.status === 200 && j.removed === 0 && !!kv.get('inv:' + dslug2));
+r = await call('POST', '/api/del', { init: sign(u1), id: 'del001' }); j = await r.json(); T('владелец удалил: запись и редирект', r.status === 200 && j.ok && j.removed === 2, JSON.stringify(j));
+r = await call('GET', '/api/inv/' + dslug2); T('после удаления гость видит 404', r.status === 404);
+r = await call('GET', '/api/inv/' + dslug); T('старое имя тоже 404', r.status === 404);
+r = await call('GET', '/api/byid/del001'); T('обратный ключ id убран', r.status === 404);
+r = await call('GET', '/api/mine', null, { 'x-tg-init': sign(u1) }); j = await r.json(); T('в «моих» его больше нет', !j.pub.del001);
+r = await call('POST', '/api/del', { init: sign(u1), id: 'del001' }); j = await r.json(); T('повторное удаление безопасно', r.status === 200 && j.ok);
 console.log(`\nИТОГО: ${ok} ok, ${bad} fail`); process.exit(bad ? 1 : 0);
