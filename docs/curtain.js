@@ -25,7 +25,7 @@
       root.style.setProperty('--cx', VEIL[theme] || VEIL.gold);
       root.innerHTML =
         '<img class="cp" src="' + base + 'brand/curtain_poster.jpg" alt="" decoding="async">' +
-        '<video class="cv" muted playsinline webkit-playsinline preload="none" poster="' + base + 'brand/curtain_poster.jpg" aria-hidden="true"></video>' +
+        '<video class="cv" playsinline webkit-playsinline preload="none" poster="' + base + 'brand/curtain_poster.jpg" aria-hidden="true"></video>' +
         '<div class="cx"></div><div class="cd"></div>' +
         '<div class="ct"><b>' + L.t + '</b><span>' + L.b + '</span></div>' +
         '<button type="button" class="sk">' + L.s + '</button>';
@@ -51,7 +51,7 @@
           if (v.duration && v.currentTime >= v.duration - 1.7) { v.removeEventListener('timeupdate', onT); root.classList.add('dim'); tEnd = setTimeout(finish, 900); }
         });
         v.addEventListener('ended', finish); v.addEventListener('error', finish);
-        var p = v.play(); if (p && p.catch) p.catch(finish);
+        var p = v.play(); if (p && p.catch) p.catch(function () { try { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(finish); } catch (_) { finish(); } });
       }
       root.addEventListener('click', function (e) { if (e.target.closest('.sk')) { finish(); return; } start(); });
       root.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(); } if (e.key === 'Escape') finish(); });
