@@ -42,6 +42,11 @@ await page.evaluate(() => document.querySelector('[data-edit],[data-open]')?.cli
 await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
 const mine = await page.evaluate(async () => { const r = await fetch('https://taklif-api.dostonravshanov1006800.workers.dev/api/mine', { headers: { 'x-tg-init': window.Telegram.WebApp.initData } }); return r.json(); });
 T('после перезагрузки /api/mine отдаёт slug владельца', mine.ok && Object.values(mine.pub).includes('timur-lola'), JSON.stringify(mine));
+// старое приглашение без версии на сервере: мини-апп публикует само, без «Отправить боту»
+await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForTimeout(2500);
+const body2 = await page.evaluate(() => document.body.innerText);
+T('нет старого шага «Отправить боту»', !/Отправить боту|Botga yuborish/.test(body2));
+T('нет старого текста про кнопку бота', !/бот покажет внизу кнопку/.test(body2));
 // страница гостя по короткой ссылке
 const g = await ctx.newPage(); const gerr = []; g.on('pageerror', (e) => gerr.push(e.message));
 await g.goto(BASE + '/i.html?s=timur-lola', { waitUntil: 'domcontentloaded' }); await g.waitForTimeout(2500);
