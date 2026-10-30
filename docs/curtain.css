@@ -1,0 +1,23 @@
+/* Заставка-занавес: видео с бабочками, по нажатию играет, тускнеет и открывает приглашение.
+   Анимации только transform и opacity. */
+#cur{position:fixed;inset:0;z-index:9000;background:#EFE4D2;overflow:hidden;opacity:1;transition:opacity .9s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer;outline:0}
+#cur.fade{opacity:0;pointer-events:none}
+#cur .cv,#cur .cp{position:absolute;left:50%;top:50%;min-width:100%;min-height:100%;width:auto;height:auto;transform:translate(-50%,-50%);object-fit:cover}
+#cur .cp{width:100%;height:100%}
+#cur .cv{opacity:0;transition:opacity .45s ease}
+#cur.play .cv{opacity:1}
+/* вуаль цвета темы: бежевое видео не выбивается на тёмных темах */
+#cur .cx{position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 45%,transparent 38%,var(--cx,rgba(60,40,20,.34)) 100%)}
+#cur .cd{position:absolute;inset:0;pointer-events:none;background:#000;opacity:0;transition:opacity 1.5s ease}
+#cur.dim .cd{opacity:.55}
+#cur .ct{position:absolute;left:0;right:0;bottom:max(11vh,64px);text-align:center;padding:0 24px;pointer-events:none;transition:opacity .4s ease}
+#cur .ct b{display:block;font:italic 600 clamp(26px,8vw,38px)/1.15 'Cormorant Garamond','Playfair Display',Georgia,serif;color:#fff;text-shadow:0 2px 18px rgba(60,40,20,.55);letter-spacing:.01em}
+#cur .ct span{display:inline-block;margin-top:14px;padding:11px 22px;border-radius:999px;background:rgba(255,255,255,.88);color:#4a3520;font:700 13px/1.2 Manrope,system-ui,sans-serif;letter-spacing:.06em;box-shadow:0 10px 26px -12px rgba(60,40,20,.6);animation:curHint 1.9s ease-in-out infinite}
+@keyframes curHint{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.05);opacity:1}}
+#cur.play .ct{opacity:0}
+#cur .sk{position:absolute;right:14px;top:max(14px,env(safe-area-inset-top));min-height:44px;min-width:44px;padding:0 16px;border:0;border-radius:999px;background:rgba(0,0,0,.32);color:#fff;font:600 12px/1 Manrope,system-ui,sans-serif;letter-spacing:.06em;cursor:pointer;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#cur .sk:focus-visible,#cur:focus-visible .ct span{outline:2px solid #fff;outline-offset:3px}
+/* приглашение под заставкой скрыто и проявляется вместе с её исчезновением */
+html.curtain-on #root{opacity:0;transform:scale(.985)}
+html.curtain-on.curtain-rev #root{opacity:1;transform:none;transition:opacity 1.1s ease,transform 1.1s cubic-bezier(.22,1,.36,1)}
+@media (prefers-reduced-motion:reduce){#cur{display:none!important}html.curtain-on #root{opacity:1!important;transform:none!important}}

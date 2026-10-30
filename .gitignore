@@ -1,2 +1,14 @@
 node_modules
 .env
+
+# тестовые заготовки (не публиковать)
+docs/inv/cal-test-*.json
+docs/inv/calx-*.json
+docs/inv/cardt-*.json
+docs/inv/gift1*.json
+docs/inv/gift3*.json
+docs/inv/t-*.json
+docs/inv/test-*.json
+docs/media/*/tv*.mp4
+docs/wishes/*.json
+!docs/wishes/.keep

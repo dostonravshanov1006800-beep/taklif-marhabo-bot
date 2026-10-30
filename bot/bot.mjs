@@ -365,12 +365,13 @@ function findInvById(id) {
 }
 function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
-  const o = { t: ['wedding','birthday','jubilee','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
+  const o = { t: ['wedding','birthday','anniversary','jubilee','nikah','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60), d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
     pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), ct: cleanStr(d.ct, 40),
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
   if (!o.a || !o.i) return null;
   if (d.w === 1 || d.w === true) o.w = 1;
+  if ((d.cu === 1 || d.cu === true) && (o.t === 'wedding' || o.t === 'nikah' || o.t === 'nikoh')) o.cu = 1; // заставка-занавес: только свадьба и никах
   if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].includes(d.th)) o.th = d.th;
   // тойона: до 3 карт [[16 цифр, имя, банк]]; карта с другим числом цифр отбрасывается
   if (Array.isArray(d.tc)) {

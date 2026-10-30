@@ -114,53 +114,39 @@
     addEventListener('resize', upd, { passive: true }); upd();
   });
 
-  /* ---------- 2. Табло «Кольца времени» ---------- */
-  var cdState = {};
-  var RING_R = 34, RING_C = 2 * Math.PI * RING_R;
+  /* ---------- 2. Табло: 4 квадрата, цифры меняются мгновенно, без анимации ---------- */
   var setupCountdown = safe(function () {
     var w = $('cdw'); if (!w) return;
     var c = getCtx(); if (!c) return;
+    var I0 = c.I, built = false, nodes = [], last = ['', '', '', ''], timer = 0;
+    var target = function () { var t = (c.I.time || '12:00').slice(0, 5); return new Date(c.I.date + 'T' + t + ':00').getTime(); };
     var tick = function () {
-      var I = c.I; if (!I.date) { w.innerHTML = ''; return; }
-      var t = (I.time || '12:00').slice(0, 5);
-      var d = new Date(I.date + 'T' + t + ':00') - new Date();
-      if (isNaN(d)) { return; }
+      var I = c.I; if (!I.date) { w.innerHTML = ''; built = false; return; }
+      var tg = target(); if (isNaN(tg)) return;
+      var d = tg - Date.now();
       if (d <= 0) {
         if (!w.querySelector('.fx-today')) {
           var sameDay = new Date(I.date + 'T00:00:00').toDateString() === new Date().toDateString();
           w.innerHTML = sameDay ? '<div class="fx-today" style="color:' + (c.th.accentText || c.th.accent) + '">' + c.T.today + '</div>' : '';
+          built = false;
         }
         return;
       }
-      var days = Math.floor(d / 864e5), hrs = Math.floor(d % 864e5 / 36e5), mins = Math.floor(d % 36e5 / 6e4), secs = Math.floor(d % 6e4 / 1e3);
-      var v = [days, hrs, mins, secs];
-      // доля каждого кольца: дни от 100, часы от 24, минуты и секунды от 60
-      var f = [Math.min(1, days / 100), (hrs + mins / 60) / 24, (mins + secs / 60) / 60, (secs + (1 - (d % 1000) / 1000)) / 60];
-      var labels = [c.T.day, c.T.hour, c.T.min, c.T.sec];
-      var host = w.querySelector('.rg');
-      if (!host || host.children.length !== 4) {
+      var s = Math.floor(d / 1000);
+      var v = [Math.floor(s / 86400), Math.floor(s % 86400 / 3600), Math.floor(s % 3600 / 60), s % 60];
+      if (!built || !w.querySelector('.sq')) {
+        var labels = [c.T.day, c.T.hour, c.T.min, c.T.sec];
         w.innerHTML = '<div class="rgw"><p class="up rgt" style="color:' + c.th.muted + '">' + c.T.countdown + '</p><div class="rg" data-fx="1">' +
-          v.map(function (x, i) {
-            return '<div class="rc" data-i="' + i + '"><div class="ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="bg" cx="40" cy="40" r="' + RING_R + '"/><circle class="fg" cx="40" cy="40" r="' + RING_R + '" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + (RING_C * (1 - f[i])).toFixed(2) + '"/></svg>' +
-              '<span class="num"><b>' + pad(x) + '</b></span></div><small>' + esc(labels[i]) + '</small></div>';
-          }).join('') + '</div></div>';
-        cdState = { v: v.map(pad) };
-        return;
+          v.map(function (x, i) { return '<div class="sq"><b>' + pad(x) + '</b><small>' + esc(labels[i]) + '</small></div>'; }).join('') + '</div></div>';
+        nodes = [].slice.call(w.querySelectorAll('.sq b')); last = v.map(pad); built = true; return;
       }
-      v.forEach(function (x, i) {
-        var cell = host.children[i], s2 = pad(x);
-        var fg = cell.querySelector('.fg'); if (fg) fg.style.strokeDashoffset = (RING_C * (1 - f[i])).toFixed(2);
-        if (cdState.v[i] === s2) return;
-        var num = cell.querySelector('.num');
-        if (RM) { num.querySelector('b').textContent = s2; cdState.v[i] = s2; return; }
-        var old = num.querySelector('b'), nu = document.createElement('b'); nu.textContent = s2; nu.className = 'in';
-        old.classList.add('out'); num.appendChild(nu);
-        setTimeout(function () { if (old.parentNode) old.remove(); nu.classList.remove('in'); }, 460);
-        cdState.v[i] = s2;
-      });
+      for (var i = 0; i < 4; i++) { var t = pad(v[i]); if (t !== last[i]) { nodes[i].textContent = t; last[i] = t; } }
     };
+    // тик выравниваем по границе секунды: без дрейфа setInterval, без пропусков и двойных шагов
+    var loop = function () { tick(); var ms = 1000 - (Date.now() % 1000) + 8; timer = setTimeout(loop, ms); };
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) { clearTimeout(timer); loop(); } });
     window.__fxOwnsCd = function () { return !!(w.querySelector('.rg[data-fx]') || w.querySelector('.fx-today')); };
-    tick(); setInterval(tick, 1000);
+    loop();
   });
   function pad(x) { return String(x).padStart(2, '0'); }
 
@@ -289,26 +275,75 @@
         (taxi ? '<a class="wide tx" href="' + esc(taxi) + '" target="_blank" rel="noreferrer">' + ICO.car + '<span>' + T.taxi + '</span></a>' : '');
       anchor.appendChild(box);
     }
-    $('fxcal').addEventListener('click', function () { downloadICS(c); });
+    $('fxcal').addEventListener('click', function () { openCalMenu(c); });
   });
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); }
   function icsText(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
-  function downloadICS(c) {
-    var I = c.I, m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(I.date); if (!m) return;
+  function calData(c) {
+    var I = c.I, m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(I.date); if (!m) return null;
     var tm = /^(\d{1,2}):(\d{2})/.exec(I.time || '') || [0, '18', '00'];
-    var st = m[1] + m[2] + m[3] + 'T' + String(tm[1]).padStart(2, '0') + tm[2] + '00';
-    var endH = (parseInt(tm[1], 10) + 4) % 24, endDay = m[1] + m[2] + m[3];
-    if (parseInt(tm[1], 10) + 4 >= 24) { var dd = new Date(+m[1], +m[2] - 1, +m[3] + 1); endDay = dd.getFullYear() + pad(dd.getMonth() + 1) + pad(dd.getDate()); }
-    var en = endDay + 'T' + pad(endH) + tm[2] + '00';
+    var h = parseInt(tm[1], 10), st = m[1] + m[2] + m[3] + 'T' + pad(h) + tm[2] + '00';
+    var endDay = m[1] + m[2] + m[3];
+    if (h + 4 >= 24) { var dd = new Date(+m[1], +m[2] - 1, +m[3] + 1); endDay = dd.getFullYear() + pad(dd.getMonth() + 1) + pad(dd.getDate()); }
+    var en = endDay + 'T' + pad((h + 4) % 24) + tm[2] + '00';
     var title = [I.n1, I.n2].filter(Boolean).join(' & ') + ' · ' + (c.tp.label[c.lang] || c.tp.label.ru);
-    var uid = (c.id || Math.random().toString(36).slice(2)) + '@marhabo';
+    var place = [I.place, I.addr].filter(Boolean).join(', ');
+    var note = (I.text || '') + (I.map ? '\n' + I.map : '');
+    return { st: st, en: en, title: title, place: place, note: note, m: m, h: h, mi: tm[2] };
+  }
+  function buildICS(c, d) {
+    var uid = (c.id || Math.random().toString(36).slice(2)) + '@taklifnoma';
     var now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-    var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Marhabo//Invitation//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + now,
-      'DTSTART:' + st, 'DTEND:' + en, 'SUMMARY:' + icsText(title), 'LOCATION:' + icsText([I.place, I.addr].filter(Boolean).join(', ')),
-      'DESCRIPTION:' + icsText((I.text || '') + (I.map ? '\n' + I.map : '')), 'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(title), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-    var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' }), url = URL.createObjectURL(blob);
-    var a = document.createElement('a'); a.href = url; a.download = 'invitation.ics'; document.body.appendChild(a); a.click();
-    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1500);
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Taklifnoma//Invitation//RU', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + now,
+      'DTSTART:' + d.st, 'DTEND:' + d.en, 'SUMMARY:' + icsText(d.title), 'LOCATION:' + icsText(d.place), 'DESCRIPTION:' + icsText(d.note),
+      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsText(d.title), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  }
+  // открываем внешнюю ссылку так, чтобы её не заблокировал WebView Telegram
+  function openExt(url) {
+    try { var tg = window.Telegram && window.Telegram.WebApp; if (tg && tg.openLink) { tg.openLink(url, { try_instant_view: false }); return; } } catch (_) {}
+    var w = window.open(url, '_blank', 'noopener'); if (!w) location.href = url;
+  }
+  function openCalMenu(c) {
+    var d = calData(c); if (!d) return;
+    var old = document.getElementById('fxcm'); if (old) old.remove();
+    var L = { ru: ['Добавить в календарь', 'Google Календарь', 'Outlook', 'Apple / файл .ics', 'Закрыть', 'Скопировано'], uz: ['Kalendarga qo\'shish', 'Google Kalendar', 'Outlook', 'Apple / .ics fayl', 'Yopish', 'Nusxalandi'], en: ['Add to calendar', 'Google Calendar', 'Outlook', 'Apple / .ics file', 'Close', 'Copied'], kk: ['Күнтізбеге қосу', 'Google күнтізбесі', 'Outlook', 'Apple / .ics файл', 'Жабу', 'Көшірілді'] }[c.lang] || null;
+    L = L || ['Добавить в календарь', 'Google Календарь', 'Outlook', 'Apple / файл .ics', 'Закрыть', 'Скопировано'];
+    var g = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(d.title) + '&dates=' + d.st + '/' + d.en + '&details=' + encodeURIComponent(d.note) + '&location=' + encodeURIComponent(d.place);
+    var iso = function (s) { return s.slice(0, 4) + '-' + s.slice(4, 6) + '-' + s.slice(6, 8) + 'T' + s.slice(9, 11) + ':' + s.slice(11, 13) + ':00'; };
+    var o = 'https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&subject=' + encodeURIComponent(d.title) + '&startdt=' + encodeURIComponent(iso(d.st)) + '&enddt=' + encodeURIComponent(iso(d.en)) + '&body=' + encodeURIComponent(d.note) + '&location=' + encodeURIComponent(d.place);
+    var ics = buildICS(c, d), dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    var ov = document.createElement('div'); ov.id = 'fxcm'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', L[0]);
+    ov.innerHTML = '<div class="cmb"><p class="cmt">' + esc(L[0]) + '</p>' +
+      '<button type="button" data-k="g">' + ICO.cal + '<span>' + esc(L[1]) + '</span></button>' +
+      '<button type="button" data-k="o">' + ICO.cal + '<span>' + esc(L[2]) + '</span></button>' +
+      '<button type="button" data-k="i">' + ICO.cal + '<span>' + esc(L[3]) + '</span></button>' +
+      '<button type="button" class="cmx" data-k="x">' + esc(L[4]) + '</button></div>';
+    document.body.appendChild(ov);
+    requestAnimationFrame(function () { ov.classList.add('on'); });
+    var close = function () { ov.classList.remove('on'); setTimeout(function () { ov.remove(); }, 200); };
+    ov.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (e.target === ov || (b && b.dataset.k === 'x')) { close(); return; }
+      if (!b) return; var k = b.dataset.k;
+      if (k === 'g') { openExt(g); close(); }
+      else if (k === 'o') { openExt(o); close(); }
+      else if (k === 'i') {
+        var inTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink);
+        if (inTg) {
+          // WebView Telegram блокирует скачивание: открываем страницу-посредник во внешнем браузере, он сам скачает .ics
+          var base = document.baseURI.replace(/[#?].*$/, '').replace(/\/i\/[^/]*\/?$/, '/').replace(/[^/]*$/, '');
+          var u = base + 'cal.html?s=' + d.st + '&e=' + d.en + '&t=' + encodeURIComponent(d.title) + '&p=' + encodeURIComponent(d.place) + '&n=' + encodeURIComponent(d.note.slice(0, 400)) + '&l=' + encodeURIComponent(c.lang || 'ru') + '&i=' + encodeURIComponent(c.id || '');
+          openExt(u);
+        } else {
+          try {
+            var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' }), url = URL.createObjectURL(blob);
+            var a = document.createElement('a'); a.href = url; a.download = 'taklifnoma.ics'; a.rel = 'noopener'; document.body.appendChild(a); a.click();
+            setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1500);
+          } catch (_) {}
+        }
+        close();
+      }
+    });
+    document.addEventListener('keydown', function esc2(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc2); } });
   }
 
   /* ---------- 4. Галерея: свайп, зум, листание ---------- */

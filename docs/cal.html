@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex"><title>Taklifnoma · календарь</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#fbf6ee;color:#2B2219;font:500 16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;text-align:center}
+.c{max-width:360px;width:100%}
+h1{font:600 22px/1.2 Georgia,serif;margin:0 0 8px}
+p{margin:0 0 16px;color:#695b4b}
+a.b{display:flex;align-items:center;justify-content:center;min-height:52px;border-radius:14px;background:#2B2219;color:#fff;text-decoration:none;font-weight:700;letter-spacing:.04em}
+small{display:block;margin-top:14px;color:#8a7a68}
+</style></head><body>
+<div class="c"><h1 id="t">Добавить в календарь</h1><p id="s"></p><a class="b" id="dl" href="#" download="taklifnoma.ics">Скачать .ics</a><small id="h"></small></div>
+<script>
+(function(){
+  var q=new URLSearchParams(location.search), L={
+    ru:['Добавить в календарь','Скачать файл события','Если файл не открылся, откройте его из загрузок.','Неверная ссылка'],
+    uz:["Kalendarga qo'shish","Tadbir faylini yuklab olish","Fayl ochilmasa, yuklamalardan oching.","Havola noto'g'ri"],
+    en:['Add to calendar','Download event file','If it does not open, open it from your downloads.','Invalid link'],
+    kk:['Күнтізбеге қосу','Іс-шара файлын жүктеу','Файл ашылмаса, жүктеулерден ашыңыз.','Сілтеме қате']}[q.get('l')]||null;
+  L=L||['Добавить в календарь','Скачать файл события','Если файл не открылся, откройте его из загрузок.','Неверная ссылка'];
+  var st=q.get('s'),en=q.get('e'),ti=q.get('t')||'Taklifnoma',lo=q.get('p')||'',no=q.get('n')||'',id=(q.get('i')||'x').replace(/[^\w-]/g,'');
+  document.getElementById('t').textContent=L[0]; document.getElementById('h').textContent=L[2];
+  var re=/^\d{8}T\d{6}$/;
+  if(!re.test(st||'')||!re.test(en||'')){document.getElementById('s').textContent=L[3];document.getElementById('dl').style.display='none';return}
+  var esc=function(s){return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n')};
+  var now=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  var ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Taklifnoma//Invitation//RU','CALSCALE:GREGORIAN','METHOD:PUBLISH','BEGIN:VEVENT','UID:'+id+'@taklifnoma','DTSTAMP:'+now,'DTSTART:'+st,'DTEND:'+en,'SUMMARY:'+esc(ti),'LOCATION:'+esc(lo),'DESCRIPTION:'+esc(no),'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:'+esc(ti),'END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  var a=document.getElementById('dl'); a.textContent=L[1];
+  var url=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'})); a.href=url;
+  document.getElementById('s').textContent=ti;
+  setTimeout(function(){try{a.click()}catch(e){}},350);
+})();
+</script></body></html>
