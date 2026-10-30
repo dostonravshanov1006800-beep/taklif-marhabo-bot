@@ -1,0 +1,21 @@
+// Ссылка t.me/<бот>?start=i_<slug>: карточка берётся из API, даже если файла в репозитории нет
+import fs from 'fs';
+const REPO = process.cwd(), ROOT = '/tmp/blk';
+fs.rmSync(ROOT, { recursive: true, force: true }); fs.mkdirSync(ROOT + '/bot', { recursive: true });
+fs.cpSync(REPO + '/docs', ROOT + '/docs', { recursive: true }); fs.copyFileSync(REPO + '/bot/bot.mjs', ROOT + '/bot/bot.mjs');
+fs.rmSync(ROOT + '/docs/inv', { recursive: true, force: true }); fs.mkdirSync(ROOT + '/docs/inv', { recursive: true });
+process.chdir(ROOT);
+let src = fs.readFileSync('bot/bot.mjs', 'utf8');
+src = src.replace("from '../docs/qr.mjs'", "from '" + ROOT + "/docs/qr.mjs'").replace(/\nmain\(\)\.catch[^\n]*\s*$/, '\nmain();').replace(/\nmain\(\);\s*$/, '\nexport {onMessage};');
+src = src.replace("const TOKEN = process.env.BOT_TOKEN;", "const TOKEN = 'T';").replace("const APP_URL = process.env.APP_URL; ", "const APP_URL = 'https://x.github.io/r/'; ");
+const sent = []; const realFetch = globalThis.fetch;
+globalThis.fetch = async (url, opt) => { if (String(url).includes('workers.dev')) return realFetch(url, opt); let b = {}; try { b = JSON.parse(opt.body); } catch {} sent.push({ m: String(url).split('/').pop(), b }); return { ok: true, json: async () => ({ ok: true, result: { message_id: 1 } }) }; };
+fs.writeFileSync('/tmp/blk_mod.mjs', src); const { onMessage } = await import('/tmp/blk_mod.mjs');
+let ok = 0, bad = 0; const T = (n, c, e = '') => { c ? ok++ : bad++; console.log(c ? 'PASS' : 'FAIL', n, c ? '' : e); };
+const say = async (text) => { sent.length = 0; await onMessage({ chat: { id: 42, type: 'private' }, from: { id: 42, first_name: 'Гость', language_code: 'ru' }, text }); return [...sent]; };
+let r = await say('/start i_javohir-aziza'); let all = JSON.stringify(r);
+T('карточка из API (на диске файла нет)', /Javohir/.test(all) && /Aziza/.test(all), all.slice(0, 250));
+T('есть кнопка открыть приглашение', /web_app/.test(all) && /i\.html/.test(all));
+T('приветствие с именем гостя', /Гость/.test(all));
+r = await say('/start i_net-takogo-zzz'); all = JSON.stringify(r); T('несуществующая ссылка не ломает бота', r.length > 0 && !/Javohir/.test(all));
+console.log(`ИТОГО ${ok}/${ok + bad}`); process.exit(bad ? 1 : 0);
