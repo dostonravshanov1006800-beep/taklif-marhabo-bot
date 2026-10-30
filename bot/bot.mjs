@@ -632,7 +632,9 @@ async function sendInviteCard(chat, slug, guestKey, from) {
   const kb = { inline_keyboard: [[{ text: LX[lang].open, web_app: { url } }]] };
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c) ? `${base}${o.p.c}` : null;
   const caption = cardCaption(o, gname);
-  let r = cover ? await tg('sendPhoto', { chat_id: chat, photo: cover, caption, parse_mode: 'HTML', reply_markup: kb }) : null;
+  // нет своей обложки (или она не загрузилась): фирменная картинка, чтобы визитка всегда выглядела одинаково
+  let r = await tg('sendPhoto', { chat_id: chat, photo: cover || bannerUrl(lang), caption, parse_mode: 'HTML', reply_markup: kb });
+  if (!r && cover) r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption, parse_mode: 'HTML', reply_markup: kb });
   if (!r) r = await tg('sendMessage', { chat_id: chat, text: caption, parse_mode: 'HTML', reply_markup: kb });
   if (r && o.o && o.i) record(Number(o.o), o.i, guestKey || 'g', 'o', gname);
   return !!r;
