@@ -1,0 +1,25 @@
+import fs from 'fs';
+const REPO='/app/conversations/6ae32fd38b107a4b39ea2360/taklif-gh';
+const ROOT='/tmp/e3'; fs.rmSync(ROOT,{recursive:true,force:true}); fs.mkdirSync(ROOT,{recursive:true});
+fs.cpSync(REPO+'/docs',ROOT+'/docs',{recursive:true}); fs.mkdirSync(ROOT+'/bot',{recursive:true}); fs.copyFileSync(REPO+'/bot/bot.mjs',ROOT+'/bot/bot.mjs');
+process.chdir(ROOT);
+let src=fs.readFileSync('bot/bot.mjs','utf8');
+src=src.replace("from '../docs/qr.mjs'","from '"+ROOT+"/docs/qr.mjs'");
+src=src.replace(/\nmain\(\)\.catch[^\n]*\s*$/,'\nmain();').replace(/\nmain\(\);\s*$/,'\nexport {onMessage};');
+src=src.replace("const TOKEN = process.env.BOT_TOKEN;","const TOKEN = 'T';").replace("const APP_URL = process.env.APP_URL; ","const APP_URL = 'https://x.github.io/r'; ");
+src=src.replace("execSync('git config user.name","return; execSync('git config user.name");
+globalThis.fetch=async()=>({json:async()=>({ok:true,result:{}})});
+fs.writeFileSync('/tmp/e3_mod.mjs',src);
+const {onMessage}=await import('/tmp/e3_mod.mjs');
+const enc=o=>Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const say=(uid,text,lc='ru')=>onMessage({chat:{id:uid,type:'private'},from:{id:uid,first_name:'U',username:'u'+uid,language_code:lc},text});
+const sv=(o)=>enc(o);
+await say(21,'#svc '+sv({i:'zal001',c:'venue',n:'Zal Tantana',p:'+998901112233',t:'tantana_zal',city:'Ташкент',ds:'Банкетный зал',pr:6000000,cap:400}));
+await say(22,'#svc '+sv({i:'zal002',c:'venue',n:'Bad Price',p:'+998901112244',pr:-5,cap:'много'}));
+await say(23,'#svc '+sv({i:'zal003',c:'venue',n:'Huge',p:'+998901112255',pr:99999999999,cap:999999}));
+const ix=JSON.parse(fs.readFileSync(ROOT+'/docs/services/index.json','utf8')); const by=Object.fromEntries(ix.map(x=>[x.i,x]));
+console.log('SVC1',JSON.stringify(by.zal001)); console.log('SVC2',JSON.stringify(by.zal002)); console.log('SVC3',JSON.stringify(by.zal003));
+console.log('PRIVACY owner-id leaked:', ix.some(x=>'o' in x));
+// приглашение с палитрой и историей
+await say(21,'#taklif '+enc({t:'wedding',l:'ru',a:'Anvar',b:'Madina',d:'2027-02-14',h:'18:00',pl:'Зал',o:'21',i:'p1',k:'Taklifnomai_bot',dc:'Вечерние платья',dp:['#e8c9c4','#C9A24B','#2F6B52'],st:[['2019','Познакомились'],['2021','Помолвка']],v:'t3'}));
+console.log('INV',fs.readFileSync(ROOT+'/docs/inv/anvar-madina.json','utf8').slice(0,400));
