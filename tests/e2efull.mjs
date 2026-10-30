@@ -1,0 +1,34 @@
+import fs from 'fs';
+const REPO='/app/conversations/6ae32fd38b107a4b39ea2360/taklif-gh';
+const ROOT='/tmp/e2f'; fs.rmSync(ROOT,{recursive:true,force:true}); fs.mkdirSync(ROOT,{recursive:true});
+fs.cpSync(REPO+'/docs',ROOT+'/docs',{recursive:true}); fs.mkdirSync(ROOT+'/bot',{recursive:true}); fs.copyFileSync(REPO+'/bot/bot.mjs',ROOT+'/bot/bot.mjs');
+process.chdir(ROOT);
+let src=fs.readFileSync('bot/bot.mjs','utf8');
+src=src.replace("from '../docs/qr.mjs'","from '"+ROOT+"/docs/qr.mjs'");
+src=src.replace(/\nmain\(\)\.catch[^\n]*\s*$/,'\nmain();').replace(/\nmain\(\);\s*$/,'\nexport {onMessage};');
+src=src.replace("const TOKEN = process.env.BOT_TOKEN;","const TOKEN = 'T';").replace("const APP_URL = process.env.APP_URL; ","const APP_URL = 'https://x.github.io/r'; ");
+src=src.replace("execSync('git config user.name","return; execSync('git config user.name");
+const sent=[]; globalThis.fetch=async(url,opt)=>{let b={};try{b=JSON.parse(opt.body)}catch{};sent.push({m:String(url).split('/').pop(),b});return {json:async()=>({ok:true,result:{}})}};
+fs.writeFileSync('/tmp/e2f_mod.mjs',src);
+const {onMessage}=await import('/tmp/e2f_mod.mjs');
+let res=[]; const ok=(n,c,e='')=>{console.log(c?'PASS':'FAIL',n,c?'':e);res.push(!!c)};
+const enc=o=>Buffer.from(JSON.stringify(o)).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const say=async(uid,text,lc='uz')=>{sent.length=0;await onMessage({chat:{id:uid,type:'private'},from:{id:uid,first_name:'U',language_code:lc},text});return [...sent]};
+// повторяем отправку «свежей» версии той же пары, как её формирует мини-апп
+const full={t:'wedding',l:'uz',th:'rose',w:1,cu:1,a:'Javohir',b:'Aziza',d:'2026-11-14',h:'18:00',pl:'Turkiston restoran',ad:'Katta halqa yoʻli Yunusobod',
+  tc:[['4448844410037090','Tūyana','Mastercard']],pr:[['18:00','Yig‘ilish'],['19:00','Ziyofat']],i:'e0dxok',o:'8396883978',v:'fresh01'};
+const r=await say(8396883978,'#taklif '+enc(full));
+const o=JSON.parse(fs.readFileSync(ROOT+'/docs/inv/javohir-aziza.json','utf8'));
+ok('приглашение обновлено под тем же коротким адресом javohir-aziza', !!o);
+ok('тема rose дошла', o.th==='rose', o.th);
+ok('заставка cu=1 дошла', o.cu===1, o.cu);
+ok('карта тойоны дошла (16 цифр)', o.tc&&o.tc[0][0]==='4448844410037090', JSON.stringify(o.tc));
+ok('программа дня дошла', o.pr&&o.pr.length===2, JSON.stringify(o.pr));
+ok('имена дошли', o.a==='Javohir'&&o.b==='Aziza');
+const v=JSON.parse(fs.readFileSync(ROOT+'/docs/inv/_8396883978.v.json','utf8'));
+ok('бот подтвердил версию fresh01', v.e0dxok==='fresh01', JSON.stringify(v));
+const ix=JSON.parse(fs.readFileSync(ROOT+'/docs/inv/_8396883978.json','utf8'));
+ok('индекс владельца: e0dxok -> javohir-aziza (адрес не поменялся)', ix.e0dxok==='javohir-aziza', JSON.stringify(ix));
+ok('превью-страница /i/javohir-aziza/ обновлена', fs.existsSync(ROOT+'/docs/i/javohir-aziza/index.html'));
+const msg=(r.find(x=>x.m==='sendMessage')||{b:{}}).b.text||''; ok('бот ответил владельцу «опубликовано» на его языке', /e'lon|E'lon|опублик|published|Taklifnoma/i.test(msg), msg.slice(0,80));
+console.log('ИТОГО',res.filter(Boolean).length,'/',res.length);

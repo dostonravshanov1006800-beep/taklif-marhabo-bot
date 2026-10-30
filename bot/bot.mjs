@@ -408,6 +408,7 @@ function saveInvitation(raw, owner) {
   try { d = JSON.parse(Buffer.from(raw.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); } catch { return { error: 'parse' }; }
   const o = sanitizeInv(d, owner);
   if (!o) return { error: 'data' };
+  const ver = typeof d.v === 'string' && /^[a-z0-9]{1,12}$/.test(d.v) ? d.v : '';
   const slug = makeSlug(o, owner, o.i);
   // имена поменяли: старый адрес не должен отдавать устаревшие данные, переводим его на новый
   try {
@@ -428,6 +429,14 @@ function saveInvitation(raw, owner) {
   try { ix = JSON.parse(readFileSync(ixf, 'utf8')); } catch {}
   ix[o.i] = slug;
   writeFileSync(ixf, JSON.stringify(ix));
+  // версия, которую бот реально принял: мини-апп по ней видит, дошли ли последние правки
+  if (ver) {
+    const vf = `${INV_DIR}/_${owner}.v.json`;
+    let vx = {};
+    try { vx = JSON.parse(readFileSync(vf, 'utf8')); } catch {}
+    vx[o.i] = ver;
+    writeFileSync(vf, JSON.stringify(vx));
+  }
   dirty.add('inv');
   return { slug, name: [o.a, o.b].filter(Boolean).join(' & ') };
 }
@@ -591,6 +600,7 @@ async function onMessage(m) {
 
   // /start, /info и любое другое сообщение: баннер + «Старт» и «Информация»
   if (/^\/info\b/i.test(text)) { await sendInfo(chat, lang); return; }
+  if (/^\/(audit|done|report)\b/i.test(text)) { await tg('sendMessage', { chat_id: chat, text: auditText(lang), parse_mode: 'HTML' }); return; }
   await sendStart(chat, lang);
 }
 
@@ -633,6 +643,64 @@ async function sendStart(chat, lang) {
   const r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) });
   if (!r) await tg('sendMessage', { chat_id: chat, text: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) }); // запасной путь без картинки
 }
+
+// ---- /audit: отчёт «что сделано» с галочками. Каждый пункт проверяет реальные файлы репозитория ----
+const rd = (f) => { try { return readFileSync(f, 'utf8'); } catch { return ''; } };
+const has = (f, re) => re.test(rd(f));
+const AUDIT = [
+  ['short',   { ru: 'Короткие ссылки /i/имя-пары для каждого приглашения', uz: "Har bir taklifnoma uchun qisqa havola /i/ism-ism", en: 'Short links /i/couple-name for every invitation', kk: 'Әр шақыруға қысқа сілтеме /i/есім-есім' },
+    () => existsSync(PREV_DIR) && has('docs/index.html', /predSlug/) && has('bot/bot.mjs', /makeSlug/)],
+  ['bot',     { ru: 'Ссылка внутри бота: старт открывает карточку с кнопкой', uz: "Bot ichidagi havola: start tugmasi kartochkani ochadi", en: 'In-bot link: start opens a card with a button', kk: 'Бот ішіндегі сілтеме: старт карточканы ашады' },
+    () => has('bot/bot.mjs', /sendInviteCard/) && has('docs/index.html', /t\.me\/'\+BOT\+'\?start=/)],
+  ['qr',      { ru: 'QR-код сразу после создания, бесплатно, без внешних сервисов', uz: "QR-kod yaratilgach darrov, bepul, tashqi xizmatlarsiz", en: 'QR code right after creating, free, no external services', kk: 'QR-код жасалған бойда, тегін, сыртқы қызметсіз' },
+    () => existsSync('docs/qr.mjs') && has('docs/index.html', /showQR/) && !has('docs/index.html', /qrNeed\)\);return/)],
+  ['qrchat',  { ru: 'QR приходит в чат картинкой и файлом для печати', uz: "QR chatga rasm va bosma fayl bo'lib keladi", en: 'QR arrives in chat as an image and a print file', kk: 'QR чатқа сурет және баспа файлы болып келеді' },
+    () => has('bot/bot.mjs', /sendPhoto/) && has('bot/bot.mjs', /sendDocument/) && has('bot/bot.mjs', /#qr/)],
+  ['version', { ru: 'Честный статус публикации: бот подтверждает принятую версию', uz: "Halol e'lon holati: bot qabul qilgan versiyani tasdiqlaydi", en: 'Honest publish status: the bot confirms the accepted version', kk: 'Адал жариялау күйі: бот қабылдаған нұсқаны растайды' },
+    () => has('bot/bot.mjs', /\.v\.json/) && has('docs/index.html', /acceptedVer/)],
+  ['curtain', { ru: 'Заставка с бабочками внутри Telegram и в браузере (свадьба, никах)', uz: "Telegram ichida va brauzerda kapalakli zastavka (to'y, nikoh)", en: 'Butterfly intro inside Telegram and in the browser (wedding, nikah)', kk: 'Telegram ішінде және браузерде көбелекті заставка (үйлену, неке)' },
+    () => existsSync('docs/curtain.js') && existsSync('docs/brand/curtain.mp4') && has('docs/index.html', /cu:/)],
+  ['timer',   { ru: 'Табло: 4 квадрата без дёрганья', uz: "Taho: 4 ta kvadrat, qimirlamasdan", en: 'Countdown: 4 squares, no jitter', kk: 'Таймер: 4 шаршы, selkildemesiz' },
+    () => existsSync('docs/fx.js') && has('docs/fx.js', /cdw/)],
+  ['cal',     { ru: 'Календарь: Google, Outlook и .ics', uz: "Kalendar: Google, Outlook va .ics", en: 'Calendar: Google, Outlook and .ics', kk: 'Күнтізбе: Google, Outlook және .ics' },
+    () => existsSync('docs/cal.html')],
+  ['gift',    { ru: 'Подарок: 3D-коробка, номер карты скрыт до нажатия (до 3 карт)', uz: "Sovg'a: 3D quti, karta raqami bosilguncha yashirin (3 tagacha)", en: 'Gift: 3D box, card number hidden until tapped (up to 3 cards)', kk: 'Сыйлық: 3D қорап, карта нөмірі басқанға дейін жасырын (3-ке дейін)' },
+    () => has('docs/i.html', /gf/) && has('bot/bot.mjs', /\\d\{16\}/)],
+  ['wishes',  { ru: 'Пожелания гостей с модерацией', uz: "Mehmonlar tilaklari moderatsiya bilan", en: 'Guest wishes with moderation', kk: 'Қонақ тілектері модерациямен' },
+    () => has('bot/bot.mjs', /#wishhide/) && existsSync('docs/wishes')],
+  ['themes',  { ru: '7 тем оформления с проверенным контрастом', uz: "Kontrasti tekshirilgan 7 ta mavzu", en: '7 themes with verified contrast', kk: 'Контрасты тексерілген 7 тақырып' },
+    () => ['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].every((n) => has('docs/shared.js', new RegExp(n)) && has('bot/bot.mjs', new RegExp("'" + n + "'"))) && has('docs/shared.js', /accentText/)],
+  ['wizard',  { ru: 'Мастер готовых текстов приглашения', uz: "Tayyor taklif matnlari ustasi", en: 'Ready-made invitation text wizard', kk: 'Дайын шақыру мәтіндері шебері' },
+    () => existsSync('docs/phrases.js') && has('docs/index.html', /phb/)],
+  ['catalog', { ru: 'Каталог услуг: 15 категорий, поиск, город, цена', uz: "Xizmatlar katalogi: 15 toifa, qidiruv, shahar, narx", en: 'Vendor catalog: 15 categories, search, city, price', kk: 'Қызметтер каталогі: 15 санат, іздеу, қала, баға' },
+    () => existsSync('docs/s.html') && has('bot/bot.mjs', /#svc/)],
+  ['media',   { ru: 'Фото, музыка и видео из чата, хранятся в GitHub', uz: "Chatdan rasm, musiqa va video, GitHub'da saqlanadi", en: 'Photos, music and video from chat, stored in GitHub', kk: 'Чаттан сурет, музыка, бейне, GitHub-та сақталады' },
+    () => existsSync(MEDIA_DIR) && has('bot/bot.mjs', /MEDIA_DIR/)],
+  ['langs',   { ru: 'Бот и приглашения на 4 языках: RU, UZ, EN, KK', uz: "Bot va taklifnomalar 4 tilda: RU, UZ, EN, KK", en: 'Bot and invitations in 4 languages: RU, UZ, EN, KK', kk: 'Бот және шақырулар 4 тілде: RU, UZ, EN, KK' },
+    () => ['ru', 'uz', 'en', 'kk'].every((l) => T[l] && T[l].info)],
+  ['perf',    { ru: 'Скорость: без размытия фона, анимации только transform/opacity', uz: "Tezlik: fon xiralashtirishsiz, faqat transform/opacity", en: 'Speed: no backdrop blur, animations use transform/opacity only', kk: 'Жылдамдық: бұлдырсыз, тек transform/opacity' },
+    () => ['docs/index.html', 'docs/i.html', 'docs/fx.css', 'docs/curtain.css'].every((f) => existsSync(f) && !/backdrop-filter/.test(rd(f)))],
+  ['free',    { ru: 'Всё бесплатно: без внешних API и платных интеграций', uz: "Hammasi bepul: tashqi API va pullik integratsiyasiz", en: 'All free: no external APIs or paid integrations', kk: 'Бәрі тегін: сыртқы API жоқ, ақылы интеграциясыз' },
+    () => existsSync('docs/qr.mjs') && !has('bot/bot.mjs', /api\.qrserver|goqr\.me|chart\.googleapis/)],
+];
+const AUDIT_HEAD = {
+  ru: ['🧾 <b>Аудит: что сделано</b>', 'Каждая галочка проверена по файлам репозитория прямо сейчас.', 'Итого', 'Не найдено', 'Чтобы всё обновилось у вас: закройте и снова откройте мини-апп.'],
+  uz: ['🧾 <b>Audit: nimalar qilindi</b>', "Har bir belgi hozirning o'zida repozitoriy fayllari bo'yicha tekshirilgan.", 'Jami', 'Topilmadi', "Hammasi yangilanishi uchun mini-appni yopib, qayta oching."],
+  en: ['🧾 <b>Audit: what is done</b>', 'Every tick is checked against the repository files right now.', 'Total', 'Not found', 'To get everything updated, close and reopen the mini app.'],
+  kk: ['🧾 <b>Аудит: не істелді</b>', 'Әр белгі дәл қазір репозиторий файлдары бойынша тексерілді.', 'Барлығы', 'Табылмады', 'Бәрі жаңарсын десеңіз, мини-аппты жауып, қайта ашыңыз.'],
+};
+function auditText(lang) {
+  const H = AUDIT_HEAD[lang] || AUDIT_HEAD.ru;
+  let okN = 0;
+  const lines = AUDIT.map(([, label, test]) => {
+    let r = false;
+    try { r = !!test(); } catch { r = false; }
+    if (r) okN += 1;
+    return `${r ? '✅' : '⚠️'} ${label[lang] || label.ru}${r ? '' : ' (' + H[3] + ')'}`;
+  });
+  return `${H[0]}\n<i>${H[1]}</i>\n\n${lines.join('\n')}\n\n<b>${H[2]}: ${okN}/${AUDIT.length}</b>\n${H[4]}`;
+}
+
 async function sendInfo(chat, lang) {
   await tg('sendMessage', { chat_id: chat, text: T[lang].info, parse_mode: 'HTML', reply_markup: infoKb(lang) });
 }
