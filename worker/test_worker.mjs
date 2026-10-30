@@ -29,6 +29,10 @@ const orig = await (await call('GET', '/api/inv/' + slug)).json(); T('ориги
 r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, a: 'Баходир' }, v: 'v2' }); j = await r.json(); T('переименование → новый slug', j.slug === 'bahodir-aziza');
 r = await call('GET', '/api/inv/' + slug); j = await r.json(); T('старый slug отдаёт новый (редирект r)', r.status === 200 && j.a === 'Баходир');
 r = await call('GET', '/api/mine', null, { 'x-tg-init': sign(u1) }); j = await r.json(); T('мои: 1 приглашение', r.status === 200 && Object.keys(j.pub).length === 1 && j.pub.abc123 === 'bahodir-aziza');
+T('мои: версия приглашения приходит с сервера', j.ver && j.ver.abc123 === 'v2');
+kv.delete('inv:bahodir-aziza');
+r = await call('GET', '/api/mine', null, { 'x-tg-init': sign(u1) }); j = await r.json(); T('удалённое на сервере не числится опубликованным', r.status === 200 && !j.pub.abc123 && !(j.ver || {}).abc123);
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, a: 'Баходир' }, v: 'v2' }); j = await r.json(); T('повторная публикация восстанавливает', r.status === 200 && j.ok);
 r = await call('GET', '/api/mine'); T('мои без подписи → 401', r.status === 401);
 r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, tc: [['1234', 'x', 'y']], u: 'javascript:alert(1)', m: 'http://evil' } }); j = await r.json(); const g = await (await call('GET', '/api/inv/' + j.slug)).json(); T('мусорные карта/ссылки отброшены', !g.tc && !g.u && !g.m);
 r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, a: '<script>' + 'x'.repeat(200) } }); j = await r.json(); const g2 = await (await call('GET', '/api/inv/' + j.slug)).json(); T('длина имени ≤60', g2.a.length <= 60);

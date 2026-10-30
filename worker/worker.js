@@ -149,7 +149,13 @@ export default {
         const owner = await verifyInit(req.headers.get('x-tg-init') || url.searchParams.get('init') || '', env.BOT_TOKEN);
         if (!owner) return J({ error: 'auth' }, 401);
         const ix = (await env.INV.get('own:' + owner, 'json')) || {};
-        return J({ ok: true, pub: ix }, 200, { 'cache-control': 'no-store' });
+        // версия каждого приглашения на сервере: мини-апп сверяет с локальной и сам видит, что устарело или удалено
+        const pub = {}, ver = {};
+        await Promise.all(Object.entries(ix).map(async ([id, slug]) => {
+          const o = await env.INV.get('inv:' + slug, 'json');
+          if (o) { pub[id] = slug; if (o.v) ver[id] = o.v; }
+        }));
+        return J({ ok: true, pub, ver }, 200, { 'cache-control': 'no-store' });
       }
 
       // сохранить приглашение
