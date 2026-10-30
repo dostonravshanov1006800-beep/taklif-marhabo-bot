@@ -48,4 +48,26 @@ r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'byid77
 r = await call('GET', '/api/byid/byid77'); const bj = await r.json(); T('byid находит приглашение', r.status === 200 && bj.slug === j.slug && bj.o.i === 'byid77');
 r = await call('GET', '/api/byid/nonexist'); T('byid нет → 404', r.status === 404);
 r = await call('GET', '/api/byid/BAD!'); T('byid плохой id → 404', r.status === 404);
+
+// ---- QR в чат ----
+const tgCalls = []; const realFetch = globalThis.fetch;
+globalThis.fetch = async (u, o) => { if (String(u).startsWith('https://api.telegram.org/')) { const f = o.body; tgCalls.push({ m: String(u).split('/').pop(), chat: f.get('chat_id'), cap: f.get('caption'), size: (await f.get(f.has('photo') ? 'photo' : 'document').arrayBuffer()).byteLength }); return new Response(JSON.stringify({ ok: true }), { status: 200 }); } return realFetch(u, o); };
+const PNG = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.alloc(400, 7)]).toString('base64');
+const mySlug = 'bahodir-aziza';
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, a: 'Баходир' }, v: 'v2' }); j = await r.json(); const qs = j.slug;
+r = await call('POST', '/api/qr', { slug: qs, png: PNG }); T('qr без подписи → 401', r.status === 401);
+r = await call('POST', '/api/qr', { init: sign(u2), slug: qs, png: PNG }); T('qr чужое приглашение → 403', r.status === 403);
+r = await call('POST', '/api/qr', { init: sign(u1), slug: 'net-takogo', png: PNG }); T('qr несуществующее → 403', r.status === 403);
+r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: Buffer.from('not a png at all'.repeat(30)).toString('base64') }); T('qr не-PNG → 400', r.status === 400);
+r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: 'А!!' }); T('qr битый base64 → 400', r.status === 400);
+r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: PNG, lang: 'uz' }); j = await r.json();
+T('qr владельцу → 200 ok', r.status === 200 && j.ok);
+T('qr: фото и файл ушли в чат владельца (id подписи)', tgCalls.length === 2 && tgCalls[0].m === 'sendPhoto' && tgCalls[1].m === 'sendDocument' && tgCalls.every((c) => c.chat === String(u1.id)), JSON.stringify(tgCalls.map((c) => [c.m, c.chat])));
+T('qr: подпись с именами и ссылкой бота', /Баходир/.test(tgCalls[0].cap) && /t\.me\/Taklifnomai_bot\?start=i_/.test(tgCalls[0].cap), tgCalls[0].cap);
+T('qr: размер картинки сохранён', tgCalls[0].size === Buffer.from(PNG, 'base64').length);
+r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: PNG, web: 1 }); await r.json();
+T('qr для браузера: ссылка на сайт', /github\.io\/taklif-marhabo-bot\/i\//.test(tgCalls[2].cap), tgCalls[2].cap);
+for (let i = 0; i < 12; i++) r = await call('POST', '/api/qr', { init: sign(u1), slug: qs, png: PNG });
+T('qr: лимит в час → 429', r.status === 429);
+globalThis.fetch = realFetch;
 console.log(`\nИТОГО: ${ok} ok, ${bad} fail`); process.exit(bad ? 1 : 0);

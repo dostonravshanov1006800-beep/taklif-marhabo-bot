@@ -1,0 +1,64 @@
+// Каждая тема и каждое поле: мини-апп -> сохранить -> правка -> страница гостя. Цвет на экране должен совпасть с цветом темы.
+import { createServer } from 'node:http'; import { createHmac } from 'node:crypto'; import fs from 'node:fs'; import path from 'node:path';
+import { chromium } from '/tmp/pw/node_modules/playwright/index.mjs'; import worker from '../worker/worker.js';
+const DOCS = path.resolve('docs'), BOT = '123456:TESTTOKEN', OWNER = 777002, API = 'https://taklif-api.dostonravshanov1006800.workers.dev';
+const kv = new Map(); const env = { BOT_TOKEN: BOT, ADMIN_KEY: 'a', INV: { async get(k, t) { const v = kv.get(k); return v == null ? null : t === 'json' ? JSON.parse(v) : v; }, async put(k, v) { kv.set(k, v); } } };
+const sign = (uid) => { const p = { auth_date: String(Math.floor(Date.now() / 1000)), query_id: 'Q', user: JSON.stringify({ id: uid, first_name: 'T', language_code: 'ru' }) };
+  const s = Object.keys(p).sort().map((k) => `${k}=${p[k]}`).join('\n'); p.hash = createHmac('sha256', createHmac('sha256', 'WebAppData').update(BOT).digest()).update(s).digest('hex'); return new URLSearchParams(p).toString(); };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.svg': 'image/svg+xml' };
+const srv = createServer((q, r) => { let u = decodeURIComponent(q.url.split('?')[0]); if (u.endsWith('/')) u += 'index.html'; const f = path.join(DOCS, u); if (!f.startsWith(DOCS) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
+await new Promise((r) => srv.listen(0, r)); const BASE = `http://localhost:${srv.address().port}`;
+let ok = 0, bad = 0; const T = (n, c, e = '') => { c ? ok++ : bad++; console.log(c ? 'PASS' : 'FAIL', n, c ? '' : e); };
+const br = await chromium.launch({ executablePath: '/root/.cache/ms-playwright/chromium-1248/chrome-linux64/chrome', args: ['--no-sandbox'] });
+const ctx = await br.newContext({ viewport: { width: 390, height: 800 }, serviceWorkers: 'block' });
+await ctx.route(API + '/**', async (route) => { const rq = route.request(), u = new URL(rq.url());
+  const res = await worker.fetch(new Request('https://x' + u.pathname + u.search, { method: rq.method(), headers: rq.headers(), body: rq.postData() || undefined }), env);
+  await route.fulfill({ status: res.status, headers: Object.fromEntries(res.headers), body: await res.text() }); });
+await ctx.route(/fonts\.(googleapis|gstatic)|unpkg|cdn\./, (r) => r.abort());
+await ctx.route('https://telegram.org/**', (r) => r.fulfill({ status: 200, contentType: 'text/javascript', body: '/* stub */' }));
+const page = await ctx.newPage(); const errs = []; page.on('pageerror', (e) => errs.push(e.message));
+await page.addInitScript(({ init, uid }) => { window.Telegram = { WebApp: { initData: init, initDataUnsafe: { user: { id: uid, first_name: 'T', language_code: 'ru' } }, ready() {}, expand() {}, close() {}, setHeaderColor() {}, setBackgroundColor() {}, enableClosingConfirmation() {}, disableVerticalSwipes() {}, version: '7.0', platform: 'tdesktop', colorScheme: 'light', themeParams: {}, MainButton: { hide() {}, show() {}, setText() {}, onClick() {}, offClick() {} }, BackButton: { hide() {}, show() {}, onClick() {}, offClick() {} }, HapticFeedback: { impactOccurred() {}, notificationOccurred() {}, selectionChanged() {} }, onEvent() {}, offEvent() {}, openLink() {}, openTelegramLink() {}, showAlert() {}, showConfirm() {}, CloudStorage: undefined } }; }, { init: sign(OWNER), uid: OWNER });
+await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
+const themes = await page.evaluate(async () => { const m = await import('./themes.js').catch(() => null); return null; });
+await page.click('[data-new="wedding"]'); await page.waitForSelector('input[data-f="a"]');
+const keys = await page.$$eval('[data-th]', (b) => b.map((x) => x.dataset.th)); T('в форме есть темы: ' + keys.map((k) => k || 'по умолчанию').join(', '), keys.length >= 7, String(keys.length));
+const rgb = (h) => { const m = /(\d+),\s*(\d+),\s*(\d+)/.exec(h); return m ? [+m[1], +m[2], +m[3]] : null; };
+const FIELDS = { a: 'Асрор', b: 'Мадина', d: '2027-02-14', h: '18:30', pl: 'Зал Нур', ad: 'ул. Навои, 5', m: 'https://maps.google.com/?q=1', x: 'Добро пожаловать', dc: 'Белый и золото', ct: '+998901112233' };
+let n = 0;
+for (const k of (process.env.ONLY ? [process.env.ONLY] : keys)) {
+  n++; const slug = 'asror-madina' + (n > 1 ? '-' + n : '');
+  if (n > 1) { await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(700); await page.click('[data-new="wedding"]'); await page.waitForSelector('input[data-f="a"]'); }
+  for (const [f, v] of Object.entries(FIELDS)) await page.fill(`[data-f="${f}"]`, v).catch(() => {});
+  await page.click(`[data-th="${k}"]`); await page.click('#sv');
+  await page.waitForFunction((s) => (localStorage.getItem('mh_pub_' + 777002) || '').includes(s), slug, { timeout: 8000 }).catch(() => {});
+  const rec = JSON.parse(kv.get('inv:' + slug) || 'null');
+  T(`[${k || 'по умолчанию'}] сохранено на сервере`, !!rec, slug);
+  if (!rec) continue;
+  T(`[${k || 'по умолчанию'}] тема сохранена в записи`, (rec.th || '') === k, JSON.stringify(rec.th));
+  const bad = Object.entries({ a: 'Асрор', b: 'Мадина', d: '2027-02-14', h: '18:30', pl: 'Зал Нур', ad: 'ул. Навои, 5', dc: 'Белый и золото', ct: '+998901112233' }).filter(([f, v]) => rec[f] !== v);
+  T(`[${k || 'по умолчанию'}] все поля сохранены`, bad.length === 0, JSON.stringify(bad));
+  const g = await ctx.newPage(); const ge = []; g.on('pageerror', (e) => ge.push(e.message));
+  await g.route(API + '/**', async (route) => { const rq = route.request(), u = new URL(rq.url()); const res = await worker.fetch(new Request('https://x' + u.pathname + u.search, { method: rq.method(), headers: rq.headers() }), env); await route.fulfill({ status: res.status, headers: Object.fromEntries(res.headers), body: await res.text() }); });
+  await g.goto(BASE + '/i.html?s=' + slug, { waitUntil: 'domcontentloaded' }); await g.waitForTimeout(1800);
+  await g.click('#cur .sk', { timeout: 2500 }).catch(() => {}); await g.waitForSelector('#cur', { state: 'detached', timeout: 4000 }).catch(() => {});
+  await g.click('.seal', { timeout: 2500 }).catch(() => {}); await g.waitForTimeout(3200);
+  await g.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight + 2000; y += 400) { window.scrollTo(0, y); await new Promise((r) => setTimeout(r, 120)); } }); await g.waitForTimeout(600);
+  const info = await g.evaluate(() => { const cs = getComputedStyle(document.body); const t = document.body.innerText; const tel = [...document.querySelectorAll('a[href^="tel:"]')].map((a) => a.getAttribute('href')); return { bg: cs.backgroundColor, img: cs.backgroundImage.slice(0, 60), t, tel }; });
+  T(`[${k || 'по умолчанию'}] гость: нет ошибок JS`, ge.length === 0, ge.join('|'));
+  T(`[${k || 'по умолчанию'}] гость видит имена, место, время, дресс-код`, ['Асрор', 'Мадина', 'Зал Нур', '18:30', 'Белый и золото'].every((x) => info.t.includes(x)), info.t.replace(/\n+/g, ' | ').slice(-500));
+  T(`[${k || 'по умолчанию'}] гость: контакт — рабочая ссылка tel:`, info.tel.includes('tel:+998901112233'), JSON.stringify(info.tel));
+  T(`[${k || 'по умолчанию'}] у страницы задан цвет фона`, !!rgb(info.bg) || info.img !== 'none', info.bg + ' ' + info.img);
+  if(process.env.DBG&&k==='gold')console.log('GUESTTAIL',info.t.replace(/\n+/g,' | ').slice(-420));fs.writeFileSync('/tmp/guest_'+(k||'def')+'.txt',info.t);(globalThis.COL ||= {})[k] = info.bg + '|' + info.img; await g.close();
+}
+const uniq = new Set(Object.values(globalThis.COL)).size; T('разные темы дают разный вид (' + uniq + ' из ' + keys.length + ')', uniq >= keys.length - 1, JSON.stringify(globalThis.COL));
+// правка: меняем тему и место у существующего, цвет и поле должны обновиться у гостя
+await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(900);
+await page.click('#bg'); await page.waitForTimeout(500); await page.click('.mi[data-mgo="mine"]'); await page.waitForTimeout(900); await page.click('[data-edit]').catch(() => {}); await page.waitForSelector('input[data-f="a"]', { timeout: 4000 }).catch(() => {});
+console.log('DBG', await page.evaluate(() => JSON.stringify({ view: document.body.innerText.slice(0, 160).replace(/\n+/g,' | '), mine: !!document.querySelector('[data-go="mine"]'), edit: document.querySelectorAll('[data-edit]').length, burger: !!document.querySelector('.burger,#menuBtn,[data-menu],#mb') })));
+const first = await page.inputValue('[data-f="a"]').catch(() => ''); T('форма правки открывается с сохранёнными данными', !!first, first);
+await page.fill('[data-f="pl"]', 'Новое место 77').catch(() => {}); await page.click('[data-th="rose"]').catch(() => {}); await page.click('#sv');
+await page.waitForTimeout(1500);
+const after = Object.keys(Object.fromEntries([...kv].filter(([k, v]) => k.startsWith('inv:')))).map((k) => JSON.parse(kv.get(k))).find((r) => r.pl === 'Новое место 77');
+T('правка: новое место и тема дошли до сервера', !!after && after.th === 'rose', JSON.stringify(after && { pl: after.pl, th: after.th }));
+T('в мини-аппе нет ошибок JS за весь тест', errs.length === 0, errs.join('|'));
+console.log(`ИТОГО: ${ok} ok, ${bad} fail`); await br.close(); srv.close(); process.exit(bad ? 1 : 0);

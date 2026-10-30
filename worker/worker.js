@@ -17,7 +17,7 @@ function sanitizeInv(d, owner) {
     l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60),
     d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
-    pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80),
+    pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), ct: cleanStr(d.ct, 60),
     dp: (Array.isArray(d.dp) ? d.dp : []).map((c) => String(c).toUpperCase()).filter((c) => /^#[0-9A-F]{6}$/.test(c)).slice(0, 8),
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, ''),
   };
@@ -156,6 +156,43 @@ export default {
           if (o) { pub[id] = slug; if (o.v) ver[id] = o.v; }
         }));
         return J({ ok: true, pub, ver }, 200, { 'cache-control': 'no-store' });
+      }
+
+      // QR прямо в чат: мини-апп присылает готовый PNG, воркер проверяет подпись и шлёт его владельцу через Telegram
+      if (path === '/api/qr' && req.method === 'POST') {
+        const body = await readBody(req, 400000);
+        const owner = await verifyInit(body.init || req.headers.get('x-tg-init') || '', env.BOT_TOKEN);
+        if (!owner) return J({ error: 'auth' }, 401);
+        const slug = String(body.slug || '').toLowerCase();
+        if (!/^[a-z0-9-]{2,60}$/.test(slug)) return J({ error: 'data' }, 400);
+        const inv = await env.INV.get('inv:' + slug, 'json');
+        if (!inv || String(inv.o) !== String(owner)) return J({ error: 'forbidden' }, 403);
+        // не больше 12 QR в час на владельца
+        const rk = 'rq:' + owner + ':' + Math.floor(Date.now() / 3600000);
+        const rc = Number(await env.INV.get(rk)) || 0;
+        if (rc >= 12) return J({ error: 'rate' }, 429);
+        await env.INV.put(rk, String(rc + 1), { expirationTtl: 7200 });
+        // это должен быть настоящий PNG небольшого размера
+        let bin; try { bin = Uint8Array.from(atob(String(body.png || '')), (c) => c.charCodeAt(0)); } catch { return J({ error: 'png' }, 400); }
+        const sig = [137, 80, 78, 71, 13, 10, 26, 10];
+        if (bin.length < 200 || bin.length > 300000 || !sig.every((b, i) => bin[i] === b)) return J({ error: 'png' }, 400);
+        const link = body.web ? 'https://dostonravshanov1006800-beep.github.io/taklif-marhabo-bot/i/' + slug + '/' : 'https://t.me/' + BOT_NAME + '?start=i_' + slug;
+        const LANGS = { ru: 'Наведите камеру телефона на QR-код, чтобы открыть приглашение', uz: "Taklifnomani ochish uchun telefon kamerasini QR-kodga qarating", en: 'Point your phone camera at the QR code to open the invitation', kk: 'Шақыруды ашу үшін телефон камерасын QR-кодқа бағыттаңыз' };
+        const PRN = { ru: 'Файл без сжатия для печати', uz: 'Bosma uchun siqilmagan fayl', en: 'Uncompressed file for printing', kk: 'Басып шығаруға арналған файл' };
+        const lg = LANGS[body.lang] ? body.lang : 'ru';
+        const names = [inv.a, inv.b].filter(Boolean).join(' & ');
+        const esc = (x) => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const send = async (method, field, caption) => {
+          const fd = new FormData();
+          fd.append('chat_id', String(owner)); fd.append(field, new Blob([bin], { type: 'image/png' }), 'taklifnoma-' + slug + '.png');
+          fd.append('caption', caption); fd.append('parse_mode', 'HTML');
+          const r = await fetch('https://api.telegram.org/bot' + env.BOT_TOKEN + '/' + method, { method: 'POST', body: fd });
+          return r.json().catch(() => ({}));
+        };
+        const a = await send('sendPhoto', 'photo', '💌 <b>' + esc(names) + '</b>\n\n' + LANGS[lg] + '\n🔗 ' + esc(link));
+        if (!a.ok) return J({ error: 'tg', why: String(a.description || '').slice(0, 80) }, 502);
+        await send('sendDocument', 'document', '📎 ' + PRN[lg]);
+        return J({ ok: true }, 200, { 'cache-control': 'no-store' });
       }
 
       // сохранить приглашение
