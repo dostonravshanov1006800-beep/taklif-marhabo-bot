@@ -364,13 +364,17 @@ function writeSvcIndex() {
 }
 
 // найти опубликованное приглашение по внутреннему id (поле i)
-function findInvById(id) {
+async function findInvById(id) {
   try {
     for (const f of readdirSync(INV_DIR)) {
       if (!f.endsWith('.json') || f.startsWith('_')) continue;
       let o; try { o = JSON.parse(readFileSync(`${INV_DIR}/${f}`, 'utf8')); } catch { continue; }
       if (o && o.i === id && !o.r) return { slug: f.slice(0, -5), o };
     }
+  } catch {}
+  try {
+    const r = await fetch(`${INV_API}/api/byid/${encodeURIComponent(id)}`, { signal: AbortSignal.timeout(6000) });
+    if (r.ok) { const j = await r.json(); if (j && j.slug && j.o) return { slug: j.slug, o: j.o }; }
   } catch {}
   return null;
 }
@@ -500,7 +504,7 @@ async function onMessage(m) {
   const qrm = text.match(/^#qr\s+([a-z0-9-]{2,60})(?:\s+(w))?$/i);
   if (qrm) {
     const slug = qrm[1].toLowerCase();
-    const o = readInv(slug);
+    const o = await readInv(slug);
     const QL = {
       ru: ['⚠️ Приглашение не найдено или оно принадлежит другому владельцу.', 'Откройте камеру телефона и наведите на QR-код, чтобы увидеть приглашение', '📎 QR без сжатия для печати'],
       uz: ['⚠️ Taklifnoma topilmadi yoki boshqa egaga tegishli.', "Taklifnomani ko'rish uchun telefon kamerasini QR-kodga qarating", '📎 Bosma uchun siqilmagan QR'],
@@ -546,7 +550,7 @@ async function onMessage(m) {
   // ---- пожелания гостей: "#wish <invId> <base64url JSON {n,m,k}>" ----
   const wsh = text.match(/^#wish\s+([a-z0-9]{3,12})\s+([A-Za-z0-9_-]{4,1500})$/i);
   if (wsh) {
-    const found = findInvById(wsh[1].toLowerCase());
+    const found = await findInvById(wsh[1].toLowerCase());
     const lg = found ? lgOf(found.o) : (LGS.includes(lang) ? lang : 'ru');
     const L = LX[lg] || LX.ru;
     let d = null;
@@ -578,7 +582,7 @@ async function onMessage(m) {
   // владелец скрывает или возвращает пожелание: "#wishhide <invId> <номер>" / "#wishshow <invId> <номер>"
   const wh = text.match(/^#wish(hide|show)\s+([a-z0-9]{3,12})\s+(\d{1,3})$/i);
   if (wh) {
-    const found = findInvById(wh[2].toLowerCase());
+    const found = await findInvById(wh[2].toLowerCase());
     if (!found || String(found.o.o) !== String(m.from.id)) { await tg('sendMessage', { chat_id: chat, text: '⚠️' }); return; }
     const wf = `docs/wishes/${found.o.i}.json`;
     let arr = []; try { arr = JSON.parse(readFileSync(wf, 'utf8')); } catch {}
@@ -651,9 +655,20 @@ async function onMessage(m) {
 
 
 // ---- Красивая ссылка через бота: t.me/<бот>?start=i_<slug>[_<ключГостя>] ----
-function readInv(slug) {
+const INV_API = process.env.INV_API || 'https://taklif-api.dostonravshanov1006800.workers.dev';
+const _invCache = new Map();
+async function readInv(slug) {
   if (!/^[a-z0-9-]{2,60}$/.test(slug)) return null;
-  try { return JSON.parse(readFileSync(`${INV_DIR}/${slug}.json`, 'utf8')); } catch { return null; }
+  const c = _invCache.get(slug);
+  if (c && Date.now() - c.t < 20000) return c.o;
+  let o = null;
+  try {
+    const r = await fetch(`${INV_API}/api/inv/${slug}`, { signal: AbortSignal.timeout(6000) });
+    if (r.ok) { const j = await r.json(); if (j && j.a) o = j; }
+  } catch {}
+  if (!o) { try { o = JSON.parse(readFileSync(`${INV_DIR}/${slug}.json`, 'utf8')); } catch {} }
+  if (o) _invCache.set(slug, { t: Date.now(), o });
+  return o;
 }
 function cardCaption(o, guestName) {
   const lang = lgOf(o);
@@ -665,13 +680,13 @@ function cardCaption(o, guestName) {
   return `💌 ${hi}\n\n<b>${names}</b>` + (when ? `\n📅 ${when}` : '') + (o.pl ? `\n📍 ${esc(o.pl)}` : '');
 }
 async function sendInviteCard(chat, slug, guestKey, from) {
-  const o = readInv(slug);
+  const o = await readInv(slug);
   if (!o) return false;
   const lang = lgOf(o);
   const base = APP_URL.replace(/\/?$/, '/');
   // имя берём из профиля Telegram того, кто открыл ссылку: список гостей в репозитории не публикуем
   const gname = from ? [from.first_name].filter(Boolean).join(' ').slice(0, 40) : '';
-  let vv = ''; try { const vx = JSON.parse(readFileSync(`${INV_DIR}/_${o.o}.v.json`, 'utf8')); vv = vx[o.i] || ''; } catch {}
+  let vv = typeof o.v === 'string' ? o.v : ''; if (!vv) { try { const vx = JSON.parse(readFileSync(`${INV_DIR}/_${o.o}.v.json`, 'utf8')); vv = vx[o.i] || ''; } catch {} }
   const vq = vv && /^[a-z0-9]{1,12}$/.test(vv) ? 'v=' + vv : '';
   // i.html?s=<имя> есть на сайте всегда, а страница /i/<имя>/ появляется только после пересборки: поэтому ведём на i.html
   const ex = [];

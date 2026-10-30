@@ -336,8 +336,9 @@ function payload(it,gIdx){
  Object.keys(o).forEach(k=>(o[k]===''||o[k]==null)&&delete o[k]);return o}
 /* публикация: бот кладёт docs/inv/<slug>.json и пишет индекс docs/inv/_<owner>.json (id -> slug) */
 ST.pub={};ST.ver={};
-async function loadVer(){ if(!OWNER)return; try{const r=await fetch(SITE+'inv/_'+OWNER+'.v.json?_='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();ST.ver=Object.assign({},j,ST.fast&&ST.fast.ver||{})}}catch(e){} }
-async function loadPub(){ if(!OWNER)return; await loadVer(); try{const r=await fetch(SITE+'inv/_'+OWNER+'.json?_='+Date.now(),{cache:'no-store'});if(r.ok){ST.pub=Object.assign({},await r.json(),ST.fast&&ST.fast.pub||{});try{localStorage.setItem('mh_pub_'+OWNER,JSON.stringify(ST.pub))}catch(e){}}}catch(e){try{const c=JSON.parse(localStorage.getItem('mh_pub_'+OWNER)||'null');if(c&&!Object.keys(ST.pub||{}).length)ST.pub=c}catch(e2){}} }
+const API='https://taklif-api.dostonravshanov1006800.workers.dev';const INIT=(tg&&tg.initData)||'';
+async function loadVer(){ /* версия приходит вместе со списком в loadPub */ }
+async function loadPub(){ if(!OWNER)return; try{const r=await fetch(API+'/api/mine',{headers:{'x-tg-init':INIT},cache:'no-store'});if(r.ok){const j=await r.json();ST.pub=Object.assign({},j.pub||{},ST.fast&&ST.fast.pub||{});try{localStorage.setItem('mh_pub_'+OWNER,JSON.stringify(ST.pub))}catch(e){}}}catch(e){try{const c=JSON.parse(localStorage.getItem('mh_pub_'+OWNER)||'null');if(c&&!Object.keys(ST.pub||{}).length)ST.pub=c}catch(e2){}} }
 const sig=it=>{const o=payload(it);delete o.g;delete o.q;const j=JSON.stringify(o);let h=5381;for(let i=0;i<j.length;i++)h=((h<<5)+h+j.charCodeAt(i))|0;return (h>>>0).toString(36)};
 const slugOf=it=>ST.pub[it.id]||'';
 const TRM={'ʻ':'','’':'','`':'','ʹ':'','‘':'',а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'yo',ж:'j',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'i',ь:'',э:'e',ю:'yu',я:'ya',ў:'o',қ:'q',ғ:'g',ҳ:'h',ʼ:'',"'":''};
@@ -356,7 +357,7 @@ const webLink=(it,gIdx)=>{const s=wantSlug(it);const base=SITE+'i/'+s;if(gIdx==n
 const botLink=(it,gIdx)=>{const s=wantSlug(it);let p='i_'+s;if(gIdx!=null){const g=it.guests[gIdx];if(g&&g.k)p+='__'+g.k}return p.length>64?'':'https://t.me/'+BOT+'?start='+p};
 const linkFor=(it,gIdx)=>(ST.wl?'':botLink(it,gIdx))||webLink(it,gIdx);
 const publishText=it=>'#taklif '+pack(Object.assign(payload(it),{v:sig(it)}));
-const doPublish=it=>{it.ps=sig(it);(ST.pubAt=ST.pubAt||{})[it.id]=Date.now();persist();const txt=publishText(it);if(SENDMODE&&tg&&tg.sendData){try{tg.sendData(txt);setTimeout(()=>{try{tg.close()}catch(e){}},400);return}catch(e){}}try{copy(txt)}catch(e){}delete (ST.pubAt||{})[it.id];persist();const u='https://t.me/'+BOT+'?start=publish';if(tg&&V('6.1')){tg.openTelegramLink(u);setTimeout(()=>{try{tg.close()}catch(e){}},500)}else window.open(u,'_blank')};
+const doPublish=async it=>{const v=sig(it);(ST.pubAt=ST.pubAt||{})[it.id]=Date.now();setTimeout(()=>{try{const e=document.getElementById('pbs');if(e)e.textContent=t('pubWait')}catch(_){}},0);const body=JSON.stringify({init:INIT,data:payload(it),v});let lastErr='';for(let k=0;k<3;k++){try{const r=await fetch(API+'/api/inv',{method:'POST',headers:{'content-type':'application/json'},body,cache:'no-store'});const j=await r.json().catch(()=>({}));if(r.ok&&j.ok&&j.slug){it.ps=v;ST.pub=ST.pub||{};ST.pub[it.id]=j.slug;ST.ver=ST.ver||{};ST.ver[it.id]=v;ST.fast=ST.fast||{pub:{},ver:{}};ST.fast.pub[it.id]=j.slug;ST.fast.ver[it.id]=v;delete ST.pubAt[it.id];persist();try{localStorage.setItem('mh_pub_'+OWNER,JSON.stringify(ST.pub))}catch(e){}render();return true}lastErr=j.error||('http'+r.status);if(r.status===401||r.status===400||r.status===429)break}catch(e){lastErr='net'}await new Promise(r=>setTimeout(r,500*(k+1)))}delete ST.pubAt[it.id];persist();ST.pubErr=lastErr;render();try{alert(lastErr==='auth'?'Откройте Marhabo через бота @'+BOT+' в Telegram':lastErr==='rate'?'Слишком часто. Подождите немного':lastErr==='limit'?'Слишком много приглашений':'Не удалось сохранить. Проверьте интернет и нажмите ещё раз')}catch(e){}return false};
 
 /* статус публикации с отсчётом: после отправки боту ждём 1-3 минуты, страница обновляется сама */
 const PUB_ETA=110;
@@ -447,19 +448,6 @@ async function syncFiles(){
 const needSync=()=>!document.hidden&&((ST.view==='form'&&pendingCount())||waitingItems().length);
 /* ожидание публикации: после отправки #taklif боту короткая ссылка появляется сама, без ручной проверки */
 const unpubItems=()=>ST.items.filter(i=>!isFresh(i));
-let _pubPoll=0;
-/* мгновенная проверка: бот кладёт файл inv/v/<имя>.<версия>.json, он виден сразу после push, пересборку сайта ждать не нужно */
-const RAWBASE=(()=>{const m=String(SITE).match(/^https:\/\/([^.\/]+)\.github\.io\/([^\/]+)\//);return m?'https://raw.githubusercontent.com/'+m[1]+'/'+m[2]+'/main/docs/':''})();
-async function verSeen(it){const sl=slugOf(it)||'';const v=sig(it);if(!RAWBASE||!v)return false;
- const cand=[sl].filter(Boolean);cand.push(predSlug(it));
- for(const s0 of [...new Set(cand)]){try{const r=await fetch(RAWBASE+'inv/v/'+s0+'.'+v+'.json',{cache:'no-store'});if(r.ok){const j=await r.json();if(j&&String(j.i)===String(it.id)){ST.fast=ST.fast||{pub:{},ver:{}};ST.fast.pub[it.id]=s0;ST.fast.ver[it.id]=v;ST.pub=ST.pub||{};ST.pub[it.id]=s0;ST.ver=ST.ver||{};ST.ver[it.id]=v;return true}}}catch(e){}}
- return false}
-async function pollPub(){
-  if(!OWNER||_pubPoll||document.hidden)return; if(!unpubItems().length)return; _pubPoll=1;
-  try{const before=JSON.stringify([ST.pub||{},ST.ver||{}]);for(const k in (ST.pubAt||{})){const x=ST.items.find(i=>i.id===k);if(x&&!isFresh(x))await verSeen(x)}await loadPub();for(const k in (ST.pubAt||{})){const x=ST.items.find(i=>i.id===k);if(x&&slugOf(x)&&isFresh(x))delete ST.pubAt[k]}if(JSON.stringify([ST.pub||{},ST.ver||{}])!==before&&(ST.view==='mine'||ST.view==='list'||ST.view==='panel'||ST.view==='done'))render()}finally{_pubPoll=0}
-}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollPub()});
-setInterval(pollPub,1500);
 document.addEventListener('visibilitychange',()=>{if(needSync())syncFiles()});
 setInterval(()=>{if(needSync())syncFiles()},6000);
 

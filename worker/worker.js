@@ -118,6 +118,16 @@ export default {
         return J({ error: 'not_found' }, 404);
       }
 
+      // найти приглашение по внутреннему id (нужно боту для пожеланий гостей)
+      m = /^\/api\/byid\/([a-z0-9]{3,12})$/.exec(path);
+      if (m && req.method === 'GET') {
+        const slug = await env.INV.get('id:' + m[1]);
+        if (!slug) return J({ error: 'not_found' }, 404);
+        const o = await env.INV.get('inv:' + slug, 'json');
+        if (!o || o.r) return J({ error: 'not_found' }, 404);
+        return J({ slug, o }, 200, { 'cache-control': 'public, max-age=5' });
+      }
+
       // мои приглашения (по подписи)
       if (path === '/api/mine' && req.method === 'GET') {
         const owner = await verifyInit(req.headers.get('x-tg-init') || url.searchParams.get('init') || '', env.BOT_TOKEN);
@@ -146,6 +156,7 @@ export default {
         if (old && old !== slug && /^[a-z0-9-]{1,60}$/.test(old)) await env.INV.put('inv:' + old, JSON.stringify({ ...o, r: slug }));
         if (ver) o.v = ver;
         await env.INV.put('inv:' + slug, JSON.stringify(o));
+        await env.INV.put('id:' + o.i, slug);
         own[o.i] = slug;
         await env.INV.put('own:' + owner, JSON.stringify(own));
         return J({ ok: true, slug, v: ver, name: [o.a, o.b].filter(Boolean).join(' & ') }, 200, { 'cache-control': 'no-store' });
@@ -159,6 +170,7 @@ export default {
         for (const it of body.items || []) {
           if (!/^[a-z0-9-]{1,60}$/.test(it.slug || '') || !it.data) continue;
           await env.INV.put('inv:' + it.slug, JSON.stringify(it.data)); n++;
+          if (it.data && it.data.i && !it.data.r) await env.INV.put('id:' + it.data.i, it.slug);
         }
         for (const [owner, ix] of Object.entries(body.own || {})) {
           if (!/^\d{3,15}$/.test(owner)) continue;

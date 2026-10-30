@@ -39,4 +39,9 @@ r = await call('POST', '/api/import', { items: [] }); T('импорт без к�
 r = await call('POST', '/api/import', { items: [{ slug: 'old-one', data: { a: 'X', o: '5', i: 'q' } }], own: { 5: { q: 'old-one' } } }, { 'x-admin': 'adm' }); j = await r.json(); T('импорт с ключом', j.imported === 1);
 r = await call('OPTIONS', '/api/inv'); T('CORS preflight', r.status === 204 && r.headers.get('access-control-allow-origin') === '*');
 for (let k = 0; k < 40; k++) r = await call('POST', '/api/inv', { init: sign(u2), data: { ...data, i: 'q' + k } }); T('лимит частоты 429', r.status === 429 || r.status === 400);
+
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'byid77', a: 'Тест', b: 'Ид' }, v: 'v9' }); j = await r.json();
+r = await call('GET', '/api/byid/byid77'); const bj = await r.json(); T('byid находит приглашение', r.status === 200 && bj.slug === j.slug && bj.o.i === 'byid77');
+r = await call('GET', '/api/byid/nonexist'); T('byid нет → 404', r.status === 404);
+r = await call('GET', '/api/byid/BAD!'); T('byid плохой id → 404', r.status === 404);
 console.log(`\nИТОГО: ${ok} ok, ${bad} fail`); process.exit(bad ? 1 : 0);
