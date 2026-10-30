@@ -356,7 +356,7 @@ const webLink=(it,gIdx)=>{const s=wantSlug(it);const base=SITE+'i/'+s;if(gIdx==n
 const botLink=(it,gIdx)=>{const s=wantSlug(it);let p='i_'+s;if(gIdx!=null){const g=it.guests[gIdx];if(g&&g.k)p+='__'+g.k}return p.length>64?'':'https://t.me/'+BOT+'?start='+p};
 const linkFor=(it,gIdx)=>(ST.wl?'':botLink(it,gIdx))||webLink(it,gIdx);
 const publishText=it=>'#taklif '+pack(Object.assign(payload(it),{v:sig(it)}));
-const doPublish=it=>{it.ps=sig(it);(ST.pubAt=ST.pubAt||{})[it.id]=Date.now();persist();const txt=publishText(it);if(SENDMODE&&tg&&tg.sendData){try{tg.sendData(txt);setTimeout(()=>{try{tg.close()}catch(e){}},400);return}catch(e){}}try{copy(txt)}catch(e){}const u='https://t.me/'+BOT+'?start=publish';if(tg&&V('6.1')){tg.openTelegramLink(u);setTimeout(()=>{try{tg.close()}catch(e){}},500)}else window.open(u,'_blank')};
+const doPublish=it=>{it.ps=sig(it);(ST.pubAt=ST.pubAt||{})[it.id]=Date.now();persist();const txt=publishText(it);if(SENDMODE&&tg&&tg.sendData){try{tg.sendData(txt);setTimeout(()=>{try{tg.close()}catch(e){}},400);return}catch(e){}}try{copy(txt)}catch(e){}delete (ST.pubAt||{})[it.id];persist();const u='https://t.me/'+BOT+'?start=publish';if(tg&&V('6.1')){tg.openTelegramLink(u);setTimeout(()=>{try{tg.close()}catch(e){}},500)}else window.open(u,'_blank')};
 
 /* статус публикации с отсчётом: после отправки боту ждём 1-3 минуты, страница обновляется сама */
 const PUB_ETA=110;

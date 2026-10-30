@@ -473,6 +473,10 @@ async function onMessage(m) {
   }
   // /publish: кнопка клавиатуры, открывает мини-апп в режиме отправки (по ней данные приходят боту автоматически)
   if (/^\/(publish|start publish)(@\w+)?$/i.test(text)) {
+    await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Нажмите кнопку «✨ Открыть Marhabo» внизу, затем «Сохранить». Приглашение опубликуется само.', uz: "👇 Pastdagi «✨ Marhabo ni ochish» tugmasini bosing, so'ng «Saqlash». Taklifnoma o'zi e'lon bo'ladi.", en: '👇 Tap «✨ Open Marhabo» below, then Save. It publishes by itself.', kk: '👇 Төмендегі «✨ Marhabo ашу» түймесін басыңыз, содан кейін «Сақтау».' })[lang] || '', reply_markup: permKb(lang) });
+    return;
+  }
+  if (false) {
     const PB = { ru: ['📤 Опубликовать приглашение', 'Нажмите кнопку внизу, выберите приглашение и «Отправить боту». Вставлять ничего не нужно.'], uz: ["📤 Taklifnomani e'lon qilish", "Pastdagi tugmani bosing, taklifnomani tanlang va «Botga yuborish» ni bosing. Hech narsa qo'yish shart emas."], en: ['📤 Publish invitation', 'Tap the button below, pick the invitation and press "Send to bot". No pasting needed.'], kk: ['📤 Шақыруды жариялау', 'Төмендегі батырманы басып, шақыруды таңдаңыз да «Ботқа жіберу» басыңыз. Қоюдың қажеті жоқ.'] }[lang];
     await tg('sendMessage', { chat_id: chat, text: PB[1], reply_markup: { keyboard: [[{ text: PB[0], web_app: { url: APP_URL.replace(/\/?$/, '/') + '?send=1' } }]], resize_keyboard: true, one_time_keyboard: true } });
     KBCHATS.add(chat);
@@ -673,7 +677,7 @@ const infoKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { u
 const bannerUrl = (lang) => `${APP_URL.replace(/\/?$/, '/')}brand/banner_${lang}.jpg`;
 
 async function sendStart(chat, lang) {
-  if (!PERMSHOWN.has(chat)) { PERMSHOWN.add(chat); await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Кнопка внизу открывает Marhabo и публикует приглашение в один шаг', uz: '👇 Pastdagi tugma Marhabo ni ochadi va taklifnomani bir qadamda e\'lon qiladi', en: '👇 The button below opens Marhabo and publishes in one step', kk: '👇 Төмендегі түйме Marhabo ашады және бір қадамда жариялайды' })[lang] || '', reply_markup: permKb(lang) }); }
+  { PERMSHOWN.add(chat); await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Кнопка внизу открывает Marhabo и публикует приглашение в один шаг', uz: '👇 Pastdagi tugma Marhabo ni ochadi va taklifnomani bir qadamda e\'lon qiladi', en: '👇 The button below opens Marhabo and publishes in one step', kk: '👇 Төмендегі түйме Marhabo ашады және бір қадамда жариялайды' })[lang] || '', reply_markup: permKb(lang) }); }
   const r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) });
   if (!r) await tg('sendMessage', { chat_id: chat, text: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) }); // запасной путь без картинки
 }
