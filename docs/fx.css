@@ -31,13 +31,13 @@
   background:linear-gradient(105deg,var(--fa1,#8a6a35) 0%,var(--fa2,#e6c98a) 22%,var(--fa1,#8a6a35) 40%,var(--fa3,#f6e3b4) 54%,var(--fa1,#8a6a35) 70%,var(--fa2,#e6c98a) 100%);
   background-size:220% 100%;
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;
-  animation:foil 7s ease-in-out infinite;
-  filter:drop-shadow(0 1px 0 rgba(255,255,255,.55)) drop-shadow(0 2px 3px rgba(90,60,20,.18));
+  background-position:38% 0;
+  text-shadow:none;
 }
 @keyframes foil{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
 
 /* ---------- 1. Печать из воска ---------- */
-.seal{overflow:visible !important;filter:drop-shadow(0 10px 10px rgba(60,10,10,.35)) drop-shadow(0 2px 2px rgba(60,10,10,.35))}
+.seal{overflow:visible !important;border-radius:50%;box-shadow:0 10px 14px -6px rgba(60,10,10,.45),0 2px 3px rgba(60,10,10,.3)}
 .seal .d{
   border-radius:48% 52% 50% 50% / 52% 48% 52% 48% !important;
   background:
@@ -67,15 +67,14 @@
 .seal.fx-press{animation:pressWax .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes pressWax{0%{transform:scale(1)}35%{transform:scale(.88)}100%{transform:scale(1)}}
 .seal.fx-crack{animation:crackWax .55s ease forwards}
-@keyframes crackWax{0%{transform:scale(1) rotate(0)}30%{transform:scale(.9) rotate(-3deg)}100%{transform:scale(1.5) rotate(8deg);opacity:0;filter:blur(2px)}}
+@keyframes crackWax{0%{transform:scale(1) rotate(0)}30%{transform:scale(.9) rotate(-3deg)}100%{transform:scale(1.5) rotate(8deg);opacity:0}}
 /* пульс-подсказка */
 .seal .fxh{position:absolute;inset:-14px;border-radius:999px;border:1px solid rgba(180,60,60,.35);animation:ring 2.6s ease-out infinite;pointer-events:none}
 
 /* ---------- 3. Появление блоков при прокрутке ---------- */
-.fx-rv{opacity:0;transform:translateY(26px) scale(.985);filter:blur(3px);
-  transition:opacity .9s cubic-bezier(.22,1,.36,1),transform .9s cubic-bezier(.22,1,.36,1),filter .9s ease}
-.fx-rv.fx-in{opacity:1;transform:none;filter:none}
-.fx-rv.fx-d1{transition-delay:.08s}.fx-rv.fx-d2{transition-delay:.16s}.fx-rv.fx-d3{transition-delay:.24s}
+.fx-rv{opacity:0;transform:translate3d(0,16px,0);transition:opacity .4s ease-out,transform .4s ease-out}
+.fx-rv.fx-in{opacity:1;transform:none}
+.fx-rv.fx-d1{transition-delay:.05s}.fx-rv.fx-d2{transition-delay:.1s}.fx-rv.fx-d3{transition-delay:.15s}
 /* прорисовка орнамента */
 .fx-draw path,.fx-draw circle,.fx-draw line{stroke-dasharray:var(--l,260);stroke-dashoffset:var(--l,260);transition:stroke-dashoffset 2.2s cubic-bezier(.4,0,.2,1)}
 .fx-draw.fx-in path,.fx-draw.fx-in circle,.fx-draw.fx-in line{stroke-dashoffset:0}
@@ -103,7 +102,7 @@
 .fx-today{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;text-align:center;padding:14px 0}
 
 /* ---------- 4. Галерея: просмотр со свайпом и зумом ---------- */
-#lb{touch-action:none;user-select:none;-webkit-user-select:none;background:rgba(10,7,4,.92) !important;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#lb{touch-action:none;user-select:none;-webkit-user-select:none;background:rgba(10,7,4,.96) !important}
 #lb .fxs{position:relative;width:100%;max-width:460px;height:82vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
 #lb .fxs img{position:absolute;max-width:100%;max-height:100%;width:auto !important;object-fit:contain;border-radius:14px;
   box-shadow:0 30px 60px -20px rgba(0,0,0,.7);will-change:transform;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .3s}
@@ -119,7 +118,10 @@
 
 /* ---------- 5. Лепестки и конфетти ---------- */
 #fxc{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;height:100%}
-#fxp{position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%}
+#fxp{position:fixed;inset:0;z-index:1;pointer-events:none;contain:strict;overflow:hidden}
+#fxp i{position:absolute;top:-24px;display:block;border-radius:70% 0 70% 0;background:linear-gradient(135deg,var(--a),var(--b));opacity:0;will-change:transform;animation:fxfall linear infinite}
+#fxp.paused i{animation-play-state:paused}
+@keyframes fxfall{0%{transform:translate3d(0,0,0) rotate(0);opacity:0}8%{opacity:var(--o)}92%{opacity:var(--o)}100%{transform:translate3d(var(--dx),calc(100vh + 48px),0) rotate(var(--r));opacity:0}}
 #fx .pt{display:none}
 
 /* ---------- 6. Календарь, маршрут, такси ---------- */
@@ -278,7 +280,7 @@ body[data-th=nikah] .card::before{opacity:.05}
 .ctb:active{transform:scale(.96)}.ctb:hover{box-shadow:0 14px 26px -18px currentColor}
 .fin{position:relative;overflow:hidden}
 .fin::before{content:"";position:absolute;inset:-30% -10% auto -10%;height:70%;background:radial-gradient(60% 80% at 50% 0%,rgba(255,255,255,.16),transparent 70%);pointer-events:none}
-.mono{width:74px;height:74px;margin:16px auto 14px;border:1px solid;border-radius:50%;display:grid;place-items:center;font-family:"Cormorant Garamond",Georgia,serif;font-size:26px;letter-spacing:.06em;animation:monoGlow 4.6s ease-in-out infinite}
+.mono{width:74px;height:74px;margin:16px auto 14px;border:1px solid;border-radius:50%;display:grid;place-items:center;font-family:"Cormorant Garamond",Georgia,serif;font-size:26px;letter-spacing:.06em;box-shadow:0 0 22px 1px rgba(255,255,255,.14)}
 @keyframes monoGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}50%{box-shadow:0 0 28px 2px rgba(255,255,255,.22)}}
 
 @media (prefers-reduced-motion:reduce){.gc,.wc{opacity:1!important;transform:none!important;transition:none!important}.gc::after,.mono{animation:none!important}}
@@ -298,3 +300,22 @@ body[data-th=nikah] .card::before{opacity:.05}
 #fxcm button svg{color:#745a37;flex:none}
 #fxcm button:active{transform:scale(.985)}
 #fxcm .cmx{border-color:transparent;background:#f4ede2;color:#5a4a37}
+
+/* ---------- производительность: отрисовка только видимого ---------- */
+#st>div:nth-child(n+7){content-visibility:auto;contain-intrinsic-size:auto 520px}
+.fx-rv{will-change:opacity,transform}
+.fx-rv.fx-in{will-change:auto}
+html,body{background-color:#FCF9F3}
+#bg{transform:translateZ(0);contain:strict}
+#bg img{filter:none!important}
+.sq,.fx-cal,.gc,.wc{contain:layout paint}
+@media (prefers-reduced-motion:reduce){#fxp{display:none}.fx-rv{opacity:1;transform:none;transition:none}}
+
+/* ---------- линии «Gold Hairline»: чёткие, без швов ---------- */
+.lh{display:flex;align-items:center;gap:12px}
+.lh i{flex:1;height:1px;opacity:.95;-webkit-mask-image:linear-gradient(90deg,transparent,#000);mask-image:linear-gradient(90deg,transparent,#000)}
+.lh i:last-child{-webkit-mask-image:linear-gradient(270deg,transparent,#000);mask-image:linear-gradient(270deg,transparent,#000)}
+.lh p{position:relative;margin:0;white-space:nowrap}
+.card,.gate{transform:translateZ(0)}
+.card .in{border-radius:21px}
+@media (min-resolution:2.5dppx){.lh i{height:.5px;min-height:.5px}}

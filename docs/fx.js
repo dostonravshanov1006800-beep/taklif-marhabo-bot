@@ -79,6 +79,15 @@
     }
   });
 
+  /* прогрев: пока гость читает первый экран, в простое готовим слои нижних блоков */
+  var warmUp = safe(function () {
+    var st = $('st'); if (!st) return;
+    var idle = window.requestIdleCallback || function (f) { return setTimeout(f, 600); };
+    idle(function () {
+      var n = 0; [].slice.call(st.children).forEach(function (k) { if (n++ > 12) return; void k.offsetHeight; });
+    });
+  });
+
   /* ---------- 3. Появление при прокрутке + параллакс ---------- */
   var io = null;
   var setupReveal = safe(function () {
@@ -151,33 +160,23 @@
   function pad(x) { return String(x).padStart(2, '0'); }
 
   /* ---------- 5. Лепестки (canvas) и конфетти ---------- */
-  var petalsOn = false, pCv, pCx, parts = [], pRaf = 0;
+  var petalsOn = false;
   var startPetals = safe(function () {
     if (petalsOn || RM) return; petalsOn = true;
     var c = getCtx(); if (!c) return;
-    pCv = document.createElement('canvas'); pCv.id = 'fxp'; document.body.appendChild(pCv);
-    pCx = pCv.getContext('2d');
-    var dpr = Math.min(2, window.devicePixelRatio || 1);
-    var rs = function () { pCv.width = innerWidth * dpr; pCv.height = innerHeight * dpr; pCx.setTransform(dpr, 0, 0, dpr, 0, 0); };
-    rs(); addEventListener('resize', rs);
     var pal = PAL[c.type] || PAL.wedding;
-    var N = Math.min(26, Math.round(innerWidth / 18));
-    for (var i = 0; i < N; i++) parts.push(newPetal(pal, true));
-    var last = performance.now(), vis = true;
-    document.addEventListener('visibilitychange', function () { vis = !document.hidden; if (vis) { last = performance.now(); loop(last); } });
-    function loop(now) {
-      if (!vis) return;
-      var dt = Math.min(48, now - last) / 16.67; last = now;
-      pCx.clearRect(0, 0, innerWidth, innerHeight);
-      for (var i = 0; i < parts.length; i++) {
-        var p = parts[i];
-        p.t += dt * p.ts; p.y += p.vy * dt; p.x += (p.vx + Math.sin(p.t) * p.sw) * dt; p.rot += p.vr * dt; p.flip += p.vf * dt;
-        if (p.y > innerHeight + 30 || p.x < -40 || p.x > innerWidth + 40) { parts[i] = newPetal(pal, false); continue; }
-        drawPetal(pCx, p);
-      }
-      pRaf = requestAnimationFrame(loop);
+    // один фиксированный слой; лепестки двигает только CSS (transform), без JS-цикла и без градиента на каждом кадре
+    var N = innerWidth < 600 ? 10 : 18;
+    var layer = document.createElement('div'); layer.id = 'fxp';
+    var h = '';
+    for (var i = 0; i < N; i++) {
+      var col = pal[i % pal.length], s = 9 + Math.random() * 8, x = Math.random() * 100, dur = 11 + Math.random() * 9, del = -Math.random() * dur,
+        dx = (Math.random() - 0.5) * 90, rot = 180 + Math.random() * 300, op = 0.55 + Math.random() * 0.35;
+      h += '<i style="left:' + x.toFixed(1) + '%;width:' + s.toFixed(1) + 'px;height:' + (s * 1.35).toFixed(1) + 'px;--a:' + col[0] + ';--b:' + col[1] + ';--dx:' + dx.toFixed(0) + 'px;--r:' + rot.toFixed(0) + 'deg;--o:' + op.toFixed(2) + ';animation-duration:' + dur.toFixed(1) + 's;animation-delay:' + del.toFixed(1) + 's"></i>';
     }
-    pRaf = requestAnimationFrame(loop);
+    layer.innerHTML = h; document.body.appendChild(layer);
+    // вкладка скрыта: останавливаем анимацию
+    document.addEventListener('visibilitychange', function () { layer.style.animationPlayState = ''; layer.classList.toggle('paused', document.hidden); });
   });
   var PAL = {
     wedding: [['#fbe3e6', '#f1b9c2'], ['#fff5f0', '#f4d6cc'], ['#fde9c9', '#e8c07a']],
@@ -471,7 +470,7 @@
     if (!getCtx()) return;
     applyThemeVars(); setupSeal();
     if ($('card')) { setupTheme(); setupFoil(); setupCountdown(); setupMusic(); setupGallery(); setupRsvp(); setupCards(); }
-    if ($('st') && $('st').children.length) { setupActions(); setupReveal(); setupParallax(); }
+    if ($('st') && $('st').children.length) { setupActions(); setupReveal(); warmUp(); setupParallax(); }
     bootDone = !!($('seal') && $('st') && $('st').children.length);
   });
   window.__fxBoot = boot;
