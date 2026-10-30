@@ -29,7 +29,7 @@
     // воск: по типу праздника
     var wax = { wedding: ['#a8323a', '#7d1f27', '#5e141b'], nikah: ['#5d7a4a', '#3f5a33', '#2c4023'], birthday: ['#e0805f', '#c25a3c', '#923f27'], anniversary: ['#3f8a6a', '#2a6a4f', '#1c4a37'], navruz: ['#2aa684', '#1b7f64', '#115a46'], other: ['#8e5a78', '#6b3f58', '#4c2b3e'] }[c.type] || ['#a8323a', '#7d1f27', '#5e141b'];
     root.style.setProperty('--wx2', wax[0]); root.style.setProperty('--wx1', wax[1]); root.style.setProperty('--wx0', wax[2]);
-    root.style.setProperty('--cdt', '#fffdf8'); root.style.setProperty('--cdb', th.accentSoft + 'cc');
+    root.style.setProperty('--fbase', th.base);
   }
   function shade(hex, p) {
     var m = /^#?([0-9a-f]{6})$/i.exec(hex); if (!m) return hex;
@@ -114,14 +114,16 @@
     addEventListener('resize', upd, { passive: true }); upd();
   });
 
-  /* ---------- 2. Механическое табло ---------- */
+  /* ---------- 2. Табло «Кольца времени» ---------- */
   var cdState = {};
+  var RING_R = 34, RING_C = 2 * Math.PI * RING_R;
   var setupCountdown = safe(function () {
     var w = $('cdw'); if (!w) return;
     var c = getCtx(); if (!c) return;
     var tick = function () {
       var I = c.I; if (!I.date) { w.innerHTML = ''; return; }
-      var d = new Date(I.date + 'T' + (I.time || '12:00').slice(0, 5) + ':00') - new Date();
+      var t = (I.time || '12:00').slice(0, 5);
+      var d = new Date(I.date + 'T' + t + ':00') - new Date();
       if (isNaN(d)) { return; }
       if (d <= 0) {
         if (!w.querySelector('.fx-today')) {
@@ -130,38 +132,37 @@
         }
         return;
       }
-      var v = [Math.floor(d / 864e5), Math.floor(d % 864e5 / 36e5), Math.floor(d % 36e5 / 6e4), Math.floor(d % 6e4 / 1e3)];
+      var days = Math.floor(d / 864e5), hrs = Math.floor(d % 864e5 / 36e5), mins = Math.floor(d % 36e5 / 6e4), secs = Math.floor(d % 6e4 / 1e3);
+      var v = [days, hrs, mins, secs];
+      // доля каждого кольца: дни от 100, часы от 24, минуты и секунды от 60
+      var f = [Math.min(1, days / 100), (hrs + mins / 60) / 24, (mins + secs / 60) / 60, (secs + (1 - (d % 1000) / 1000)) / 60];
       var labels = [c.T.day, c.T.hour, c.T.min, c.T.sec];
-      var host = w.querySelector('.cd');
-      if (!host || host.children.length !== 4 || !host.dataset.fx) {
-        w.innerHTML = '<div style="margin-top:28px"><p class="up" style="text-align:center;font-size:10px;letter-spacing:.32em;color:' + c.th.muted + '">' + c.T.countdown + '</p><div class="cd" data-fx="1">' +
+      var host = w.querySelector('.rg');
+      if (!host || host.children.length !== 4) {
+        w.innerHTML = '<div class="rgw"><p class="up rgt" style="color:' + c.th.muted + '">' + c.T.countdown + '</p><div class="rg" data-fx="1">' +
           v.map(function (x, i) {
-            var s = pad(x);
-            return '<div data-i="' + i + '" style="border:1px solid ' + c.th.accentSoft + '"><div class="fp t" style="color:' + c.th.ink + '"><span>' + s + '</span></div><div class="fp b" style="color:' + c.th.ink + '"><span>' + s + '</span></div><small style="color:' + c.th.muted + '">' + labels[i] + '</small></div>';
+            return '<div class="rc" data-i="' + i + '"><div class="ring"><svg viewBox="0 0 80 80" aria-hidden="true"><circle class="bg" cx="40" cy="40" r="' + RING_R + '"/><circle class="fg" cx="40" cy="40" r="' + RING_R + '" stroke-dasharray="' + RING_C.toFixed(2) + '" stroke-dashoffset="' + (RING_C * (1 - f[i])).toFixed(2) + '"/></svg>' +
+              '<span class="num"><b>' + pad(x) + '</b></span></div><small>' + esc(labels[i]) + '</small></div>';
           }).join('') + '</div></div>';
         cdState = { v: v.map(pad) };
         return;
       }
       v.forEach(function (x, i) {
-        var s = pad(x), cell = host.children[i];
-        if (cdState.v[i] === s) return;
-        flip(cell, cdState.v[i], s, c); cdState.v[i] = s;
+        var cell = host.children[i], s2 = pad(x);
+        var fg = cell.querySelector('.fg'); if (fg) fg.style.strokeDashoffset = (RING_C * (1 - f[i])).toFixed(2);
+        if (cdState.v[i] === s2) return;
+        var num = cell.querySelector('.num');
+        if (RM) { num.querySelector('b').textContent = s2; cdState.v[i] = s2; return; }
+        var old = num.querySelector('b'), nu = document.createElement('b'); nu.textContent = s2; nu.className = 'in';
+        old.classList.add('out'); num.appendChild(nu);
+        setTimeout(function () { if (old.parentNode) old.remove(); nu.classList.remove('in'); }, 460);
+        cdState.v[i] = s2;
       });
     };
-    window.__fxOwnsCd = function () { return !!(w.querySelector('.cd[data-fx]') || w.querySelector('.fx-today')); };
+    window.__fxOwnsCd = function () { return !!(w.querySelector('.rg[data-fx]') || w.querySelector('.fx-today')); };
     tick(); setInterval(tick, 1000);
   });
   function pad(x) { return String(x).padStart(2, '0'); }
-  function flip(cell, from, to, c) {
-    if (RM) { cell.querySelectorAll('.fp:not(.fl) span').forEach(function (s) { s.textContent = to; }); return; }
-    var t = cell.querySelector('.fp.t:not(.fl)'), b = cell.querySelector('.fp.b:not(.fl)');
-    cell.querySelectorAll('.fl').forEach(function (n) { n.remove(); });
-    var ft = mk('t', from), fb = mk('b', to);
-    function mk(k, val) { var d = document.createElement('div'); d.className = 'fp fl ' + k; d.style.color = c.th.ink; d.style.background = k === 't' ? 'var(--cdt)' : 'var(--cdb)'; d.innerHTML = '<span>' + val + '</span>'; return d; }
-    t.querySelector('span').textContent = to;
-    cell.insertBefore(ft, cell.querySelector('small')); cell.insertBefore(fb, cell.querySelector('small'));
-    setTimeout(function () { b.querySelector('span').textContent = to; ft.remove(); fb.remove(); }, 760);
-  }
 
   /* ---------- 5. Лепестки (canvas) и конфетти ---------- */
   var petalsOn = false, pCv, pCx, parts = [], pRaf = 0;
@@ -245,11 +246,17 @@
     var y = +m[1], mo = +m[2] - 1, d = +m[3];
     var first = new Date(y, mo, 1).getDay(), dim = new Date(y, mo + 1, 0).getDate();
     var lead = (first + 6) % 7; // неделя с понедельника
-    var wd = [1, 2, 3, 4, 5, 6, 0].map(function (i) { return '<i>' + esc((T.dw && T.dw[i]) || T.days[i].slice(0, 2)) + '</i>'; }).join('');
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var wd = [1, 2, 3, 4, 5, 6, 0].map(function (i, k) { return '<i' + (k > 4 ? ' class="we"' : '') + '>' + esc((T.dw && T.dw[i]) || T.days[i].slice(0, 2)) + '</i>'; }).join('');
     var cells = '', i;
     for (i = 0; i < lead; i++) cells += '<b class="e"></b>';
-    for (i = 1; i <= dim; i++) cells += i === d ? '<b class="on"><span>' + i + '</span></b>' : '<b>' + i + '</b>';
-    return '<div class="fx-cal"><div class="hd"><span class="mn">' + esc(T.months[mo]) + '</span><span class="yr">' + y + '</span></div>' +
+    for (i = 1; i <= dim; i++) {
+      var past = new Date(y, mo, i) < today, col = (lead + i - 1) % 7;
+      if (i === d) cells += '<b class="on"><span class="hv" aria-label="' + i + '">' + i + '</span></b>';
+      else cells += '<b class="' + (past ? 'pa' : '') + (col > 4 ? ' we' : '') + '">' + i + '</b>';
+    }
+    var heart = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.1C.9 8.5 2.8 5 6.2 5c2 0 3.4 1 4.4 2.5h2.8C14.4 6 15.8 5 17.8 5c3.4 0 5.3 3.5 3.8 6.9C19.5 16.4 12 21 12 21z"/></svg>';
+    return '<div class="fx-cal"><div class="hd"><span class="yd">' + heart + '<em>' + esc(T.yourDay || '') + '</em></span><div class="ttl"><span class="mn">' + esc(T.months[mo]) + '</span><span class="yr">' + y + '</span></div></div>' +
       '<div class="wk">' + wd + '</div><div class="dg">' + cells + '</div></div>';
   }
   var setupActions = safe(function () {

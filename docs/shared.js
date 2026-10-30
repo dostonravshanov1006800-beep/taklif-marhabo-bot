@@ -48,6 +48,8 @@ export const THEMES = {
     theme: { page: 'radial-gradient(120% 100% at 50% 0%, #4A1A26 0%, #2C0E16 55%, #1A070C 100%)', card: 'linear-gradient(180deg, #3A141E 0%, #260B13 100%)', base: '#260B13', accent: '#E9BFA6', accentText: '#E9BFA6', accentSoft: '#6B3040', ink: '#FBEAE3', muted: '#CDA295' } },
   green:  { name: { ru: 'Зелёная', uz: 'Yashil', en: 'Green White', kk: 'Жасыл' }, dark: false, motif: 'laurel',
     theme: { page: 'radial-gradient(125% 110% at 50% 0%, #F8FCF9 0%, #E2F0E6 52%, #CBE3D3 100%)', card: 'linear-gradient(180deg, #FDFFFD 0%, #EDF6F0 100%)', base: '#FDFFFD', accent: '#2A6049', accentText: '#2a6049', accentSoft: '#D2E6D9', ink: '#15291F', muted: '#56756A' } },
+  midnight: { name: { ru: 'Полночь', uz: 'Yarim tun', en: 'Midnight Silver', kk: 'Түн ортасы' }, dark: true, motif: 'star',
+    theme: { page: 'radial-gradient(120% 100% at 50% 0%, #16264A 0%, #0F1B33 55%, #070D1A 100%)', card: 'linear-gradient(180deg, #0F1B33 0%, #0B1426 100%)', base: '#0B1426', accent: '#B9C7E6', accentText: '#B9C7E6', accentSoft: '#2A3C66', ink: '#EAF0FA', muted: '#9FB0D0' } }
 };
 
 // ---- кодирование приглашения в ссылку (без сервера) ----

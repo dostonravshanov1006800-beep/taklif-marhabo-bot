@@ -2,6 +2,7 @@
 // Умеет только: /start (красивый текст + кнопка мини-приложения) и приём ответа гостя.
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, readdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { png as qrPng } from '../docs/qr.mjs';
 
 const TOKEN = process.env.BOT_TOKEN;
 const APP_URL = process.env.APP_URL;           // https://<user>.github.io/<repo>/
@@ -80,6 +81,23 @@ async function tg(method, body = {}) {
   return null;
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// Отправка файла (QR) в Telegram: multipart/form-data
+async function tgFile(method, field, buf, filename, mime, fields = {}) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.append(k, typeof v === 'string' ? v : JSON.stringify(v));
+      fd.append(field, new Blob([buf], { type: mime }), filename);
+      const r = await fetch(`${API}/${method}`, { method: 'POST', body: fd, signal: AbortSignal.timeout(40000) });
+      const j = await r.json();
+      if (j.ok) return j.result;
+      if (j.error_code === 429) { await sleep((j.parameters?.retry_after || 2) * 1000); continue; }
+      console.error(method, j.description); return null;
+    } catch (e) { await sleep(1500 + i * 1500); }
+  }
+  return null;
+}
+
 
 const T = {
   ru: {
@@ -353,7 +371,7 @@ function sanitizeInv(d, owner) {
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
   if (!o.a || !o.i) return null;
   if (d.w === 1 || d.w === true) o.w = 1;
-  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green'].includes(d.th)) o.th = d.th;
+  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].includes(d.th)) o.th = d.th;
   // тойона: до 3 карт [[16 цифр, имя, банк]]; карта с другим числом цифр отбрасывается
   if (Array.isArray(d.tc)) {
     const BANKS = ['Uzcard', 'Humo', 'Visa', 'Mastercard'];
@@ -421,6 +439,26 @@ async function onMessage(m) {
 
 
 
+  // ---- QR-код приглашения: "#qr <slug>" -> фото QR с текстом + файл без сжатия (только владельцу) ----
+  const qrm = text.match(/^#qr\s+([a-z0-9-]{2,60})(?:\s+(w))?$/i);
+  if (qrm) {
+    const slug = qrm[1].toLowerCase();
+    const o = readInv(slug);
+    const QL = {
+      ru: ['⚠️ Приглашение не найдено или оно принадлежит другому владельцу.', 'Откройте камеру телефона и наведите на QR-код, чтобы увидеть приглашение', '📎 QR без сжатия для печати'],
+      uz: ['⚠️ Taklifnoma topilmadi yoki boshqa egaga tegishli.', "Taklifnomani ko'rish uchun telefon kamerasini QR-kodga qarating", '📎 Bosma uchun siqilmagan QR'],
+      en: ['⚠️ Invitation not found or it belongs to another owner.', 'Point your phone camera at the QR code to see the invitation', '📎 Uncompressed QR for printing'],
+      kk: ['⚠️ Шақыру табылмады немесе басқа иесіне тиесілі.', 'Шақыруды көру үшін телефон камерасын QR-кодқа бағыттаңыз', '📎 Басып шығаруға арналған QR'],
+    }[lang];
+    if (!o || String(o.o) !== String(m.from.id)) { await tg('sendMessage', { chat_id: chat, text: QL[0] }); return; }
+    const link = qrm[2] ? `${APP_URL.replace(/\/?$/, '/')}i/${slug}/` : `https://t.me/${BOT_NAME}?start=i_${slug}`;
+    let buf = null; try { buf = await qrPng(link, 720); } catch (e) { console.error('qr', String(e.message).slice(0, 80)); }
+    if (!buf) { await tg('sendMessage', { chat_id: chat, text: QL[0] }); return; }
+    const caption = `${cardCaption(o, '').replace(/^💌 [^\n]*\n\n/, '💌 ')}\n\n${QL[1]}\n🔗 ${link}`;
+    await tgFile('sendPhoto', 'photo', buf, `taklifnoma-${slug}.png`, 'image/png', { chat_id: String(chat), caption, parse_mode: 'HTML' });
+    await tgFile('sendDocument', 'document', buf, `taklifnoma-qr-${slug}.png`, 'image/png', { chat_id: String(chat), caption: QL[2] });
+    return;
+  }
   // ---- каталог услуг ----
   const svc = text.match(/^#svc\s+([A-Za-z0-9_-]{20,3000})$/);
   if (svc) {

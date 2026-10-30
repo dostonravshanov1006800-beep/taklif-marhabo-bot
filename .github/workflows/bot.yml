@@ -6,7 +6,7 @@ on:
     - cron: '*/20 * * * *'   # страховка: поднимет бота, если он остановился
   push:
     branches: [main]
-    paths: ['bot/bot.mjs', '.github/workflows/bot.yml']
+    paths: ['bot/bot.mjs', 'docs/qr.mjs', '.github/workflows/bot.yml']
 
 # Только один бот одновременно. Новый запуск (после обновления кода) заменяет старый.
 concurrency:
