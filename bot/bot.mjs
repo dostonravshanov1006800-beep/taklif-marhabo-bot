@@ -46,7 +46,7 @@ function publish() {
   if (!dirty.size) return;
   try {
     execSync('git config user.name "marhabo-bot" && git config user.email "bot@users.noreply.github.com"');
-    execSync('git add docs/data docs/media docs/inv docs/i docs/wishes bot-state');
+    execSync('git add docs/data docs/media docs/inv docs/i docs/wishes docs/services bot-state');
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     try { execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' }); }
     catch (e1) {
@@ -136,8 +136,62 @@ const T = {
     mediaBad: '⚠️ Rasm (JPG, PNG, WebP), musiqa (MP3, M4A, OGG, WAV) yoki video (MP4, WebM, 19 MB gacha) kerak. Rasm, video yoki fayl sifatida yuboring.',
     guest: 'Mehmon',
   },
+  en: {
+    start:
+      '🌿 <b>Marhabo</b>\n<i>Invitations for weddings and celebrations</i>\n\n' +
+      'A beautiful card where every guest sees their own name. "I will come / I can\'t" answers arrive right here.\n\n' +
+      'Press <b>Start</b> to create an invitation in a minute.',
+    info:
+      '📖 <b>How it works</b>\n\n' +
+      '1️⃣ Press <b>Start</b> and pick a template: wedding, nikah, anniversary, birthday, Navruz.\n' +
+      '2️⃣ Enter names, date and place. Add photos and music: send the file straight to this chat.\n' +
+      '3️⃣ Press <b>Save</b>: this chat opens with a ready message, just press "Send".\n' +
+      '4️⃣ Get a pretty link like <code>/i/couple-names</code> and a personal one for each guest.\n\n' +
+      '🔔 Guest answers arrive here instantly.\n' +
+      '🆓 Free, works around the clock.',
+    btn: '✨ Start',
+    btnInfo: 'ℹ️ Information',
+    btnBack: '‹ Back',
+    yes: (n) => `✅ <b>${n}</b> will come`,
+    no: (n) => `❌ <b>${n}</b> can't come`,
+    thanksYes: '🌿 Thank you! Your answer "I will come" was sent to the host. See you at the celebration!',
+    thanksNo: 'Thank you for answering. We told the host.',
+    mediaOk: (kb) => `✅ File saved (${kb} KB). Go back to Marhabo: in 1-2 minutes it will appear by itself and become visible to guests.`,
+    mediaBig: '⚠️ The file is larger than 19 MB. Compress it and send again.',
+    pubOk: (n) => `✅ The invitation <b>${n}</b> is published. The link below will work in 1-2 minutes. Go back to Marhabo: guest links will become short.`,
+    pubBad: '⚠️ Could not read the invitation. Go back to Marhabo and press "Publish" again.',
+    mediaBad: '⚠️ Send a photo (JPG, PNG, WebP), music (MP3, M4A, OGG, WAV) or video (MP4, WebM up to 19 MB). Send it as a photo, video or file.',
+    guest: 'Guest',
+  },
+  kk: {
+    start:
+      '🌿 <b>Marhabo</b>\n<i>Той және мерекеге шақырулар</i>\n\n' +
+      'Әр қонақ өз атын көретін әдемі открытка. «Келемін / Келе алмаймын» жауаптары осында түседі.\n\n' +
+      'Бір минутта шақыру жасау үшін <b>Бастау</b> түймесін басыңыз.',
+    info:
+      '📖 <b>Бұл қалай жұмыс істейді</b>\n\n' +
+      '1️⃣ <b>Бастау</b> түймесін басып, үлгіні таңдаңыз: той, неке, мерейтой, туған күн, Наурыз.\n' +
+      '2️⃣ Аттарды, күнді және орынды жазыңыз. Фото мен музыка қосыңыз: файлды осы чатқа жіберіңіз.\n' +
+      '3️⃣ <b>Сақтау</b> түймесін басыңыз: осы чат дайын хабарламамен ашылады, «Жіберу» түймесін басыңыз.\n' +
+      '4️⃣ <code>/i/жұп-аттары</code> түріндегі әдемі сілтеме және әр қонаққа жеке сілтеме алыңыз.\n\n' +
+      '🔔 Қонақтардың жауаптары осында бірден келеді.\n' +
+      '🆓 Тегін, тәулік бойы жұмыс істейді.',
+    btn: '✨ Бастау',
+    btnInfo: 'ℹ️ Ақпарат',
+    btnBack: '‹ Артқа',
+    yes: (n) => `✅ <b>${n}</b> келеді`,
+    no: (n) => `❌ <b>${n}</b> келе алмайды`,
+    thanksYes: '🌿 Рахмет! «Келемін» деген жауабыңыз шақыру иесіне жіберілді. Мерекеде кездескенше!',
+    thanksNo: 'Жауабыңызға рахмет. Шақыру иесіне хабарладық.',
+    mediaOk: (kb) => `✅ Файл сақталды (${kb} КБ). Marhabo-ға оралыңыз: 1-2 минутта ол өзі қосылып, қонақтарға көрінеді.`,
+    mediaBig: '⚠️ Файл 19 МБ-тан үлкен. Оны кішірейтіп, қайта жіберіңіз.',
+    pubOk: (n) => `✅ <b>${n}</b> шақыруы жарияланды. Төмендегі сілтеме 1-2 минутта жұмыс істейді. Marhabo-ға оралыңыз: қонақ сілтемелері қысқа болады.`,
+    pubBad: '⚠️ Шақыруды оқу мүмкін болмады. Marhabo-ға оралып, «Жариялау» түймесін қайта басыңыз.',
+    mediaBad: '⚠️ Фото (JPG, PNG, WebP), музыка (MP3, M4A, OGG, WAV) немесе бейне (MP4, WebM, 19 МБ дейін) керек. Оны фото, бейне немесе файл ретінде жіберіңіз.',
+    guest: 'Қонақ',
+  },
 };
-const langOf = (u) => ((u?.language_code || 'ru').startsWith('uz') ? 'uz' : 'ru');
+const langOf = (u) => { const c = String(u?.language_code || 'ru').toLowerCase().slice(0, 2); return c === 'uz' ? 'uz' : c === 'en' ? 'en' : c === 'kk' ? 'kk' : 'ru'; };
 
 
 // ---- Приём файлов от владельца: фото/документ/аудио -> docs/media/<owner>/ ----
@@ -247,6 +301,39 @@ const cleanStr = (v, max) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').tri
 const okUrl = (u) => (/^https:\/\/[^\s<>"']{3,400}$/i.test(u || '') ? u : '');
 const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a|ogg|wav|mp4|webm)$/i.test(u || '') ? u : (okUrl(u)));
 
+
+// ---- Каталог услуг: "#svc <base64url JSON>" -> docs/services/<id>.json, индекс docs/services/index.json ----
+const SVC_CATS = ['restaurant','photo','host','singer','dj','decor','flowers','dress','rings','car','makeup','cakes','show','invite','other'];
+function sanitizeSvc(d, owner) {
+  if (!d || typeof d !== 'object') return null;
+  const name = cleanStr(d.n, 60);
+  const tel = String(d.p || '').replace(/[^\d+]/g, '').slice(0, 16);
+  const tg = String(d.t || '').replace(/^@/, '').replace(/[^A-Za-z0-9_]/g, '').slice(0, 32);
+  if (!name || (!/^\+?\d{7,15}$/.test(tel) && tg.length < 4)) return null;
+  const o = { i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(), c: SVC_CATS.includes(d.c) ? d.c : 'other', n: name,
+    city: cleanStr(d.city, 40), ds: cleanStr(d.ds, 300), o: String(owner) };
+  if (!o.i) return null;
+  if (/^\+?\d{7,15}$/.test(tel)) o.p = tel.startsWith('+') ? tel : '+' + tel;
+  if (tg.length >= 4) o.t = tg;
+  const pr = Math.floor(Number(d.pr)); if (Number.isFinite(pr) && pr > 0 && pr < 1e10) o.pr = pr;
+  const ph = d.ph && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(d.ph) ? d.ph : ''; if (ph) o.ph = ph;
+  if (d.ig) { const ig = String(d.ig).replace(/^@/, '').replace(/[^A-Za-z0-9_.]/g, '').slice(0, 30); if (ig.length >= 2) o.ig = ig; }
+  o.d = new Date().toISOString().slice(0, 10);
+  return o;
+}
+function writeSvcIndex() {
+  try {
+    mkdirSync('docs/services', { recursive: true }); mkdirSync('bot-state/services', { recursive: true });
+    const list = [];
+    for (const f of readdirSync('bot-state/services')) {
+      if (!f.endsWith('.json')) continue;
+      try { const o = JSON.parse(readFileSync(`bot-state/services/${f}`, 'utf8')); if (o && o.i && o.n) { const { o: _owner, ...pub } = o; list.push(pub); } } catch {}
+    }
+    list.sort((a, b) => String(b.d).localeCompare(String(a.d)));
+    writeFileSync('docs/services/index.json', JSON.stringify(list.slice(0, 500)));
+  } catch (e) { console.error('svc index failed'); }
+}
+
 // найти опубликованное приглашение по внутреннему id (поле i)
 function findInvById(id) {
   try {
@@ -333,6 +420,34 @@ async function onMessage(m) {
 
 
 
+
+  // ---- каталог услуг ----
+  const svc = text.match(/^#svc\s+([A-Za-z0-9_-]{20,3000})$/);
+  if (svc) {
+    let d = null; try { d = JSON.parse(Buffer.from(svc[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); } catch {}
+    const o = sanitizeSvc(d, m.from.id);
+    const SL = { ru: ['✅ Услуга добавлена в каталог. Она появится через минуту.', '⚠️ Не удалось прочитать карточку. Укажите название и телефон или Telegram.', '⚠️ Вы уже добавили максимум услуг (5).'], uz: ["✅ Xizmat katalogga qo'shildi. Bir daqiqada ko'rinadi.", "⚠️ Kartani o'qib bo'lmadi. Nom va telefon yoki Telegram kiriting.", "⚠️ Siz xizmatlarning maksimal soniga (5) yetdingiz."], en: ['✅ Service added to the catalog. It will appear in a minute.', '⚠️ Could not read the card. Add a name and a phone or Telegram.', '⚠️ You have reached the maximum of 5 services.'], kk: ['✅ Қызмет каталогқа қосылды. Бір минутта көрінеді.', '⚠️ Картаны оқу мүмкін болмады. Атауын және телефонды немесе Telegram көрсетіңіз.', '⚠️ Сіз қызметтердің ең көп санына (5) жеттіңіз.'] }[lang] || null;
+    const Ls = SL || ['✅', '⚠️', '⚠️'];
+    if (!o) { await tg('sendMessage', { chat_id: chat, text: Ls[1] }); return; }
+    mkdirSync('bot-state/services', { recursive: true });
+    const mine = readdirSync('bot-state/services').filter((f) => f.endsWith('.json')).map((f) => { try { return JSON.parse(readFileSync(`bot-state/services/${f}`, 'utf8')); } catch { return null; } }).filter((x) => x && String(x.o) === String(m.from.id) && x.i !== o.i);
+    if (mine.length >= 5) { await tg('sendMessage', { chat_id: chat, text: Ls[2] }); return; }
+    const ex = `bot-state/services/${o.i}.json`;
+    if (existsSync(ex)) { try { const old = JSON.parse(readFileSync(ex, 'utf8')); if (String(old.o) !== String(m.from.id)) { await tg('sendMessage', { chat_id: chat, text: Ls[1] }); return; } } catch {} }
+    writeFileSync(ex, JSON.stringify(o)); writeSvcIndex(); dirty.add('inv');
+    await tg('sendMessage', { chat_id: chat, text: Ls[0] });
+    publish();
+    return;
+  }
+  const sdel = text.match(/^#svcdel\s+([a-z0-9]{3,12})$/i);
+  if (sdel) {
+    const f = `bot-state/services/${sdel[1].toLowerCase()}.json`;
+    let ok = false;
+    try { const old = JSON.parse(readFileSync(f, 'utf8')); if (String(old.o) === String(m.from.id)) { unlinkSync(f); ok = true; } } catch {}
+    if (ok) { writeSvcIndex(); dirty.add('inv'); publish(); }
+    await tg('sendMessage', { chat_id: chat, text: ok ? '🗑 OK' : '⚠️' });
+    return;
+  }
   // ---- пожелания гостей: "#wish <invId> <base64url JSON {n,m,k}>" ----
   const wsh = text.match(/^#wish\s+([a-z0-9]{3,12})\s+([A-Za-z0-9_-]{4,1500})$/i);
   if (wsh) {

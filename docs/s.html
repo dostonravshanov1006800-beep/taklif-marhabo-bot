@@ -1,0 +1,84 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Taklifnoma · Services</title><meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#2B2219;--mu:#695b4b;--ac:#B28A50;--at:#745a37;--so:#EADBC4;--bg:#FCF9F3;--cd:#FFFEFB}
+body{font-family:Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased;background:radial-gradient(125% 110% at 50% 0%,#FCF8F1 0%,#F4EADD 52%,#E9D9C2 100%) fixed;color:var(--ink);min-height:100vh;overflow-x:hidden}
+.fd{font-family:'Cormorant Garamond',Georgia,serif}
+.w{max-width:560px;margin:0 auto;padding:18px 16px 70px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.back{border:1px solid var(--so);background:rgba(255,255,255,.7);width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer;color:var(--ink)}
+.lang{display:flex;gap:4px;background:rgba(255,255,255,.7);border:1px solid var(--so);border-radius:999px;padding:3px}.lang button{border:0;background:transparent;min-width:40px;height:34px;border-radius:999px;font:600 12px Manrope;color:var(--mu);cursor:pointer}.lang button.on{background:var(--ink);color:#fff}
+h1{font-size:36px;font-weight:500;line-height:1.1;margin:14px 0 6px}
+.sub{font-size:14px;color:var(--mu);line-height:1.5;margin-bottom:16px}
+.sr{position:relative;margin-bottom:12px}.sr input{width:100%;height:50px;border:1px solid var(--so);border-radius:16px;padding:0 16px 0 44px;font:inherit;font-size:15px;background:var(--cd);color:var(--ink);outline:none}.sr input:focus{box-shadow:0 0 0 3px rgba(178,138,80,.28)}.sr svg{position:absolute;left:15px;top:15px;color:var(--mu)}
+.cats{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.cats::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--so);background:rgba(255,255,255,.75);border-radius:999px;padding:0 16px;height:44px;font:600 13px Manrope;color:var(--ink);cursor:pointer;white-space:nowrap;transition:transform .15s,background .2s}.chip:active{transform:scale(.96)}.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.row2{display:flex;gap:8px;align-items:center;margin-bottom:14px}.row2 select{flex:1;height:44px;border:1px solid var(--so);border-radius:14px;background:var(--cd);padding:0 12px;font:inherit;font-size:14px;color:var(--ink)}
+.cnt{font-size:12px;color:var(--mu);margin:2px 2px 10px}
+.grid{display:grid;gap:14px}
+.card{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;background:var(--cd);border:1px solid var(--so);border-radius:20px;padding:12px;box-shadow:0 24px 40px -34px var(--ink);opacity:0;transform:translateY(18px);transition:opacity .6s calc(var(--i,0)*.05s),transform .7s cubic-bezier(.2,.7,.2,1) calc(var(--i,0)*.05s)}
+.card.shown{opacity:1;transform:none}
+.ph{width:96px;height:96px;border-radius:16px;background:linear-gradient(135deg,var(--so),#f6ead6);display:grid;place-items:center;overflow:hidden;color:var(--at);font:500 34px 'Cormorant Garamond',serif}.ph img{width:100%;height:100%;object-fit:cover}
+.bd{min-width:0}.cat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--at);font-weight:600}
+.nm{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;line-height:1.15;margin:2px 0 2px;overflow-wrap:anywhere}
+.mt{font-size:13px;color:var(--mu);display:flex;flex-wrap:wrap;gap:2px 10px}.pr{font-weight:700;color:var(--ink)}
+.ds{font-size:13px;line-height:1.5;margin-top:6px;color:var(--ink);overflow-wrap:anywhere}
+.ac{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.ac a{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:999px;font:600 13px Manrope;text-decoration:none;border:1px solid var(--ink);color:var(--ink);background:transparent}.ac a.p{background:var(--ink);color:#fff}
+.em{text-align:center;color:var(--mu);padding:36px 10px;font-size:14px}
+.add{display:flex;align-items:center;justify-content:center;min-height:52px;margin-top:22px;border-radius:16px;border:1px dashed var(--ac);color:var(--at);font:600 14px Manrope;text-decoration:none;background:rgba(255,255,255,.5);text-align:center;padding:8px 12px}
+@media (max-width:380px){.card{grid-template-columns:72px minmax(0,1fr)}.ph{width:72px;height:72px;font-size:26px}h1{font-size:30px}}
+@media (prefers-reduced-motion:reduce){.card{opacity:1!important;transform:none!important;transition:none!important}}
+</style></head><body><div class="w" id="app"></div>
+<script>
+(function(){
+var CATS=['restaurant','photo','host','singer','dj','decor','flowers','dress','rings','car','makeup','cakes','show','invite','other'];
+var T={
+ru:{h:'Услуги для праздника',sub:'Рестораны, фотографы, ведущие и другие. Все бесплатно, связывайтесь напрямую.',search:'Поиск по названию',all:'Все',city:'Все города',from:'от',som:'сум',call:'Позвонить',tg:'Telegram',none:'Ничего не найдено',n:'Найдено',add:'Добавить мою услугу',back:'Назад',load:'Загружается…',
+ c:{restaurant:'Рестораны',photo:'Фото и видео',host:'Ведущие',singer:'Певцы',dj:'DJ',decor:'Декор',flowers:'Флористика',dress:'Наряды',rings:'Кольца и украшения',car:'Авто кортеж',makeup:'Визажисты',cakes:'Торты',show:'Шоу и музыканты',invite:'Приглашения',other:'Другое'}},
+uz:{h:"Bayram xizmatlari",sub:"Restoranlar, fotograflar, boshlovchilar va boshqalar. Hammasi bepul, to'g'ridan-to'g'ri bog'laning.",search:'Nom bo\'yicha qidirish',all:'Hammasi',city:'Barcha shaharlar',from:'dan',som:"so'm",call:"Qo'ng'iroq",tg:'Telegram',none:'Hech narsa topilmadi',n:'Topildi',add:"Xizmatimni qo'shish",back:'Orqaga',load:'Yuklanmoqda…',
+ c:{restaurant:'Restoranlar',photo:'Foto va video',host:'Boshlovchilar',singer:'Xonandalar',dj:'DJ',decor:'Dekoratsiya',flowers:'Floristika',dress:'Liboslar',rings:'Uzuk va taqinchoq',car:'Avto kortej',makeup:'Vizajistlar',cakes:'Tortlar',show:"Shou va musiqachilar",invite:'Taklifnomalar',other:'Boshqa'}},
+en:{h:'Services for your celebration',sub:'Restaurants, photographers, hosts and more. All free, contact them directly.',search:'Search by name',all:'All',city:'All cities',from:'from',som:'UZS',call:'Call',tg:'Telegram',none:'Nothing found',n:'Found',add:'Add my service',back:'Back',load:'Loading…',
+ c:{restaurant:'Restaurants',photo:'Photo and video',host:'Hosts',singer:'Singers',dj:'DJ',decor:'Decor',flowers:'Florists',dress:'Outfits',rings:'Rings and jewelry',car:'Wedding cars',makeup:'Makeup artists',cakes:'Cakes',show:'Show and musicians',invite:'Invitations',other:'Other'}},
+kk:{h:'Мереке қызметтері',sub:'Мейрамханалар, фотографтар, жүргізушілер және басқалар. Бәрі тегін, тікелей байланысыңыз.',search:'Атауы бойынша іздеу',all:'Бәрі',city:'Барлық қалалар',from:'бастап',som:'сум',call:'Қоңырау шалу',tg:'Telegram',none:'Ештеңе табылмады',n:'Табылды',add:'Қызметімді қосу',back:'Артқа',load:'Жүктелуде…',
+ c:{restaurant:'Мейрамханалар',photo:'Фото және бейне',host:'Жүргізушілер',singer:'Әншілер',dj:'DJ',decor:'Безендіру',flowers:'Гүлдер',dress:'Киімдер',rings:'Жүзік және әшекей',car:'Көлік кортежі',makeup:'Визажистер',cakes:'Торттар',show:'Шоу және музыканттар',invite:'Шақырулар',other:'Басқа'}}};
+var q=new URLSearchParams(location.search),LG=['ru','uz','en','kk'];
+var L=q.get('l');if(LG.indexOf(L)<0)L=((navigator.language||'ru').toLowerCase().slice(0,2));if(LG.indexOf(L)<0)L='ru';
+var ST={cat:'',city:'',s:'',all:[]},$=function(s){return document.querySelector(s)};
+var BOT=q.get('b')||'Taklifnomai_bot';
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function fmt(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')}
+function shell(){var t=T[L],a=$('#app');a.textContent='';
+ var top=el('div','top'),b=el('button','back','←');b.setAttribute('aria-label',t.back);b.onclick=function(){if(history.length>1)history.back();else location.href='index.html'};
+ var lg=el('div','lang');LG.forEach(function(l){var x=el('button',l===L?'on':'',l.toUpperCase());x.onclick=function(){L=l;shell();draw()};lg.appendChild(x)});top.append(b,lg);a.appendChild(top);
+ a.appendChild(el('h1','fd',t.h));a.appendChild(el('p','sub',t.sub));
+ var sr=el('div','sr');sr.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+ var inp=el('input');inp.placeholder=t.search;inp.value=ST.s;inp.maxLength=60;inp.setAttribute('aria-label',t.search);inp.oninput=function(){ST.s=inp.value;draw()};sr.appendChild(inp);a.appendChild(sr);
+ var cats=el('div','cats');cats.id='cats';[''].concat(CATS).forEach(function(c){var ch=el('button','chip'+(ST.cat===c?' on':''),c?t.c[c]:t.all);ch.onclick=function(){ST.cat=c;[].forEach.call(cats.children,function(x,i){x.classList.toggle('on',(i?CATS[i-1]:'')===c)});draw()};cats.appendChild(ch)});a.appendChild(cats);
+ var r=el('div','row2'),sel=el('select');sel.id='city';sel.setAttribute('aria-label',t.city);r.appendChild(sel);a.appendChild(r);sel.onchange=function(){ST.city=sel.value;draw()};
+ a.appendChild(el('div','cnt')).id='cnt';a.appendChild(el('div','grid')).id='grid';
+ var add=el('a','add',t.add);add.href='https://t.me/'+BOT;add.target='_blank';add.rel='noreferrer';a.appendChild(add)}
+function cities(){var s={};ST.all.forEach(function(x){if(x.city)s[x.city]=1});var sel=$('#city');if(!sel)return;var cur=ST.city;sel.textContent='';var o=el('option','',T[L].city);o.value='';sel.appendChild(o);Object.keys(s).sort().forEach(function(c){var p=el('option','',c);p.value=c;sel.appendChild(p)});sel.value=cur}
+var io=null;
+function draw(){var t=T[L],g=$('#grid');if(!g)return;g.textContent='';cities();
+ var s=ST.s.trim().toLowerCase();
+ var list=ST.all.filter(function(x){return(!ST.cat||x.c===ST.cat)&&(!ST.city||x.city===ST.city)&&(!s||(x.n+' '+(x.ds||'')+' '+(x.city||'')).toLowerCase().indexOf(s)>=0)});
+ $('#cnt').textContent=ST.loaded?(t.n+': '+list.length):t.load;
+ if(ST.loaded&&!list.length){g.appendChild(el('div','em',t.none));return}
+ list.slice(0,100).forEach(function(x,i){var c=el('div','card');c.style.setProperty('--i',Math.min(i,8));
+  var ph=el('div','ph');if(x.ph&&/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(x.ph)){var im=el('img');im.alt='';im.loading='lazy';im.src=x.ph;ph.appendChild(im)}else ph.textContent=String(x.n||'?').charAt(0).toUpperCase();
+  var bd=el('div','bd');bd.appendChild(el('div','cat',t.c[x.c]||t.c.other));bd.appendChild(el('div','nm',x.n));
+  var mt=el('div','mt');if(x.city)mt.appendChild(el('span','',x.city));if(x.pr)mt.appendChild(el('span','pr',t.from+' '+fmt(x.pr)+' '+t.som));bd.appendChild(mt);
+  if(x.ds)bd.appendChild(el('div','ds',x.ds));
+  var ac=el('div','ac');if(x.p&&/^\+\d{7,15}$/.test(x.p)){var a=el('a','p',t.call);a.href='tel:'+x.p;ac.appendChild(a)}
+  if(x.t&&/^[A-Za-z0-9_]{4,32}$/.test(x.t)){var b=el('a','',t.tg);b.href='https://t.me/'+x.t;b.target='_blank';b.rel='noreferrer';ac.appendChild(b)}
+  if(x.ig&&/^[A-Za-z0-9_.]{2,30}$/.test(x.ig)){var g2=el('a','','Instagram');g2.href='https://instagram.com/'+x.ig;g2.target='_blank';g2.rel='noreferrer';ac.appendChild(g2)}
+  bd.appendChild(ac);c.append(ph,bd);g.appendChild(c);
+  if('IntersectionObserver' in window){io=io||new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('shown');io.unobserve(e.target)}})},{threshold:.08});io.observe(c)}else c.classList.add('shown')})}
+shell();draw();
+fetch('services/index.json?_='+Math.floor(Date.now()/30000),{cache:'no-store'}).then(function(r){return r.ok?r.json():[]}).catch(function(){return[]}).then(function(a){ST.all=Array.isArray(a)?a.filter(function(x){return x&&x.n}):[];ST.loaded=true;draw()});
+})();
+</script></body></html>
