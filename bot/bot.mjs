@@ -1,6 +1,6 @@
 // Telegram-бот Marhabo. Без зависимостей. Работает как long polling внутри GitHub Actions.
 // Умеет только: /start (красивый текст + кнопка мини-приложения) и приём ответа гостя.
-import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, readdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, readdirSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { png as qrPng } from '../docs/qr.mjs';
 
@@ -431,6 +431,16 @@ function saveInvitation(raw, owner) {
     }
   } catch {}
   writeFileSync(`${INV_DIR}/${slug}.json`, JSON.stringify(o));
+  // неизменяемая копия по версии: у каждой правки своё имя файла, поэтому гость видит её сразу после push, без пересборки сайта
+  if (ver) {
+    mkdirSync(`${INV_DIR}/v`, { recursive: true });
+    writeFileSync(`${INV_DIR}/v/${slug}.${ver}.json`, JSON.stringify(o));
+    try { // храним не больше 4 последних версий на приглашение
+      const fs0 = readdirSync(`${INV_DIR}/v`).filter((f) => f.startsWith(slug + '.') && /^[a-z0-9-]+\.[a-z0-9]{1,12}\.json$/.test(f) && f.slice(0, f.lastIndexOf('.', f.length - 6)) === slug)
+        .map((f) => ({ f, t: statSync(`${INV_DIR}/v/${f}`).mtimeMs })).sort((a, b) => b.t - a.t);
+      fs0.slice(4).forEach((x) => unlinkSync(`${INV_DIR}/v/${x.f}`));
+    } catch {}
+  }
   mkdirSync(`${PREV_DIR}/${slug}`, { recursive: true });
   writeFileSync(`${PREV_DIR}/${slug}/index.html`, previewPage(slug, o));
   // индекс владельца: id приглашения -> slug (мини-апп по нему узнаёт короткую ссылку)
@@ -448,7 +458,7 @@ function saveInvitation(raw, owner) {
     writeFileSync(vf, JSON.stringify(vx));
   }
   dirty.add('inv');
-  return { slug, name: [o.a, o.b].filter(Boolean).join(' & ') };
+  return { slug, ver, name: [o.a, o.b].filter(Boolean).join(' & ') };
 }
 
 async function onMessage(m) {
@@ -661,7 +671,14 @@ async function sendInviteCard(chat, slug, guestKey, from) {
   const base = APP_URL.replace(/\/?$/, '/');
   // имя берём из профиля Telegram того, кто открыл ссылку: список гостей в репозитории не публикуем
   const gname = from ? [from.first_name].filter(Boolean).join(' ').slice(0, 40) : '';
-  const url = `${base}i/${slug}/` + (guestKey ? `?q=${encodeURIComponent(guestKey)}` + (gname ? `&g=${encodeURIComponent(gname)}` : '') : (gname ? `?g=${encodeURIComponent(gname)}` : ''));
+  let vv = ''; try { const vx = JSON.parse(readFileSync(`${INV_DIR}/_${o.o}.v.json`, 'utf8')); vv = vx[o.i] || ''; } catch {}
+  const vq = vv && /^[a-z0-9]{1,12}$/.test(vv) ? 'v=' + vv : '';
+  // i.html?s=<имя> есть на сайте всегда, а страница /i/<имя>/ появляется только после пересборки: поэтому ведём на i.html
+  const ex = [];
+  if (guestKey) ex.push('q=' + encodeURIComponent(guestKey));
+  if (gname) ex.push('g=' + encodeURIComponent(gname));
+  if (vq) ex.push(vq);
+  const url = `${base}i.html?s=${encodeURIComponent(slug)}` + (ex.length ? '&' + ex.join('&') : '');
   const kb = { inline_keyboard: [[{ text: LX[lang].open, web_app: { url } }]] };
   const cover = o.p && o.p.c && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp)$/i.test(o.p.c) ? `${base}${o.p.c}` : null;
   const caption = cardCaption(o, gname);
