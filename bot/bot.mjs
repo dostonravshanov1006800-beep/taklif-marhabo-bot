@@ -449,6 +449,25 @@ async function onMessage(m) {
   if (m.chat.type !== 'private') return;
   const lang = langOf(m.from);
   const t = T[lang];
+  // мини-апп, открытый кнопкой клавиатуры, шлёт публикацию сам (sendData): вставлять текст вручную не нужно
+  if (m.web_app_data && typeof m.web_app_data.data === 'string') {
+    const wd = m.web_app_data.data.trim().replace(/^#taklif\s+/, '');
+    if (/^[A-Za-z0-9_-]{20,3900}$/.test(wd)) {
+      const r = saveInvitation(wd, m.from.id);
+      if (r.error) { await tg('sendMessage', { chat_id: chat, text: t.pubBad, parse_mode: 'HTML' }); return; }
+      publish();
+      const url = `${APP_URL.replace(/\/?$/, '/')}i/${r.slug}`;
+      await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: { remove_keyboard: true } });
+      await tg('sendMessage', { chat_id: chat, text: url, disable_web_page_preview: true });
+      return;
+    }
+  }
+  // /publish: кнопка клавиатуры, открывает мини-апп в режиме отправки (по ней данные приходят боту автоматически)
+  if (/^\/(publish|start publish)(@\w+)?$/i.test(text)) {
+    const PB = { ru: ['📤 Опубликовать приглашение', 'Нажмите кнопку внизу, выберите приглашение и «Отправить боту». Вставлять ничего не нужно.'], uz: ["📤 Taklifnomani e'lon qilish", "Pastdagi tugmani bosing, taklifnomani tanlang va «Botga yuborish» ni bosing. Hech narsa qo'yish shart emas."], en: ['📤 Publish invitation', 'Tap the button below, pick the invitation and press "Send to bot". No pasting needed.'], kk: ['📤 Шақыруды жариялау', 'Төмендегі батырманы басып, шақыруды таңдаңыз да «Ботқа жіберу» басыңыз. Қоюдың қажеті жоқ.'] }[lang];
+    await tg('sendMessage', { chat_id: chat, text: PB[1], reply_markup: { keyboard: [[{ text: PB[0], web_app: { url: APP_URL.replace(/\/?$/, '/') + '?send=1' } }]], resize_keyboard: true, one_time_keyboard: true } });
+    return;
+  }
 
 
 
