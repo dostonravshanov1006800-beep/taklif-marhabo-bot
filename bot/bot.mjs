@@ -10,7 +10,8 @@ const RUN_MINUTES = Number(process.env.RUN_MINUTES || 340);
 if (!TOKEN || !APP_URL) { console.error('BOT_TOKEN и APP_URL обязательны'); process.exit(1); }
 
 const API = `https://api.telegram.org/bot${TOKEN}`;
-const OFFSET_FILE = 'docs/data/_offset.txt';   // в репозитории: не теряется при пересоздании раннера
+const OFFSET_FILE = 'bot-state/_offset.txt';
+const OLD_OFFSET_FILE = 'docs/data/_offset.txt';   // в репозитории: не теряется при пересоздании раннера
 
 // ---- Журнал ответов гостей: docs/data/<ownerId>.json, публикуется вместе с сайтом ----
 const DATA_DIR = 'docs/data';
@@ -50,6 +51,8 @@ function publish() {
     // добавляем только существующие папки: если одной нет (например bot-state), git add падал и ничего не сохранялось
     const paths = ['docs/data', 'docs/media', 'docs/inv', 'docs/i', 'docs/wishes', 'docs/services', 'bot-state'].filter((d) => existsSync(d));
     if (paths.length) execSync('git add ' + paths.join(' '));
+    let siteChanged = false;
+    try { siteChanged = execSync('git diff --cached --name-only').toString().split('\n').some((f) => f.startsWith('docs/')); } catch {}
     execSync('git diff --cached --quiet || git commit -q -m "rsvp data"');
     try { execSync('git pull --rebase -q origin main && git push -q origin main', { stdio: 'ignore' }); }
     catch (e1) {
@@ -60,7 +63,7 @@ function publish() {
     dirty.clear();
     console.log('published rsvp');
     // коммиты GITHUB_TOKEN не запускают Pages сами: запускаем сайт явно, чтобы данные появились через минуту
-    triggerPages();
+    if (siteChanged) triggerPages();
   } catch (e) { console.error('publish failed', String(e.message).slice(0, 120)); }
 }
 
@@ -778,7 +781,7 @@ async function main() {
   await setup();
   const me = await tg('getMe', {});
   if (me && me.username) BOT_NAME = me.username;
-  let offset = existsSync(OFFSET_FILE) ? Number(readFileSync(OFFSET_FILE, 'utf8')) || 0 : 0;
+  let offset = existsSync(OFFSET_FILE) ? Number(readFileSync(OFFSET_FILE, 'utf8')) || 0 : (existsSync(OLD_OFFSET_FILE) ? Number(readFileSync(OLD_OFFSET_FILE, 'utf8')) || 0 : 0);
   const stopAt = Date.now() + RUN_MINUTES * 60 * 1000;
   let lastPub = Date.now();
   console.log(`polling, offset=${offset}, until ${new Date(stopAt).toISOString()}`);
@@ -789,11 +792,11 @@ async function main() {
       offset = u.update_id + 1;
       try { if (u.message) await onMessage(u.message); else if (u.callback_query) await onCallback(u.callback_query); } catch (e) { console.error('update error', e.message); }
     }
-    if (updates.length) { try { mkdirSync(DATA_DIR, { recursive: true }); } catch {} writeFileSync(OFFSET_FILE, String(offset)); dirty.add('offset'); }
+    if (updates.length) { try { mkdirSync('bot-state', { recursive: true }); } catch {} writeFileSync(OFFSET_FILE, String(offset)); dirty.add('offset'); }
     if (dirty.size && Date.now() - lastPub > 20000) { publish(); lastPub = Date.now(); }
     if (pagesPending && Date.now() - lastPages >= 90000) triggerPages();
   }
-  try { mkdirSync(DATA_DIR, { recursive: true }); } catch {}
+  try { mkdirSync('bot-state', { recursive: true }); } catch {}
   writeFileSync(OFFSET_FILE, String(offset)); dirty.add('offset');
   if (offset) await tg('getUpdates', { offset, timeout: 0, limit: 1 }); // подтвердить обработанное Telegram
   publish();
