@@ -10,7 +10,7 @@ const sign = (user, token = env.BOT_TOKEN, age = 0) => {
   p.hash = createHmac('sha256', sec).update(str).digest('hex');
   return new URLSearchParams(p).toString();
 };
-let ok = 0, bad = 0; const T = (n, c) => { if (c) ok++; else { bad++; console.log('FAIL', n); } };
+let ok = 0, bad = 0; const T = (n, c, e) => { if (c) ok++; else { bad++; console.log('FAIL', n, e || ''); } };
 const call = (m, p, body, h = {}) => w.fetch(new Request('https://x' + p, { method: m, headers: h, body: body ? JSON.stringify(body) : undefined }), env);
 const data = { i: 'abc123', a: 'Жавохир', b: 'Азиза', d: '2026-12-01', h: '18:00', l: 'ru', t: 'wedding', th: 'gold', tc: [['8600 1234 5678 9012', 'Aziza', 'uzcard']], cu: 1 };
 const u1 = { id: 111, first_name: 'A' }, u2 = { id: 222, first_name: 'B' };
@@ -85,4 +85,15 @@ r = await call('GET', '/api/inv/' + dslug); T('старое имя тоже 404'
 r = await call('GET', '/api/byid/del001'); T('обратный ключ id убран', r.status === 404);
 r = await call('GET', '/api/mine', null, { 'x-tg-init': sign(u1) }); j = await r.json(); T('в «моих» его больше нет', !j.pub.del001);
 r = await call('POST', '/api/del', { init: sign(u1), id: 'del001' }); j = await r.json(); T('повторное удаление безопасно', r.status === 200 && j.ok);
+
+// ---- надгробие: удалённое не воскресает ----
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'del001', a: 'Удал', b: 'Ённый' }, v: 'd3' }); j = await r.json();
+T('удалённый id нельзя опубликовать заново (410 gone)', r.status === 410 && j.error === 'gone', JSON.stringify(j));
+r = await call('GET', '/api/inv/' + dslug2); T('и после попытки гость видит 404', r.status === 404);
+const u9 = { id: 909090, first_name: 'Девятый' };
+r = await call('POST', '/api/inv', { init: sign(u9), data: { ...data, i: 'del001', a: 'Другой', b: 'Человек' }, v: 'd4' }); j = await r.json();
+T('у другого владельца тот же id работает', r.status === 200 && j.ok, r.status + ' ' + JSON.stringify(j));
+r = await call('POST', '/api/del', { init: sign(u1), id: 'neverexisted' }); T('удаление несуществующего тоже ставит надгробие', r.status === 200);
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'neverexisted', a: 'Нет', b: 'Такого' }, v: 'd5' }); T('и его публиковать нельзя', r.status === 410);
+r = await call('POST', '/api/inv', { init: sign(u1), data: { ...data, i: 'fresh777', a: 'Новое', b: 'Обычное' }, v: 'd6' }); j = await r.json(); T('обычное новое приглашение публикуется как раньше', r.status === 200 && j.ok);
 console.log(`\nИТОГО: ${ok} ok, ${bad} fail`); process.exit(bad ? 1 : 0);

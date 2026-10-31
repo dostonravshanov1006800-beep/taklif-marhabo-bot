@@ -204,6 +204,8 @@ export default {
         if (!id) return J({ error: 'data' }, 400);
         const own = (await env.INV.get('own:' + owner, 'json')) || {};
         const slug = own[id];
+        // надгробие: удалённое приглашение нельзя воскресить публикацией из старого локального списка
+        await env.INV.put('del:' + owner + ':' + id, '1');
         if (!slug) return J({ ok: true, removed: 0 }, 200, { 'cache-control': 'no-store' });
         let removed = 0;
         const cur = await env.INV.get('inv:' + slug, 'json');
@@ -234,6 +236,7 @@ export default {
         await env.INV.put(rk, String(rc + 1), { expirationTtl: 7200 });
         const o = sanitizeInv(body.data, owner);
         if (!o) return J({ error: 'data' }, 400);
+        if (await env.INV.get('del:' + owner + ':' + o.i)) return J({ error: 'gone' }, 410);
         const ver = typeof body.v === 'string' && /^[a-z0-9]{1,12}$/.test(body.v) ? body.v : '';
         const own = (await env.INV.get('own:' + owner, 'json')) || {};
         if (!own[o.i] && Object.keys(own).length >= 20) return J({ error: 'limit' }, 400);

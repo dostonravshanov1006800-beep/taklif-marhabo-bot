@@ -1,7 +1,7 @@
 // Мини-апп: создать приглашение -> открыть QR -> «Прислать QR в чат» -> воркер получил настоящий PNG и отправил его в Telegram
 import { createServer } from 'node:http'; import { createHmac } from 'node:crypto'; import fs from 'node:fs'; import path from 'node:path';
 import { chromium } from '/tmp/pw/node_modules/playwright/index.mjs'; import worker from '../worker/worker.js';
-const DOCS = path.resolve('docs'), BOT = '123456:TESTTOKEN', OWNER = 777004, API = 'https://taklif-api.dostonravshanov1006800.workers.dev';
+const DOCS = path.resolve('docs'), BOT = '123456:TESTTOKEN', OWNER = 777005, API = 'https://taklif-api.dostonravshanov1006800.workers.dev';
 const kv = new Map(); const env = { BOT_TOKEN: BOT, ADMIN_KEY: 'a', INV: { async get(k, t) { const v = kv.get(k); return v == null ? null : t === 'json' ? JSON.parse(v) : v; }, async put(k, v) { kv.set(k, v); }, async delete(k) { kv.delete(k); }, async list({ prefix }) { return { keys: [...kv.keys()].filter((k) => k.startsWith(prefix)).map((name) => ({ name })) }; } } };
 const sent = []; const realFetch = globalThis.fetch;
 globalThis.fetch = async (u, o) => { if (String(u).startsWith('https://api.telegram.org/')) { const f = o.body; const file = f.get(f.has('photo') ? 'photo' : 'document'); const b = Buffer.from(await file.arrayBuffer()); if(!globalThis.__png)globalThis.__png=b; sent.push({ m: String(u).split('/').pop(), chat: f.get('chat_id'), cap: f.get('caption'), png: b.slice(0, 8).toString('hex'), n: b.length }); return new Response('{"ok":true}'); } return realFetch(u, o); };
@@ -23,9 +23,10 @@ await page.addInitScript(({ init, uid }) => { window.Telegram = { WebApp: { init
 await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(1500);
 await page.click('[data-new="wedding"]'); await page.waitForSelector('input[data-f="a"]');
 await page.fill('input[data-f="a"]', 'Рустам'); await page.fill('input[data-f="b"]', 'Зарина'); await page.fill('input[data-f="d"]', '2027-03-01');
-await page.click('#sv'); await page.waitForFunction(() => /rustam-zarina/.test(localStorage.getItem('mh_pub_777004') || ''), null, { timeout: 8000 }).catch(() => {});
+await page.click('#sv'); await page.waitForFunction(() => /rustam-zarina/.test(localStorage.getItem('mh_pub_777005') || ''), null, { timeout: 8000 }).catch(() => {});
 T('приглашение сохранено на сервере', !!kv.get('inv:rustam-zarina'));
 
+const stale = await page.evaluate(() => JSON.stringify({ l: localStorage.getItem('taklif_v3'), p: localStorage.getItem('mh_pub_777005') }));
 page.on('dialog', (d) => d.accept());
 await page.evaluate(() => { window.Telegram.WebApp.showConfirm = (m, cb) => cb(true); });
 await page.click('#bg'); await page.waitForTimeout(400); await page.click('.mi[data-mgo="mine"]'); await page.waitForTimeout(800);
@@ -38,5 +39,14 @@ const gr = await ctx.request.get(API + '/api/inv/rustam-zarina').catch(() => nul
 T('в списке мини-аппа его нет', !(await page.evaluate(() => /Рустам/.test(document.body.innerText))));
 await page.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await page.waitForTimeout(3500);
 T('после перезапуска мини-аппа не вернулось (автопубликация не воскресила)', !kv.get('inv:rustam-zarina'));
+
+// «старый телефон»: открывается со старой локальной копией, где приглашение ещё есть
+const old = await ctx.newPage(); old.on('pageerror', (e) => errs.push('old:' + e.message));
+await old.addInitScript(({ st }) => { const s = JSON.parse(st); if (s.l) localStorage.setItem('taklif_v3', s.l); if (s.p) localStorage.setItem('mh_pub_777005', s.p); }, { st: stale });
+await old.addInitScript(({ init, uid }) => { window.Telegram = { WebApp: { initData: init, initDataUnsafe: { user: { id: uid, first_name: 'T', language_code: 'ru' } }, ready() {}, expand() {}, close() {}, setHeaderColor() {}, setBackgroundColor() {}, enableClosingConfirmation() {}, disableVerticalSwipes() {}, version: '7.0', platform: 'tdesktop', colorScheme: 'light', themeParams: {}, MainButton: { hide() {}, show() {}, setText() {}, onClick() {}, offClick() {} }, BackButton: { hide() {}, show() {}, onClick() {}, offClick() {} }, HapticFeedback: { impactOccurred() {}, notificationOccurred() {}, selectionChanged() {} }, onEvent() {}, offEvent() {}, openLink() {}, openTelegramLink() {}, showAlert() {}, showConfirm() {}, CloudStorage: undefined } }; }, { init: sign(OWNER), uid: OWNER });
+await old.goto(BASE + '/index.html', { waitUntil: 'domcontentloaded' }); await old.waitForTimeout(4500);
+const hadLocal = await old.evaluate(() => /Рустам/.test(localStorage.getItem('taklif_v3') || '') || /Рустам/.test(document.body.innerText));
+T('старый телефон: сервер ответил «удалено», приглашение НЕ воскресло', !kv.get('inv:rustam-zarina'));
+T('старый телефон: запись сама пропала из его локального списка', !(await old.evaluate(() => /Рустам/.test(localStorage.getItem('taklif_v3') || ''))));
 T('нет ошибок JS', errs.length === 0, errs.join('|'));
 globalThis.fetch = realFetch; console.log(`ИТОГО: ${ok} ok, ${bad} fail`); await br.close(); srv.close(); process.exit(bad ? 1 : 0);
