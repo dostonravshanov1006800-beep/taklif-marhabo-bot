@@ -48,6 +48,12 @@ export const THEMES = {
     theme: { page: 'radial-gradient(120% 100% at 50% 0%, #4A1A26 0%, #2C0E16 55%, #1A070C 100%)', card: 'linear-gradient(180deg, #3A141E 0%, #260B13 100%)', base: '#260B13', accent: '#E9BFA6', accentText: '#E9BFA6', accentSoft: '#6B3040', ink: '#FBEAE3', muted: '#CDA295' } },
   green:  { name: { ru: 'Зелёная', uz: 'Yashil', en: 'Green White', kk: 'Жасыл' }, dark: false, motif: 'laurel',
     theme: { page: 'radial-gradient(125% 110% at 50% 0%, #F8FCF9 0%, #E2F0E6 52%, #CBE3D3 100%)', card: 'linear-gradient(180deg, #FDFFFD 0%, #EDF6F0 100%)', base: '#FDFFFD', accent: '#2A6049', accentText: '#2a6049', accentSoft: '#D2E6D9', ink: '#15291F', muted: '#56756A' } },
+  sunset: { name: { ru: 'Закат', uz: 'Quyosh botishi', en: 'Sunset', kk: 'Күн батуы' }, dark: true, motif: 'star', fxk: 'sunset', nf: 'vibes',
+    theme: { page: 'linear-gradient(180deg, #2A1530 0%, #50223C 42%, #772F40 78%, #8A3A3C 100%)', card: 'linear-gradient(180deg, #4A2340 0%, #2E1530 100%)', base: '#2E1530', accent: '#F6C98A', accentText: '#F6C98A', accentSoft: '#7A4A55', ink: '#FFF3E4', muted: '#F2DCCB' } },
+  stained: { name: { ru: 'Витраж', uz: 'Vitraj', en: 'Stained glass', kk: 'Витраж' }, dark: true, motif: 'geometric', fxk: 'stained', nf: 'playfair',
+    theme: { page: 'radial-gradient(120% 100% at 50% 0%, #1F1B3D 0%, #141230 55%, #0A0919 100%)', card: 'linear-gradient(180deg, #1C1840 0%, #0F0D26 100%)', base: '#0F0D26', accent: '#9FD3FF', accentText: '#9FD3FF', accentSoft: '#3B3A78', ink: '#F4F1FF', muted: '#BDB8E6' } },
+  swan: { name: { ru: 'Сад лебедей', uz: "Oqqushlar bog'i", en: 'Swan garden', kk: 'Аққу бағы' }, dark: false, motif: 'floral', fxk: 'swan', nf: 'vibes',
+    theme: { page: 'radial-gradient(125% 110% at 50% 0%, #FFFDFD 0%, #FBE9EE 52%, #F3CFDA 100%)', card: 'linear-gradient(180deg, #FFFFFF 0%, #FDF0F4 100%)', base: '#FFFFFF', accent: '#B5516D', accentText: '#9A3F5A', accentSoft: '#F0CBD6', ink: '#3A2430', muted: '#6E5560' } },
   midnight: { name: { ru: 'Полночь', uz: 'Yarim tun', en: 'Midnight Silver', kk: 'Түн ортасы' }, dark: true, motif: 'star',
     theme: { page: 'radial-gradient(120% 100% at 50% 0%, #16264A 0%, #0F1B33 55%, #070D1A 100%)', card: 'linear-gradient(180deg, #0F1B33 0%, #0B1426 100%)', base: '#0B1426', accent: '#B9C7E6', accentText: '#B9C7E6', accentSoft: '#2A3C66', ink: '#EAF0FA', muted: '#9FB0D0' } }
 };
@@ -68,3 +74,12 @@ export function unpack(str) {
     return JSON.parse(new TextDecoder().decode(bytes));
   } catch { return null; }
 }
+
+// Шрифты имён (калиграфия): ключ -> CSS-стек и ссылка на Google Fonts (подгружается только на странице гостя)
+export const NFONTS = {
+  '': { name: { ru: 'По умолчанию', uz: 'Standart', en: 'Default', kk: 'Әдепкі' }, css: "'Cormorant Garamond',Georgia,serif", g: '' },
+  vibes: { name: { ru: 'Great Vibes', uz: 'Great Vibes', en: 'Great Vibes', kk: 'Great Vibes' }, css: "'Great Vibes','Cormorant Garamond',cursive", g: 'Great+Vibes' },
+  playfair: { name: { ru: 'Playfair', uz: 'Playfair', en: 'Playfair', kk: 'Playfair' }, css: "'Playfair Display',Georgia,serif", g: 'Playfair+Display:ital,wght@0,500;1,500' },
+  script: { name: { ru: 'Marck Script', uz: 'Marck Script', en: 'Marck Script', kk: 'Marck Script' }, css: "'Marck Script','Cormorant Garamond',cursive", g: 'Marck+Script&subset=cyrillic' },
+  caveat: { name: { ru: 'Caveat', uz: 'Caveat', en: 'Caveat', kk: 'Caveat' }, css: "'Caveat','Cormorant Garamond',cursive", g: 'Caveat:wght@600' },
+};

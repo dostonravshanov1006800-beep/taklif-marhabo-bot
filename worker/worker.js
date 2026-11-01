@@ -24,7 +24,8 @@ function sanitizeInv(d, owner) {
   if (!o.a || !o.i) return null;
   if (d.w === 1 || d.w === true) o.w = 1;
   if ((d.cu === 1 || d.cu === true) && ['wedding', 'nikah', 'nikoh'].includes(o.t)) o.cu = 1;
-  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].includes(d.th)) o.th = d.th;
+  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight', 'sunset', 'stained', 'swan'].includes(d.th)) o.th = d.th;
+  if (['vibes', 'playfair', 'script', 'caveat'].includes(d.nf)) o.nf = d.nf; // шрифт имён
   if (Array.isArray(d.tc)) {
     const BANKS = ['Uzcard', 'Humo', 'Visa', 'Mastercard'];
     const tc = d.tc.slice(0, 8).map((c) => {

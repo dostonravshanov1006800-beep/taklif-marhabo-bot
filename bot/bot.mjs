@@ -387,7 +387,8 @@ function sanitizeInv(d, owner) {
   if (!o.a || !o.i) return null;
   if (d.w === 1 || d.w === true) o.w = 1;
   if ((d.cu === 1 || d.cu === true) && (o.t === 'wedding' || o.t === 'nikah' || o.t === 'nikoh')) o.cu = 1; // заставка-занавес: только свадьба и никах
-  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].includes(d.th)) o.th = d.th;
+  if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight', 'sunset', 'stained', 'swan'].includes(d.th)) o.th = d.th;
+  if (['vibes', 'playfair', 'script', 'caveat'].includes(d.nf)) o.nf = d.nf; // шрифт имён
   // тойона: до 3 карт [[16 цифр, имя, банк]]; карта с другим числом цифр отбрасывается
   if (Array.isArray(d.tc)) {
     const BANKS = ['Uzcard', 'Humo', 'Visa', 'Mastercard'];
@@ -739,7 +740,7 @@ const AUDIT = [
   ['wishes',  { ru: 'Пожелания гостей с модерацией', uz: "Mehmonlar tilaklari moderatsiya bilan", en: 'Guest wishes with moderation', kk: 'Қонақ тілектері модерациямен' },
     () => has('bot/bot.mjs', /#wish\(hide\|show\)/) && has('bot/bot.mjs', /mkdirSync\('docs\/wishes'/) && has('docs/i.html', /wishes\//)],
   ['themes',  { ru: '7 тем оформления с проверенным контрастом', uz: "Kontrasti tekshirilgan 7 ta mavzu", en: '7 themes with verified contrast', kk: 'Контрасты тексерілген 7 тақырып' },
-    () => ['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight'].every((n) => has('docs/shared.js', new RegExp(n)) && has('bot/bot.mjs', new RegExp("'" + n + "'"))) && has('docs/shared.js', /accentText/)],
+    () => ['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight', 'sunset', 'stained', 'swan'].every((n) => has('docs/shared.js', new RegExp(n)) && has('bot/bot.mjs', new RegExp("'" + n + "'"))) && has('docs/shared.js', /accentText/)],
   ['wizard',  { ru: 'Мастер готовых текстов приглашения', uz: "Tayyor taklif matnlari ustasi", en: 'Ready-made invitation text wizard', kk: 'Дайын шақыру мәтіндері шебері' },
     () => existsSync('docs/phrases.js') && has('docs/index.html', /phb/)],
   ['catalog', { ru: 'Каталог услуг: 15 категорий, поиск, город, цена', uz: "Xizmatlar katalogi: 15 toifa, qidiruv, shahar, narx", en: 'Vendor catalog: 15 categories, search, city, price', kk: 'Қызметтер каталогі: 15 санат, іздеу, қала, баға' },
