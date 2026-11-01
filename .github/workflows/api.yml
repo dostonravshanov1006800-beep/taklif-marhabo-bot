@@ -15,6 +15,10 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Проверки перед деплоем
+        run: node ci/check.mjs && node worker/test_worker.mjs
       - name: Deploy worker and set BOT_TOKEN secret
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
