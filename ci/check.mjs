@@ -198,6 +198,26 @@ T('нет конфликта классов: стили заставок тол�
   { const k = ix.indexOf("$$('[data-sdsk]')"), blk2 = ix.slice(k, ix.indexOf('\n', ix.indexOf('render()});', k))); T('рассылка: пропуск не помечает отправленным (нет sentSet в обработчике, гость уходит в конец)', k > 0 && !blk2.includes('sentSet') && blk2.includes('ST.sd.skip'), blk2.slice(0, 120)); }
 }
 
+
+// 3.7 Мастер из 5 шагов (п. 16) и живой предпросмотр на последнем шаге (п. 17)
+{
+  const ix = read('docs/index.html'), fi = ix.indexOf('function form(){'), fe = ix.indexOf('return top()+h}', fi), fb = ix.slice(fi, fe);
+  const steps = [...fb.matchAll(/h\+=STEP\((\d)\)/g)].map((m) => +m[1]);
+  T('мастер: форма разбита ровно на 5 шагов по порядку', steps.join() === '1,2,3,4,5', steps);
+  T('мастер: последняя секция закрыта, панель шагов внизу', fb.includes("</section>'+WZ_BAR(isE)"));
+  T('мастер: показывается один шаг, остальные скрыты (но остаются в DOM, данные не теряются)', /\.wzs\{display:none\}\.wzs\.on\{display:block/.test(ix));
+  T('мастер: кнопка «Сохранить» только на последнем шаге', ix.includes("ST.wz<WZ_N?'<button type=\"button\" class=\"b d\" id=\"wzn\"") && ix.includes("id=\"sv\""));
+  T('мастер: со шага 2 дальше нельзя без имени и даты (и кнопкой, и точкой)', ix.includes("const wzOk=n=>n!==2||(!!(ST.draft.a||'').trim()&&!!ST.draft.d)") && ix.includes('for(let k=ST.wz;k<n;k++){if(!wzOk(k))'));
+  T('мастер: шаг запоминается в черновике и сбрасывается на 1 для новой формы и правки', ix.includes('wz:ST.wz') && ix.includes('ST.wz=(D.wz>=1&&D.wz<=5)?D.wz:1') && (ix.match(/ST\.wz=1;/g) || []).length >= 3);
+  T('мастер: у точек прогресса есть подписи для чтения с экрана и aria-current', ix.includes("aria-current=\"step\"") && ix.includes("t('wzGo')"));
+  T('мастер: при reduced-motion смена шага без анимации', /prefers-reduced-motion:reduce\)\{\.wzs\.on\{animation:none/.test(ix));
+  const ru = ix.slice(ix.indexOf('ru:{ey:'), ix.indexOf('uz:{ey:')), uz = ix.slice(ix.indexOf('uz:{ey:'));
+  T('мастер: названия 5 шагов и кнопки есть на ru и uz', ['wz1:', 'wz2:', 'wz3:', 'wz4:', 'wz5:', 'wzNext:', 'wzBack:', 'wzNeed:', 'wzOf:'].every((k) => ru.includes(k) && uz.slice(0, uz.indexOf('\nconst ')).includes(k)));
+  T('мастер: поля даты и времени сжимаются (нет горизонтальной прокрутки на 280–320 px)', /\.row\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(ix) && ix.includes('.row input[type=date]'));
+  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec'].every((f) => existsSync('tests/wizard/' + f + '.py')));
+  T('предпросмотр: живой блок #pvb и «Посмотреть как гость» остаются на последнем шаге', fb.indexOf('id="pvb"') > fb.indexOf('h+=STEP(5)') && fb.includes('data-pvfull'));
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);

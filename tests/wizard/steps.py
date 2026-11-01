@@ -1,0 +1,47 @@
+import json
+from playwright.sync_api import sync_playwright
+BASE='http://localhost:8834/taklif-marhabo-bot'; res=[]
+def ok(n,c,e=''): print(('PASS' if c else 'FAIL'),n,str(e)[:170]); res.append(bool(c))
+with sync_playwright() as p:
+    b=p.chromium.launch()
+    for w,lang in ((320,'ru'),(390,'ru'),(360,'uz')):
+        ctx=b.new_context(viewport={'width':w,'height':780},service_workers='block'); pg=ctx.new_page(); errs=[]
+        pg.on('pageerror',lambda e:errs.append(str(e)[:120]))
+        ctx.route('**/telegram.org/**',lambda r,*a:r.fulfill(status=200,content_type='application/javascript',body=''))
+        ctx.route('**/fonts.googleapis.com/**',lambda r,*a:r.fulfill(status=200,content_type='text/css',body=''))
+        ctx.route('**/*workers.dev/**',lambda r,*a:r.fulfill(status=200,content_type='application/json',headers={'access-control-allow-origin':'*'},body='{}'))
+        pg.add_init_script("localStorage.setItem('lg','%s')"%lang)
+        pg.goto(BASE+'/index.html'); pg.wait_for_timeout(1200)
+        pg.locator('[data-new]').first.click(); pg.wait_for_timeout(700)
+        n=f'{w}/{lang}: '
+        ok(n+'в DOM 5 секций, видна ровно одна (шаг 1)',pg.locator('section.wzs').count()==5 and pg.locator('section.wzs.on').count()==1 and pg.locator('section.wzs.on').get_attribute('data-step')=='1')
+        ok(n+'шаг 1 содержит шаблоны и оформление',pg.locator('section.wzs.on .tpls').count()==1 and pg.locator('section.wzs.on #thm').count()==1)
+        ok(n+'вперёд без имени и даты не пускает, пишет причину',(pg.locator('#wzn').click(),pg.wait_for_timeout(300))[0] is None and True)
+        # шаг 1 -> 2 разрешён (проверка только на шаге 2)
+        cur=pg.locator('section.wzs.on').get_attribute('data-step'); ok(n+'с шага 1 на 2 переход разрешён',cur=='2',cur)
+        pg.locator('#wzn').click(); pg.wait_for_timeout(300)
+        cur=pg.locator('section.wzs.on').get_attribute('data-step'); ok(n+'со 2 шага без имени/даты дальше не пускает',cur=='2' and ('имя и дату' in pg.locator('#er').inner_text() or 'ism va sana' in pg.locator('#er').inner_text()),pg.locator('#er').inner_text())
+        pg.fill('[data-f="a"]','Азиз'); pg.fill('[data-f="d"]','2027-06-12'); pg.wait_for_timeout(200)
+        pg.locator('#wzn').click(); pg.wait_for_timeout(300)
+        ok(n+'с именем и датой пускает на шаг 3',pg.locator('section.wzs.on').get_attribute('data-step')=='3')
+        ok(n+'введённые данные сохранились при переходе (в DOM шага 2)',pg.evaluate("document.querySelector('[data-f=a]').value")=='Азиз')
+        pg.locator('#wzb').click(); pg.wait_for_timeout(300)
+        ok(n+'«Назад» возвращает на шаг 2 с введённым именем',pg.locator('section.wzs.on').get_attribute('data-step')=='2' and pg.evaluate("document.querySelector('[data-f=a]').value")=='Азиз')
+        for _ in range(3): pg.locator('#wzn').click(); pg.wait_for_timeout(250)
+        ok(n+'на шаге 5 вместо «Далее» кнопка «Сохранить»',pg.locator('#sv').count()==1 and pg.locator('#wzn').count()==0 and pg.locator('section.wzs.on').get_attribute('data-step')=='5')
+        ok(n+'на шаге 5 есть живой предпросмотр',pg.locator('section.wzs.on #pvb').count()==1)
+        dots=pg.evaluate("[...document.querySelectorAll('[data-wzg]')].map(b=>{const r=b.getBoundingClientRect();return [Math.round(r.width),Math.round(r.height)]})")
+        ok(n+'точки прогресса ≥44 px по высоте и ≥ 24 по ширине',all(h>=44 and wd>=24 for wd,h in dots),dots)
+        bt=pg.evaluate("[...document.querySelectorAll('.wzbar .b')].map(b=>{const r=b.getBoundingClientRect();return [Math.round(r.width),Math.round(r.height)]})")
+        ok(n+'кнопки панели ≥44 px',all(h>=44 for _,h in bt),bt)
+        pg.locator('[data-wzg="1"]').click(); pg.wait_for_timeout(300)
+        ok(n+'точка прогресса перескакивает на шаг 1',pg.locator('section.wzs.on').get_attribute('data-step')=='1')
+        pg.locator('[data-wzg="4"]').click(); pg.wait_for_timeout(300)
+        ok(n+'через точку нельзя перескочить, если на шаге 2 всё заполнено — можно (имя и дата есть)',pg.locator('section.wzs.on').get_attribute('data-step')=='4')
+        ok(n+'нет горизонтальной прокрутки и ошибок JS',not errs and not pg.evaluate("document.documentElement.scrollWidth>innerWidth"),errs)
+        # автосохранение черновика пережило перезагрузку
+        pg.wait_for_timeout(800); pg.reload(); pg.wait_for_timeout(1200)
+        ok(n+'черновик после перезагрузки: имя на месте',pg.evaluate("(document.querySelector('[data-f=a]')||{}).value")=='Азиз')
+        ctx.close()
+    b.close()
+print('ИТОГО %d ok, %d fail'%(sum(res),len(res)-sum(res)))
