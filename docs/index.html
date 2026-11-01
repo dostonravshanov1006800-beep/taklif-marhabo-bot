@@ -55,7 +55,7 @@ body.mlock{overflow:hidden;touch-action:none}
 @media (prefers-reduced-motion:reduce){.mn,.mov,.burger i{transition:none!important}.mn.on .mnl li,.mn.on .mcr{animation:none!important;opacity:1;transform:none}.mnl li,.mcr{opacity:1;transform:none}}
 /* hero */
 .eb{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ac);margin-top:26px}
-h1.hero{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2.7rem,12.5vw,4rem);line-height:.96;margin-top:16px;max-width:11ch}
+h1.hero{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2.1rem,11.5vw,4rem);line-height:.96;margin-top:16px;max-width:11ch;overflow-wrap:anywhere;hyphens:auto}
 .sub{margin-top:18px;font-size:15px;line-height:1.65;color:#6E6152;max-width:44ch}
 .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
 .b{display:inline-flex;align-items:center;gap:9px;border-radius:99px;padding:14px 24px;font:inherit;font-size:11px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border:1px solid transparent;text-decoration:none;transition:.25s}
@@ -66,8 +66,8 @@ h1.hero{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2
 .feat li{display:flex;gap:10px;font-size:13.5px;color:#6E6152;align-items:flex-start}
 .feat i{flex:none;width:16px;height:16px;border-radius:99px;background:#EFE4D3;color:var(--ac);display:grid;place-items:center;margin-top:1px}
 /* демо-открытка: парение */
-.demo{position:relative;margin:46px auto 0;max-width:330px}
-.demo:before{content:"";position:absolute;left:50%;top:-30px;width:320px;height:320px;transform:translateX(-50%);border-radius:99px;filter:blur(48px);background:radial-gradient(circle,rgba(178,138,80,.26),transparent 70%);pointer-events:none}
+.demo{position:relative;margin:46px auto 0;max-width:min(330px,100%)}
+.demo:before{content:"";position:absolute;left:50%;top:-30px;width:min(320px,92vw);height:min(320px,92vw);transform:translateX(-50%);border-radius:99px;filter:blur(48px);background:radial-gradient(circle,rgba(178,138,80,.26),transparent 70%);pointer-events:none}
 .dwrap{opacity:0;transform:translateY(28px) rotate(-1.5deg);animation:dIn 1s cubic-bezier(.22,1,.36,1) .15s forwards}
 @keyframes dIn{to{opacity:1;transform:translateY(0) rotate(-1.5deg)}}
 .dcard{position:relative;overflow:hidden;border-radius:24px;padding:28px 22px 30px;text-align:center;border:1px solid #EADBC4;background:linear-gradient(180deg,#FFFEFB 0%,#FBF3E6 100%);box-shadow:0 40px 80px -50px rgba(43,34,25,.6);animation:float 9s ease-in-out infinite}
@@ -101,7 +101,7 @@ h1.hero{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:clamp(2
 .ph h2{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px}
 .lbl{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#A08D74;margin:20px 0 8px}
 .lbl em{font-style:normal;text-transform:none;letter-spacing:0;opacity:.8;margin-left:6px}
-input,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 14px;font:inherit;font-size:15px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
+input,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 14px;font:inherit;font-size:16px;color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s}
 input:focus,textarea:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(178,138,80,.14)}
 textarea{min-height:88px;resize:vertical;line-height:1.5}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.row>*{min-width:0}.row input[type=date],.row input[type=time]{min-width:0;max-width:100%;width:100%}
@@ -193,7 +193,7 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .ic .pb i{display:block;height:100%}.ic .pb .y{background:#3E9B62}.ic .pb .n{background:#C0584B}
 .ic .pl{display:flex;justify-content:space-between;margin-top:7px;font-size:11px;color:var(--mut)}
 .ic .sy{margin-top:12px;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;background:#FFF5E6;border:1px solid #F2DDB8;font-size:12px;line-height:1.35;color:#7A5A22}
-.ic .sy button{flex:none}
+.ic .sy button{flex:none;max-width:100%}@media(max-width:340px){.ic .sy{flex-wrap:wrap}.ic .sy button{width:100%}}
 .ic .ac{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-top:14px}
 .ic .ac button{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#2B2219;font:600 10px Manrope,sans-serif;letter-spacing:.04em;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 1px;min-width:0;overflow:hidden;white-space:nowrap}
 .ic .ac button svg{width:16px;height:16px}
