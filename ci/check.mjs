@@ -47,6 +47,18 @@ for (const f of ['bot/bot.mjs', 'worker/worker.js']) {
 const nfk = [...sh.matchAll(/\n  (\w+): \{ name: \{ ru: '[^']*Great|\n  (vibes|playfair|script|caveat):/g)];
 T('шрифты имён объявлены', /NFONTS/.test(sh));
 
+
+// 3b. Виды заставок: intro.js, белые списки бота/воркера и мини-апп согласованы
+const KINDS = ['seal', 'env', 'gift', 'door', 'book'];
+const introJs = read('docs/intro.js'), introCss = read('docs/intro.css');
+for (const k of KINDS) {
+  T('intro.js знает ' + k, introJs.includes("'" + k + "'"));
+  T('intro.css стиль ' + k, introCss.includes('#intro.iv-' + k));
+  for (const f of ['bot/bot.mjs', 'worker/worker.js']) { const m = read(f).match(/\[((?:'[a-z]+',?\s*)+)\]\.includes\(d\.cv\)/); T(`${f}: заставка ${k} разрешена`, !!m && m[1].includes("'" + k + "'"), m ? m[1] : 'список cv не найден'); }
+  T('мини-апп знает заставку ' + k, read('docs/index.html').includes(k + ":'"));
+}
+T('нет конфликта классов: стили заставок только с префиксом iv-', !/#intro\.(seal|env|gift|door|book)\b/.test(introCss));
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);
