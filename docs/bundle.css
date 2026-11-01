@@ -421,6 +421,34 @@ html.intro-on,html.intro-on body{overflow:hidden!important}
 #intro.out .st,#intro.out .ev{transition:transform .9s,opacity .9s;transform:scale(1.06)}
 @media(prefers-reduced-motion:reduce){#intro *{animation:none!important}}
 
+/* ---------- Видео-заставки Muhr / Nikoh (только свадьба и никах) ---------- */
+#intro.iv-vmuhr,#intro.iv-vnikoh{background:#e4dac8;display:grid;place-items:center;overflow:hidden}
+#intro.iv-vmuhr .vbox,#intro.iv-vnikoh .vbox{position:relative;width:min(100vw,calc(100vh * 9 / 16));aspect-ratio:9/16;max-height:100vh;max-height:100dvh;overflow:hidden;container-type:inline-size}
+#intro .vv,#intro .vpo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+#intro .vv{opacity:0;transition:opacity .35s ease}
+#intro.play .vv{opacity:1}
+#intro .vpo{transition:opacity .4s ease .1s}
+#intro.play:not(.fbk) .vpo{opacity:0}
+#intro.iv-vmuhr .it,#intro.iv-vnikoh .it{bottom:9vh;text-shadow:0 1px 8px rgba(255,255,255,.85);color:#4a3622;transition:opacity .45s ease}
+#intro.iv-vmuhr .it b,#intro.iv-vnikoh .it b{color:#4a3622}
+#intro.iv-vmuhr .it span,#intro.iv-vnikoh .it span{color:#6b5238}
+#intro.play .it{opacity:0;pointer-events:none}
+#intro.iv-vmuhr .sk,#intro.iv-vnikoh .sk{background:rgba(255,255,255,.7);color:#4a3622;border:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+/* текст по кадрам: появляется в нужную секунду и остаётся на последнем кадре */
+#intro .vtx{position:absolute;left:0;right:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0;transform:translateY(10px);transition:opacity 1.1s cubic-bezier(.2,.7,.2,1),transform 1.1s cubic-bezier(.2,.7,.2,1);pointer-events:none;font-family:'Cormorant Garamond',Georgia,serif}
+#intro.tx .vtx{opacity:1;transform:none}
+#intro .vn{font-weight:600;line-height:1.12;overflow-wrap:anywhere;padding:0 6%;text-wrap:balance}
+#intro .vd{margin-top:3.2cqw;font:600 3.9cqw/1.2 Manrope,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--va,#a8782f)}
+/* Muhr: внутри светлой карточки (по замеру последнего кадра: x 14..96%, y 18..82%) */
+#intro.iv-vmuhr .vtx{left:19%;right:8%;top:28%;height:44%}
+#intro.iv-vmuhr .vn{font-size:10.8cqw}
+/* Nikoh: бабочки собираются по центру (y 44..65%), имена над ними, дата под ними: два независимых блока от рамки видео */
+#intro.iv-vnikoh .vtx{inset:0;display:block}
+#intro.iv-vnikoh .vn{position:absolute;left:6%;right:6%;top:12%;height:26%;display:flex;align-items:center;justify-content:center;font-size:11.5cqw}
+#intro.iv-vnikoh .vd{position:absolute;left:6%;right:6%;top:70%;margin:0;text-align:center}
+/* видео заканчивается: всё плавно гаснет в приглашение */
+@media(prefers-reduced-motion:reduce){#intro .vtx,#intro .vv,#intro .vpo{transition:none}}
+
 /* reveal.css */
 /* Появление блоков при прокрутке. Стиль зависит от темы: html[data-rv]. Без JS блоки видны сразу. */
 .rvj #st>.rv{opacity:0;will-change:opacity,transform;transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--rd,0s),transform .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s),filter .8s var(--rd,0s)}

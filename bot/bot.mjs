@@ -402,7 +402,8 @@ function sanitizeInv(d, owner) {
   if ((d.cu === 1 || d.cu === true) && (o.t === 'wedding' || o.t === 'nikah' || o.t === 'nikoh')) o.cu = 1; // заставка-занавес: только свадьба и никах
   if (['gold', 'rose', 'cloud', 'ivory', 'velvet', 'green', 'midnight', 'sunset', 'stained', 'swan'].includes(d.th)) o.th = d.th;
   if (['vibes', 'playfair', 'script', 'caveat'].includes(d.nf)) o.nf = d.nf; // шрифт имён
-  if (['seal', 'env', 'gift', 'door', 'book'].includes(d.cv)) o.cv = d.cv; // вид заставки (занавес = cu:1)
+  if (['seal', 'env', 'gift', 'door', 'book'].includes(d.cv)) o.cv = d.cv;
+  else if (['vmuhr', 'vnikoh'].includes(d.cv) && ['wedding', 'nikah', 'nikoh'].includes(o.t)) o.cv = d.cv; // видео-заставки только для свадьбы и никаха // вид заставки (занавес = cu:1)
   // тойона: до 3 карт [[16 цифр, имя, банк]]; карта с другим числом цифр отбрасывается
   if (Array.isArray(d.tc)) {
     const BANKS = ['Uzcard', 'Humo', 'Visa', 'Mastercard'];

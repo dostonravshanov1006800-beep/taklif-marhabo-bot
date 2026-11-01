@@ -1,5 +1,5 @@
 // CI-проверки без внешних сервисов. Красное = публикация блокируется.
-import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 let ok = 0, bad = 0;
 const T = (n, c, e = '') => { if (c) ok++; else { bad++; console.log('FAIL', n, e); } };
@@ -72,6 +72,13 @@ for (const k of KINDS) {
   for (const f of ['bot/bot.mjs', 'worker/worker.js']) { const m = read(f).match(/\[((?:'[a-z]+',?\s*)+)\]\.includes\(d\.cv\)/); T(`${f}: заставка ${k} разрешена`, !!m && m[1].includes("'" + k + "'"), m ? m[1] : 'список cv не найден'); }
   T('мини-апп знает заставку ' + k, read('docs/index.html').includes(k + ":'"));
 }
+{ const ij = read('docs/intro.js'), ic = read('docs/intro.css'), ix = read('docs/index.html'), ih2 = read('docs/i.html');
+  T('видео-заставки: файлы mp4 и постеры на месте', ['muhr', 'nikoh'].every((k) => existsSync('docs/media/intro/' + k + '.mp4') && existsSync('docs/media/intro/' + k + '.jpg') && existsSync('docs/media/intro/' + k + '_0.jpg')));
+  T('видео-заставки: файлы до 1,5 МБ каждый', ['muhr', 'nikoh'].every((k) => statSync('docs/media/intro/' + k + '.mp4').size < 1.5e6));
+  T('видео-заставки: текст привязан к кадру (currentTime) и остаётся на последнем кадре', ij.includes('v.currentTime >= cfg.at') && ij.includes("addEventListener('ended'") && ij.includes('fallback'));
+  T('видео-заставки: только свадьба и никах (мастер, бот, воркер)', ix.includes('IV_VID(k))&&!CUR_OK') && read('bot/bot.mjs').includes("['vmuhr', 'vnikoh'].includes(d.cv) && ['wedding', 'nikah', 'nikoh']") && read('worker/worker.js').includes("['vmuhr', 'vnikoh'].includes(d.cv) && ['wedding', 'nikah', 'nikoh']"));
+  T('видео-заставки: видео заставки исключено из общего плеера гостя', (ih2.match(/v\.closest\('#intro'\)/g) || []).length >= 6);
+  T('видео-заставки: стили Muhr и Nikoh', ic.includes('#intro.iv-vmuhr') && ic.includes('#intro.iv-vnikoh') && ic.includes('container-type:inline-size')); }
 T('нет конфликта классов: стили заставок только с префиксом iv-', !/#intro\.(seal|env|gift|door|book)\b/.test(introCss));
 
 
@@ -99,7 +106,8 @@ T('нет конфликта классов: стили заставок тол�
   T('a11y: названия на 4 языках', ['ru:', 'uz:', 'en:', 'kk:'].every((k) => aj.includes(k)));
   T('a11y: стили skip-link и .sr', fc.includes('.skipl') && fc.includes('.sr{'));
   T('a11y: у бургера и группы языков есть aria-label, aria-expanded, aria-controls', ih.includes('class="lgb" aria-haspopup="true" aria-expanded="false" aria-controls="lgp" aria-label=') && ih.includes('id="lgp" role="group" aria-label='));
-  T('язык/тема: компактный бургер 44px с тремя полосками вместо широкой плашки', /\.lgsw \.lgb\{width:44px;height:44px;[^}]*border-radius:50%/.test(ih) && (ih.match(/<i><\/i>/g) || []).length >= 3 && !/\.lgsw\{[^}]*display:flex;gap:2px/.test(ih));
+  T('язык/тема: компактный бургер 44px с тремя полосками вместо широкой плашки', /\.lgsw \.lgb\{[^}]*border-radius:50%/.test(ih) && (ih.match(/<i><\/i>/g) || []).length >= 3 && !/\.lgsw\{[^}]*display:flex;gap:2px/.test(ih));
+  T('язык/тема: бургер ≤36px, прячется при прокрутке вниз и возвращается вверх', /\.lgsw \.lgb\{[^}]*width:3[0-6]px;height:3[0-6]px/.test(ih) && ih.includes('.lgsw.hid:not(.op) .lgb') && ih.includes("sw.classList.add('hid')") && ih.includes("sw.classList.remove('hid')") && /\.lgsw \.lgb:before\{[^}]*inset:-5px/.test(ih));
   T('язык/тема: панель закрывается по Esc и по клику снаружи, пункты ≥44px', ih.includes("e.key==='Escape'") && ih.includes('!sw.contains(e.target)') && /\.lgp button\{[^}]*min-height:44px/.test(ih));
   T('i.html: у кнопки печати есть имя', /id="seal"[^>]*aria-label=/.test(ih));
 }
