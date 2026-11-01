@@ -120,10 +120,10 @@ input.nt{margin-top:16px;width:100%;border-radius:12px;background:transparent;pa
 /* заставка: подпись */
 .tapl{margin-top:16px;animation:tapp 2.2s ease-in-out infinite}
 @keyframes tapp{0%,100%{opacity:.55;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
-</style><link rel="stylesheet" href="fx.css"><link rel="stylesheet" href="curtain.css"><link rel="stylesheet" href="intro.css"></head><body>
+</style><link rel="stylesheet" href="fx.css"><link rel="stylesheet" href="curtain.css"><link rel="stylesheet" href="intro.css"><link rel="stylesheet" href="reveal.css"></head><body>
 <div id="bg"></div><div id="fx"></div><div id="wrap"><div id="root"></div></div>
 <div id="lb"></div><audio id="au" loop preload="none"></audio>
-<script src="curtain.js"></script><script src="intro.js"></script>
+<script src="curtain.js"></script><script src="intro.js"></script><script src="reveal.js"></script>
 <script type="module">
 import {TPL,unpack, THEMES, NFONTS} from './shared.js';
 const $=i=>document.getElementById(i);
@@ -257,7 +257,7 @@ const cd=()=>{if(!I.date)return;if(window.__fxOwnsCd&&window.__fxOwnsCd())return
 cd();setInterval(cd,1000);
 const au=$('au');au.src=music;au.volume=.45;
 const setPlay=p=>{const b=$('mb');b.classList.toggle('playing',p);$('mt').textContent=p?T.musicOff:T.musicOn};
-$('seal').onclick=()=>{$('gate').classList.add('out');setTimeout(()=>{$('gate').style.display='none';$('card').classList.add('show');[...$('st').children].forEach((c,i)=>c.style.animationDelay=(.15+i*.11)+'s');scrollTo(0,0);au.play().then(()=>setPlay(true)).catch(()=>setPlay(false))},450)};
+$('seal').onclick=()=>{$('gate').classList.add('out');setTimeout(()=>{$('gate').style.display='none';$('card').classList.add('show');try{requestAnimationFrame(()=>{window.__revealInit&&window.__revealInit(TH&&TH.fxk);window.__flipInit&&window.__flipInit()})}catch(_){}[...$('st').children].forEach((c,i)=>c.style.animationDelay=(.15+i*.11)+'s');scrollTo(0,0);au.play().then(()=>setPlay(true)).catch(()=>setPlay(false))},450)};
 $('mb').onclick=()=>{au.paused?au.play().then(()=>setPlay(true)).catch(()=>{}):(au.pause(),setPlay(false))};
 au.onpause=()=>setPlay(false);au.onplay=()=>setPlay(true);
 const fmtT=x=>{x=Math.max(0,Math.floor(x||0));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};

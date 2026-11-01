@@ -1,0 +1,19 @@
+/* Появление блоков при прокрутке. Стиль зависит от темы: html[data-rv]. Без JS блоки видны сразу. */
+.rvj #st>.rv{opacity:0;will-change:opacity,transform;transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--rd,0s),transform .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s),filter .8s var(--rd,0s)}
+.rvj #st>.rv.on{opacity:1;transform:none;filter:none}
+/* всплытие (по умолчанию) */
+.rvj #st>.rv{transform:translateY(26px)}
+/* закат: медленное проявление снизу с мягким светом */
+html[data-rv=sunset].rvj #st>.rv{transform:translateY(34px) scale(.985);filter:saturate(.7)}
+/* витраж: разлетаются из центра, как осколки */
+html[data-rv=stained].rvj #st>.rv{transform:scale(.92) rotate(-.6deg)}
+html[data-rv=stained].rvj #st>.rv:nth-child(even){transform:scale(.92) rotate(.6deg)}
+/* сад лебедей: плавно с боков, как волна */
+html[data-rv=swan].rvj #st>.rv{transform:translateX(-22px)}
+html[data-rv=swan].rvj #st>.rv:nth-child(even){transform:translateX(22px)}
+@media(prefers-reduced-motion:reduce){.rvj #st>.rv{opacity:1!important;transform:none!important;transition:none!important;filter:none!important}}
+/* Переворот цифр табло: класс ставится на 400 мс при смене текста, сам таймер из fx.js не меняется */
+.rg .sq b{display:block;transform-origin:50% 100%;backface-visibility:hidden}
+.rg .sq b.flp{animation:flp .42s cubic-bezier(.3,.7,.3,1)}
+@keyframes flp{0%{transform:perspective(220px) rotateX(-70deg);opacity:.15}60%{transform:perspective(220px) rotateX(8deg);opacity:1}100%{transform:none}}
+@media(prefers-reduced-motion:reduce){.rg .sq b.flp{animation:none}}

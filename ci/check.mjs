@@ -59,6 +59,19 @@ for (const k of KINDS) {
 }
 T('нет конфликта классов: стили заставок только с префиксом iv-', !/#intro\.(seal|env|gift|door|book)\b/.test(introCss));
 
+
+// 3c. Появление блоков: файлы подключены, стили есть для каждой тематической анимации, есть страховка и учёт reduced-motion
+{
+  const rjs = read('docs/reveal.js'), rcss = read('docs/reveal.css'), ih = read('docs/i.html');
+  T('reveal.js подключён в i.html', ih.includes('src="reveal.js"') && ih.includes('href="reveal.css"'));
+  T('reveal.js вызывается после показа карточки', ih.includes('__revealInit'));
+  for (const k of ['sunset', 'stained', 'swan']) T('reveal.css стиль темы ' + k, rcss.includes('data-rv=' + k));
+  T('reveal.js: страховка таймером', /setTimeout\(function \(\) \{ kids\.forEach/.test(rjs));
+  T('reveal.js: учёт reduced-motion', rjs.includes('prefers-reduced-motion'));
+  T('reveal.css: reduced-motion не прячет блоки', /prefers-reduced-motion[\s\S]*opacity:1!important/.test(rcss));
+  T('reveal.js не трогает чужие fx-rv', rjs.includes('fx-(rv|calw)'));
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);
