@@ -100,6 +100,15 @@
   font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:0;will-change:contents}
 .sq small{font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--fm,#695b4b);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 @media (max-width:350px){.rg{gap:5px}.sq{border-radius:13px;gap:5px}.sq small{font-size:11px;letter-spacing:0}}
+/* переворот цифр табло */
+.sq b{position:relative;overflow:hidden;height:1em}
+.sq b.fl{will-change:transform}
+.sq b i{font-style:normal;display:block;position:absolute;left:0;right:0;top:0;text-align:center;backface-visibility:hidden}
+.sq b .fo{animation:fxo .46s cubic-bezier(.5,0,.8,.4) forwards}
+.sq b .fn{animation:fxn .46s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes fxo{from{transform:translateY(0) rotateX(0);opacity:1}to{transform:translateY(-55%) rotateX(70deg);opacity:0}}
+@keyframes fxn{from{transform:translateY(60%) rotateX(-70deg);opacity:0}to{transform:translateY(0) rotateX(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){.sq b i{animation:none!important}}
 .fx-today{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;text-align:center;padding:14px 0}
 
 /* ---------- 4. Галерея: просмотр со свайпом и зумом ---------- */
@@ -411,7 +420,7 @@ html.intro-on,html.intro-on body{overflow:hidden!important}
 /* reveal.css */
 /* Появление блоков при прокрутке. Стиль зависит от темы: html[data-rv]. Без JS блоки видны сразу. */
 .rvj #st>.rv{opacity:0;will-change:opacity,transform;transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--rd,0s),transform .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s),filter .8s var(--rd,0s)}
-.rvj #st>.rv.on{opacity:1;transform:none;filter:none}
+.rvj #st>.rv.on,html[data-rv].rvj #st>.rv.on{opacity:1;transform:none;filter:none}
 /* всплытие (по умолчанию) */
 .rvj #st>.rv{transform:translateY(26px)}
 /* закат: медленное проявление снизу с мягким светом */
@@ -422,9 +431,21 @@ html[data-rv=stained].rvj #st>.rv:nth-child(even){transform:scale(.92) rotate(.6
 /* сад лебедей: плавно с боков, как волна */
 html[data-rv=swan].rvj #st>.rv{transform:translateX(-22px)}
 html[data-rv=swan].rvj #st>.rv:nth-child(even){transform:translateX(22px)}
+/* золото: тяжёлое, медленное проявление с лёгким приближением и блеском */
+html[data-rv=gold].rvj #st>.rv{transform:translateY(22px) scale(1.03);filter:brightness(1.5) saturate(.8)}
+/* красная роза: распускается, как бутон */
+html[data-rv=rose].rvj #st>.rv{transform:scale(.9) translateY(18px);transform-origin:50% 100%}
+/* небесный замок: плывёт сверху вниз, как облако */
+html[data-rv=cloud].rvj #st>.rv{transform:translateY(-24px);filter:blur(5px)}
+/* слоновая кость: чистое проявление с чуть заметным масштабом */
+html[data-rv=ivory].rvj #st>.rv{transform:scale(.97);filter:blur(2px)}
+/* бархат: раздвигается, как занавес, слева и справа */
+html[data-rv=velvet].rvj #st>.rv{transform:translateX(-30px) scaleX(.96)}
+html[data-rv=velvet].rvj #st>.rv:nth-child(even){transform:translateX(30px) scaleX(.96)}
+/* зелёная: вырастает снизу, как побег */
+html[data-rv=green].rvj #st>.rv{transform:translateY(34px) scaleY(.94);transform-origin:50% 100%}
+/* полночь: загорается, как звезда, из темноты */
+html[data-rv=midnight].rvj #st>.rv{transform:scale(.96);filter:brightness(.4) blur(3px)}
 @media(prefers-reduced-motion:reduce){.rvj #st>.rv{opacity:1!important;transform:none!important;transition:none!important;filter:none!important}}
 /* Переворот цифр табло: класс ставится на 400 мс при смене текста, сам таймер из fx.js не меняется */
 .rg .sq b{display:block;transform-origin:50% 100%;backface-visibility:hidden}
-.rg .sq b.flp{animation:flp .42s cubic-bezier(.3,.7,.3,1)}
-@keyframes flp{0%{transform:perspective(220px) rotateX(-70deg);opacity:.15}60%{transform:perspective(220px) rotateX(8deg);opacity:1}100%{transform:none}}
-@media(prefers-reduced-motion:reduce){.rg .sq b.flp{animation:none}}

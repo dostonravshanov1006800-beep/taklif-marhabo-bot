@@ -127,7 +127,7 @@
   var setupCountdown = safe(function () {
     var w = $('cdw'); if (!w) return;
     var c = getCtx(); if (!c) return;
-    var I0 = c.I, built = false, nodes = [], last = ['', '', '', ''], timer = 0;
+    var I0 = c.I, built = false, nodes = [], last = ['', '', '', ''], timer = 0, lastTick = 0;
     var target = function () { var t = (c.I.time || '12:00').slice(0, 5); return new Date(c.I.date + 'T' + t + ':00').getTime(); };
     var tick = function () {
       var I = c.I; if (!I.date) { w.innerHTML = ''; built = false; return; }
@@ -149,7 +149,8 @@
           v.map(function (x, i) { return '<div class="sq"><b>' + pad(x) + '</b><small>' + esc(labels[i]) + '</small></div>'; }).join('') + '</div></div>';
         nodes = [].slice.call(w.querySelectorAll('.sq b')); last = v.map(pad); built = true; return;
       }
-      for (var i = 0; i < 4; i++) { var t = pad(v[i]); if (t !== last[i]) { nodes[i].textContent = t; last[i] = t; } }
+      var calm = RM || document.hidden || (Date.now() - lastTick > 1600); lastTick = Date.now();
+      for (var i = 0; i < 4; i++) { var t = pad(v[i]); if (t !== last[i]) { flip(nodes[i], t, calm); last[i] = t; } }
     };
     // тик выравниваем по границе секунды: без дрейфа setInterval, без пропусков и двойных шагов
     var loop = function () { tick(); var ms = 1000 - (Date.now() % 1000) + 8; timer = setTimeout(loop, ms); };
@@ -157,6 +158,15 @@
     window.__fxOwnsCd = function () { return !!(w.querySelector('.rg[data-fx]') || w.querySelector('.fx-today')); };
     loop();
   });
+  /* переворот цифры: старая уходит вверх, новая поднимается снизу (только transform/opacity); без анимации при reduced-motion и после паузы */
+  function flip(b, t, calm) {
+    if (calm) { b.textContent = t; b.classList.remove('fl'); return; }
+    var old = b.textContent;
+    b.classList.remove('fl'); void b.offsetWidth;
+    b.innerHTML = '<i class="fo">' + old + '</i><i class="fn">' + t + '</i>';
+    b.classList.add('fl');
+    clearTimeout(b._ft); b._ft = setTimeout(function () { b.textContent = t; b.classList.remove('fl'); }, 520);
+  }
   function pad(x) { return String(x).padStart(2, '0'); }
 
   /* ---------- 5. Лепестки (canvas) и конфетти ---------- */

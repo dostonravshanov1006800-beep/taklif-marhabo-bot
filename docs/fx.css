@@ -99,6 +99,15 @@
   font-variant-numeric:tabular-nums lining-nums;font-feature-settings:'tnum' 1,'lnum' 1;letter-spacing:0;will-change:contents}
 .sq small{font:600 11px/1 Manrope,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--fm,#695b4b);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 @media (max-width:350px){.rg{gap:5px}.sq{border-radius:13px;gap:5px}.sq small{font-size:11px;letter-spacing:0}}
+/* переворот цифр табло */
+.sq b{position:relative;overflow:hidden;height:1em}
+.sq b.fl{will-change:transform}
+.sq b i{font-style:normal;display:block;position:absolute;left:0;right:0;top:0;text-align:center;backface-visibility:hidden}
+.sq b .fo{animation:fxo .46s cubic-bezier(.5,0,.8,.4) forwards}
+.sq b .fn{animation:fxn .46s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes fxo{from{transform:translateY(0) rotateX(0);opacity:1}to{transform:translateY(-55%) rotateX(70deg);opacity:0}}
+@keyframes fxn{from{transform:translateY(60%) rotateX(-70deg);opacity:0}to{transform:translateY(0) rotateX(0);opacity:1}}
+@media (prefers-reduced-motion:reduce){.sq b i{animation:none!important}}
 .fx-today{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:22px;text-align:center;padding:14px 0}
 
 /* ---------- 4. Галерея: просмотр со свайпом и зумом ---------- */

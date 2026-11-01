@@ -1,6 +1,6 @@
 /* Появление блоков при прокрутке. Стиль зависит от темы: html[data-rv]. Без JS блоки видны сразу. */
 .rvj #st>.rv{opacity:0;will-change:opacity,transform;transition:opacity .8s cubic-bezier(.2,.7,.2,1) var(--rd,0s),transform .9s cubic-bezier(.2,.7,.2,1) var(--rd,0s),filter .8s var(--rd,0s)}
-.rvj #st>.rv.on{opacity:1;transform:none;filter:none}
+.rvj #st>.rv.on,html[data-rv].rvj #st>.rv.on{opacity:1;transform:none;filter:none}
 /* всплытие (по умолчанию) */
 .rvj #st>.rv{transform:translateY(26px)}
 /* закат: медленное проявление снизу с мягким светом */
@@ -11,9 +11,21 @@ html[data-rv=stained].rvj #st>.rv:nth-child(even){transform:scale(.92) rotate(.6
 /* сад лебедей: плавно с боков, как волна */
 html[data-rv=swan].rvj #st>.rv{transform:translateX(-22px)}
 html[data-rv=swan].rvj #st>.rv:nth-child(even){transform:translateX(22px)}
+/* золото: тяжёлое, медленное проявление с лёгким приближением и блеском */
+html[data-rv=gold].rvj #st>.rv{transform:translateY(22px) scale(1.03);filter:brightness(1.5) saturate(.8)}
+/* красная роза: распускается, как бутон */
+html[data-rv=rose].rvj #st>.rv{transform:scale(.9) translateY(18px);transform-origin:50% 100%}
+/* небесный замок: плывёт сверху вниз, как облако */
+html[data-rv=cloud].rvj #st>.rv{transform:translateY(-24px);filter:blur(5px)}
+/* слоновая кость: чистое проявление с чуть заметным масштабом */
+html[data-rv=ivory].rvj #st>.rv{transform:scale(.97);filter:blur(2px)}
+/* бархат: раздвигается, как занавес, слева и справа */
+html[data-rv=velvet].rvj #st>.rv{transform:translateX(-30px) scaleX(.96)}
+html[data-rv=velvet].rvj #st>.rv:nth-child(even){transform:translateX(30px) scaleX(.96)}
+/* зелёная: вырастает снизу, как побег */
+html[data-rv=green].rvj #st>.rv{transform:translateY(34px) scaleY(.94);transform-origin:50% 100%}
+/* полночь: загорается, как звезда, из темноты */
+html[data-rv=midnight].rvj #st>.rv{transform:scale(.96);filter:brightness(.4) blur(3px)}
 @media(prefers-reduced-motion:reduce){.rvj #st>.rv{opacity:1!important;transform:none!important;transition:none!important;filter:none!important}}
 /* Переворот цифр табло: класс ставится на 400 мс при смене текста, сам таймер из fx.js не меняется */
 .rg .sq b{display:block;transform-origin:50% 100%;backface-visibility:hidden}
-.rg .sq b.flp{animation:flp .42s cubic-bezier(.3,.7,.3,1)}
-@keyframes flp{0%{transform:perspective(220px) rotateX(-70deg);opacity:.15}60%{transform:perspective(220px) rotateX(8deg);opacity:1}100%{transform:none}}
-@media(prefers-reduced-motion:reduce){.rg .sq b.flp{animation:none}}

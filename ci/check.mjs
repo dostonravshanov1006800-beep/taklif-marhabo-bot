@@ -159,6 +159,21 @@ T('нет конфликта классов: стили заставок тол�
   T('бот: сообщения mediaDim и mediaFull есть на 4 языках', (bot.match(/mediaDim:/g) || []).length === 4 && (bot.match(/mediaFull:/g) || []).length === 4);
 }
 
+// 3j. Табло и появление блоков: у каждой темы свой характер, итог перебивает тему, нет двух переворотов
+{
+  const fxs = read('docs/fx.js'), fxc = read('docs/fx.css'), rvc = read('docs/reveal.css'), rvj = read('docs/reveal.js');
+  const { THEMES } = await import('../docs/shared.js');
+  const keys = Object.entries(THEMES).map(([k, v]) => [k, v.fxk]);
+  T('темы: у каждой из ' + keys.length + ' есть свой fxk', keys.every(([, f]) => !!f), keys.filter(([, f]) => !f).map(([k]) => k));
+  T('темы: fxk уникальны', new Set(keys.map(([, f]) => f)).size === keys.length);
+  T('появление: у каждой темы есть своё правило в reveal.css', keys.every(([, f]) => rvc.includes('html[data-rv=' + f + '].rvj #st>.rv{')), keys.filter(([, f]) => !rvc.includes('html[data-rv=' + f + '].rvj #st>.rv{')).map(([k]) => k));
+  T('появление: итоговое состояние перебивает любую тему (нет застрявшего filter)', rvc.includes('html[data-rv].rvj #st>.rv.on'));
+  T('появление: при reduced-motion блоки видны сразу', /prefers-reduced-motion:reduce\)\{\.rvj #st>\.rv\{opacity:1!important/.test(rvc));
+  T('табло: переворот цифр есть (flip) и работает только на transform/opacity', fxs.includes('function flip(') && /@keyframes fxo\{[^}]*transform[^}]*opacity/.test(fxc) && !/@keyframes fx[on]\{[^}]*(width|height|top|left)\s*:/.test(fxc));
+  T('табло: второго переворота (наблюдатель + flp) нет', !rvj.includes('MutationObserver') && !rvc.includes('flp'));
+  T('табло: при reduced-motion переворота нет', fxc.includes('.sq b i{animation:none!important}') && fxs.includes('RM || document.hidden'));
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);

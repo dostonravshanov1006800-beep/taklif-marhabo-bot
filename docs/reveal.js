@@ -20,25 +20,6 @@
   };
 })();
 
-/* Переворот цифр: следим за изменением текста в табло и ставим короткий класс. Таймер fx.js не трогаем. */
-(function () {
-  'use strict';
-  window.__flipInit = function () {
-    try {
-      if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      if (!('MutationObserver' in window)) return;
-      var w = document.getElementById('cdw'); if (!w) return;
-      var mo = new MutationObserver(function (ms) {
-        ms.forEach(function (m) {
-          // fx.js меняет textContent у <b>: для наблюдателя это замена дочернего узла (childList), реже characterData
-          var el = m.type === 'childList' ? m.target : (m.target && m.target.parentNode);
-          if (!el || el.tagName !== 'B' || !el.closest || !el.closest('.sq')) return;
-          if (m.type === 'childList' && !m.addedNodes.length) return;
-          el.classList.remove('flp'); void el.offsetWidth; el.classList.add('flp');
-          clearTimeout(el._flt); el._flt = setTimeout(function () { try { el.classList.remove('flp'); } catch (_) {} }, 450);
-        });
-      });
-      mo.observe(w, { subtree: true, childList: true, characterData: true });
-    } catch (_) {}
-  };
-})();
+/* Переворот цифр теперь в fx.js (flip): один эффект, без наблюдателя. */
+window.__flipInit = function () {};
+
