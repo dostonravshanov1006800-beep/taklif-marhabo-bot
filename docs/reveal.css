@@ -28,4 +28,4 @@ html[data-rv=green].rvj #st>.rv{transform:translateY(34px) scaleY(.94);transform
 html[data-rv=midnight].rvj #st>.rv{transform:scale(.96);filter:brightness(.4) blur(3px)}
 @media(prefers-reduced-motion:reduce){.rvj #st>.rv{opacity:1!important;transform:none!important;transition:none!important;filter:none!important}}
 /* Переворот цифр табло: класс ставится на 400 мс при смене текста, сам таймер из fx.js не меняется */
-.rg .sq b{display:block;transform-origin:50% 100%;backface-visibility:hidden}
+.rg .sq b{display:block}

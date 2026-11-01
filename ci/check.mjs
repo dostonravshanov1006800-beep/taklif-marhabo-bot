@@ -238,6 +238,15 @@ T('нет конфликта классов: стили заставок тол�
   T('галерея 2.0: лимит 12 фото везде, 6 нигде не остался', !/gl\.length>=6|gl\.length<6|\.slice\(0,6\);if\(g\.length\)ph\.g/.test(ix) && [wk, bt].every((x) => !x.includes('map(okMedia).filter(Boolean).slice(0, 6)')) && ix.includes('gl.length<12'));
   T('галерея 2.0: подпись и раскладка сохраняют черновик сразу', ix.includes('g.cap=i.value.slice(0,60);autoSave()') && ix.includes("ST.draft.gv=b.dataset.gv;autoSave()"));
   T('галерея 2.0: подписи мастера на ru и uz', ['glay:', 'glg:', 'glm:', 'glr:', 'gcap:', 'gcapph:'].every((k) => ix.split(k).length >= 3));
+  // Табло: быстрая чёткая смена цифры без наклона (раньше 520 мс с rotateX 70° и сжатием до 10 px)
+  {
+    const fxc = read('docs/fx.css'), fxj = read('docs/fx.js'), bun = read('docs/bundle.css'), rvc = read('docs/reveal.css');
+    const kf = (css, n) => (css.match(new RegExp('@keyframes ' + n + '\\{[^\\n]*')) || [''])[0];
+    const dur = (css, sel) => { const m = css.match(new RegExp(sel.replace(/[.]/g, '\\.') + '\\{animation:\\w+ ([.\\d]+)s')); return m ? parseFloat(m[1]) : 9; };
+    T('табло: цифра меняется быстро (уход ≤0.2 с, приход ≤0.25 с, снятие слоёв ≤300 мс)', dur(fxc, '.sq b .fo') <= 0.2 && dur(fxc, '.sq b .fn') <= 0.25 && /_ft = setTimeout\(function \(\) \{ b\.textContent = t; b\.classList\.remove\('fl'\); \}, (\d+)\)/.test(fxj) && +fxj.match(/_ft = setTimeout\(function \(\) \{ b\.textContent = t; b\.classList\.remove\('fl'\); \}, (\d+)\)/)[1] <= 300);
+    T('табло: без наклона и сжатия (нет rotateX ни в переворотах, ни в итоговом bundle.css)', !/rotateX/.test(kf(fxc, 'fxo') + kf(fxc, 'fxn')) && !/rotateX/.test(kf(bun, 'fxo') + kf(bun, 'fxn')) && kf(bun, 'fxo').includes('translateY(-38%)'));
+    T('табло: тик по границе секунды, а второй слой reveal не трогает transform цифр', fxj.includes('1000 - (Date.now() % 1000)') && !/\.rg \.sq b\{[^}]*(transform-origin|backface)/.test(rvc));
+  }
   // Бот: нижней постоянной кнопки нет, висящая снимается
   T('бот: нет постоянной клавиатуры (is_persistent / «Открыть Marhabo» внизу)', !bt.includes('is_persistent') && !bt.includes('permKb') && !bt.includes('PERM['));
   T('бот: на /start снимается старая нижняя клавиатура', bt.includes("remove_keyboard: true }, disable_notification: true") && bt.includes("tg('deleteMessage'"));

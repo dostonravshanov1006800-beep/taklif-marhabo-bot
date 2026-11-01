@@ -165,7 +165,7 @@
     b.classList.remove('fl'); void b.offsetWidth;
     b.innerHTML = '<i class="fo">' + old + '</i><i class="fn">' + t + '</i>';
     b.classList.add('fl');
-    clearTimeout(b._ft); b._ft = setTimeout(function () { b.textContent = t; b.classList.remove('fl'); }, 520);
+    clearTimeout(b._ft); b._ft = setTimeout(function () { b.textContent = t; b.classList.remove('fl'); }, 230);
   }
   function pad(x) { return String(x).padStart(2, '0'); }
 
