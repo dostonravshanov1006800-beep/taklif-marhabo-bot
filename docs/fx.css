@@ -319,3 +319,9 @@ html,body{background-color:#FCF9F3}
 .card,.gate{transform:translateZ(0)}
 .card .in{border-radius:21px}
 @media (min-resolution:2.5dppx){.lh i{height:.5px;min-height:.5px}}
+
+/* Доступность: ссылка «к содержимому» и скрытый для глаз текст для скринридеров */
+.skipl{position:fixed;left:8px;top:-60px;z-index:100;padding:12px 16px;border-radius:10px;background:#2B2219;color:#fff;font:600 14px/1 Manrope,system-ui,sans-serif;text-decoration:none;transition:top .15s}
+.skipl:focus{top:8px;outline:2px solid #B28A50;outline-offset:2px}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#st:focus,h1:focus{outline:none}

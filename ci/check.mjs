@@ -78,13 +78,46 @@ T('нет конфликта классов: стили заставок тол�
 // 3c. Появление блоков: файлы подключены, стили есть для каждой тематической анимации, есть страховка и учёт reduced-motion
 {
   const rjs = read('docs/reveal.js'), rcss = read('docs/reveal.css'), ih = read('docs/i.html');
-  T('reveal.js подключён в i.html', ih.includes('src="reveal.js"') && ih.includes('href="reveal.css"'));
+  T('reveal.js подключён в i.html', ih.includes('src="reveal.js"') && ih.includes('href="bundle.css"'));
   T('reveal.js вызывается после показа карточки', ih.includes('__revealInit'));
   for (const k of ['sunset', 'stained', 'swan']) T('reveal.css стиль темы ' + k, rcss.includes('data-rv=' + k));
   T('reveal.js: страховка таймером', /setTimeout\(function \(\) \{ kids\.forEach/.test(rjs));
   T('reveal.js: учёт reduced-motion', rjs.includes('prefers-reduced-motion'));
   T('reveal.css: reduced-motion не прячет блоки', /prefers-reduced-motion[\s\S]*opacity:1!important/.test(rcss));
   T('reveal.js не трогает чужие fx-rv', rjs.includes('fx-(rv|calw)'));
+}
+
+// 3d. Доступность: файл подключён, основные приёмы на месте
+{
+  const aj = read('docs/a11y.js'), ih = read('docs/i.html'), fc = read('docs/fx.css');
+  T('a11y.js подключён в i.html', ih.includes('src="a11y.js"') && ih.includes('__a11yInit'));
+  T('a11y: подписи фото галереи', aj.includes("aria-label', tx('photo')"));
+  T('a11y: role=main и ссылка пропуска', aj.includes("'role', 'main'") && aj.includes('skipl'));
+  T('a11y: диалог просмотра (role=dialog, aria-modal)', aj.includes("'dialog'") && aj.includes("'aria-modal'"));
+  T('a11y: удержание Tab в окне просмотра', aj.includes("e.key !== 'Tab'"));
+  T('a11y: живая область aria-live', aj.includes("aria-live', 'polite'"));
+  T('a11y: названия на 4 языках', ['ru:', 'uz:', 'en:', 'kk:'].every((k) => aj.includes(k)));
+  T('a11y: стили skip-link и .sr', fc.includes('.skipl') && fc.includes('.sr{'));
+  T('a11y: у переключателей есть aria-label', ih.includes("aria-label',toDark") || ih.includes("'aria-label',isDark"));
+  T('i.html: у кнопки печати есть имя', /id="seal"[^>]*aria-label=/.test(ih));
+}
+
+// 3e. Единый файл стилей: свежий и подключён (иначе страница покажет старый дизайн)
+{
+  const { build } = await import('./build-css.mjs');
+  const fresh = build(), cur = read('docs/bundle.css');
+  T('bundle.css свежий (запусти node ci/build-css.mjs)', fresh === cur);
+  T('i.html подключает bundle.css, а не 4 файла', read('docs/i.html').includes('href="bundle.css"') && !/href="(fx|curtain|intro|reveal)\.css"/.test(read('docs/i.html')));
+}
+
+// 3f. Скорость: приглашение грузится из двух источников одновременно, предзагрузка скриптов
+{
+  const ih = read('docs/i.html');
+  T('i.html: API и Pages запрашиваются одновременно (Promise.race)', ih.includes('Promise.race([ap.then') );
+  T('i.html: окно ожидания свежего API 1.5 с', ih.includes('setTimeout(()=>r(null),1500)'));
+  T('i.html: modulepreload shared.js', ih.includes('rel="modulepreload" href="shared.js"'));
+  T('i.html: preload fx.js', ih.includes('rel="preload" href="fx.js" as="script"'));
+  T('i.html: шрифты не блокируют отрисовку (media=print+onload)', ih.includes('media="print" onload="this.media=\'all\'"'));
 }
 
 // 4. Нет секретов в публичной части
