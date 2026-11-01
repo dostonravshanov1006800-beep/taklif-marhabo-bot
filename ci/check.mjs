@@ -98,7 +98,9 @@ T('нет конфликта классов: стили заставок тол�
   T('a11y: живая область aria-live', aj.includes("aria-live', 'polite'"));
   T('a11y: названия на 4 языках', ['ru:', 'uz:', 'en:', 'kk:'].every((k) => aj.includes(k)));
   T('a11y: стили skip-link и .sr', fc.includes('.skipl') && fc.includes('.sr{'));
-  T('a11y: у переключателей есть aria-label', ih.includes("aria-label',toDark") || ih.includes("'aria-label',isDark"));
+  T('a11y: у бургера и группы языков есть aria-label, aria-expanded, aria-controls', ih.includes('class="lgb" aria-haspopup="true" aria-expanded="false" aria-controls="lgp" aria-label=') && ih.includes('id="lgp" role="group" aria-label='));
+  T('язык/тема: компактный бургер 44px с тремя полосками вместо широкой плашки', /\.lgsw \.lgb\{width:44px;height:44px;[^}]*border-radius:50%/.test(ih) && (ih.match(/<i><\/i>/g) || []).length >= 3 && !/\.lgsw\{[^}]*display:flex;gap:2px/.test(ih));
+  T('язык/тема: панель закрывается по Esc и по клику снаружи, пункты ≥44px', ih.includes("e.key==='Escape'") && ih.includes('!sw.contains(e.target)') && /\.lgp button\{[^}]*min-height:44px/.test(ih));
   T('i.html: у кнопки печати есть имя', /id="seal"[^>]*aria-label=/.test(ih));
 }
 

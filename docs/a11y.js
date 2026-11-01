@@ -22,7 +22,7 @@
   });
   var labelLang = safe(function () {
     var g = document.querySelector('.lgsw'); if (!g) return;
-    g.setAttribute('aria-label', tx('lang'));
+    
     [].forEach.call(g.querySelectorAll('[data-lg]'), function (e) { var l = e.getAttribute('data-lg'); if (!e.getAttribute('aria-label')) e.setAttribute('aria-label', NAMES[l] || l); });
   });
   var landmarks = safe(function () {
