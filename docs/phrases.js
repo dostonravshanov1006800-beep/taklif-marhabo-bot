@@ -1,4 +1,4 @@
-/* Библиотека готовых формулировок приглашения: 3 стиля × 6 типов × 4 языка.
+/* Библиотека готовых формулировок приглашения: 3 стиля × 12 типов × 4 языка.
    Бесплатная замена ИИ-помощнику: ничего не отправляется во внешние сервисы. */
 export const PHRASE_STYLES = {
   ru: { classic: 'Классический', warm: 'Тёплый', short: 'Коротко' },
@@ -125,6 +125,126 @@ export const PHRASES = {
       uz: 'Sizni bayramga taklif qilamiz. Kutamiz!',
       en: 'You are invited to our celebration. See you there!',
       kk: 'Сізді мерекеге шақырамыз. Күтеміз!'
+    }
+  },
+  sunnat: {
+    classic: {
+      ru: 'Приглашаем вас на сүннат той нашего сына. Будем благодарны, если вы разделите с нами радость этого дня.',
+      uz: 'Sizni o\'g\'limizning sunnat to\'yiga taklif qilamiz. Bu kunning quvonchini biz bilan baham ko\'rsangiz, minnatdor bo\'lamiz.',
+      en: 'We invite you to our son\'s sunnat celebration. We would be grateful if you shared the joy of this day with us.',
+      kk: 'Сізді ұлымыздың сүндет тойына шақырамыз. Осы күннің қуанышын бізбен бөліссеңіз, алғыс айтамыз.'
+    },
+    warm: {
+      ru: 'Наш сын становится на шаг взрослее, и мы собираем самых близких за дастарханом. Приходите, будем рады вам.',
+      uz: 'O\'g\'limiz bir qadam ulg\'ayyapti, eng yaqinlarimizni dasturxonga yig\'amiz. Keling, sizni kutamiz.',
+      en: 'Our son is growing up and we are gathering our closest people at the table. Come, we would love to see you.',
+      kk: 'Ұлымыз бір қадам есейіп келеді, ең жақындарымызды дастарқанға жинаймыз. Келіңіз, күтеміз.'
+    },
+    short: {
+      ru: 'Приглашаем на сүннат той. Ждём вас!',
+      uz: 'Sunnat to\'yiga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to our sunnat celebration. See you there!',
+      kk: 'Сүндет тойға шақырамыз. Күтеміз!'
+    }
+  },
+  beshik: {
+    classic: {
+      ru: 'С радостью приглашаем вас на бешик той в честь рождения нашего малыша. Пусть вашими пожеланиями его путь будет светлым.',
+      uz: 'Farzandimiz tug\'ilganligi munosabati bilan beshik to\'yiga sizni quvonch bilan taklif qilamiz. Sizning tilaklaringiz bilan uning yo\'li porloq bo\'lsin.',
+      en: 'We happily invite you to the cradle ceremony celebrating the birth of our baby. May your good wishes light his or her path.',
+      kk: 'Сәбиіміздің дүниеге келуіне орай бесік тойына қуана шақырамыз. Сіздердің тілектеріңізбен оның жолы жарқын болсын.'
+    },
+    warm: {
+      ru: 'У нас в доме малыш, и мы хотим разделить эту радость с близкими. Приходите на бешик той, будем рады.',
+      uz: 'Uyimizda chaqaloq bor, bu quvonchni yaqinlar bilan baham ko\'rmoqchimiz. Beshik to\'yiga keling, xursand bo\'lamiz.',
+      en: 'There is a little one in our home and we want to share the joy. Come to the cradle ceremony, we would be glad.',
+      kk: 'Үйімізде сәби бар, осы қуанышты жақындарымызбен бөліскіміз келеді. Бесік тойына келіңіз, қуанамыз.'
+    },
+    short: {
+      ru: 'Приглашаем на бешик той. Ждём!',
+      uz: 'Beshik to\'yiga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to the cradle celebration. See you!',
+      kk: 'Бесік тойға шақырамыз. Күтеміз!'
+    }
+  },
+  grad: {
+    classic: {
+      ru: 'Приглашаем вас на выпускной вечер. Будем рады разделить с вами этот важный день и поблагодарить всех, кто был рядом.',
+      uz: 'Sizni bitiruv kechasiga taklif qilamiz. Bu muhim kunni siz bilan baham ko\'rib, yonimizda bo\'lgan barchaga minnatdorchilik bildirsak, xursand bo\'lamiz.',
+      en: 'We invite you to our graduation evening. We would be glad to share this important day and thank everyone who stood by us.',
+      kk: 'Сізді түлектер кешіне шақырамыз. Осы маңызды күнді бөлісіп, қасымызда болғандардың бәріне алғыс айтқымыз келеді.'
+    },
+    warm: {
+      ru: 'Школа закончилась, и мы собираемся отметить это вместе. Приходите, будет весело и тепло.',
+      uz: 'Maktab tugadi va biz buni birga nishonlaymiz. Keling, quvnoq va samimiy bo\'ladi.',
+      en: 'School is over and we are celebrating together. Come, it will be fun and warm.',
+      kk: 'Мектеп аяқталды, біз мұны бірге атап өтеміз. Келіңіз, көңілді әрі жылы болады.'
+    },
+    short: {
+      ru: 'Приглашаем на выпускной. Ждём!',
+      uz: 'Bitiruv kechasiga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to our graduation. See you there!',
+      kk: 'Түлектер кешіне шақырамыз. Күтеміз!'
+    }
+  },
+  corp: {
+    classic: {
+      ru: 'Приглашаем вас на корпоративное мероприятие. Мы подведём итоги, поблагодарим команду и проведём вечер в хорошей компании.',
+      uz: 'Sizni korporativ tadbirga taklif qilamiz. Yakunlarni sarhisob qilamiz, jamoaga minnatdorchilik bildiramiz va oqshomni yaxshi davrada o\'tkazamiz.',
+      en: 'We invite you to our corporate event. We will review the results, thank the team and spend the evening in good company.',
+      kk: 'Сізді корпоративтік іс-шараға шақырамыз. Қорытынды жасап, ұжымға алғыс айтып, кешті жақсы ортада өткіземіз.'
+    },
+    warm: {
+      ru: 'Собираемся всей командой, чтобы отдохнуть и пообщаться без рабочей спешки. Будем рады видеть вас.',
+      uz: 'Butun jamoa bilan ish shoshilinchisiz dam olib, suhbatlashish uchun yig\'ilamiz. Sizni ko\'rsak xursand bo\'lamiz.',
+      en: 'The whole team is getting together to relax and talk without the work rush. We would be glad to see you.',
+      kk: 'Бүкіл ұжыммен жұмыс асығыстығынсыз демалып, сөйлесуге жиналамыз. Сізді көргенімізге қуанамыз.'
+    },
+    short: {
+      ru: 'Приглашаем на корпоратив. Ждём!',
+      uz: 'Korporativ tadbirga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to our corporate event. See you there!',
+      kk: 'Корпоративке шақырамыз. Күтеміз!'
+    }
+  },
+  party: {
+    classic: {
+      ru: 'Приглашаем вас на наш вечер перед большим днём. Будет музыка, танцы и хорошее настроение.',
+      uz: 'Sizni katta kundan oldingi oqshomimizga taklif qilamiz. Musiqa, raqs va yaxshi kayfiyat bo\'ladi.',
+      en: 'We invite you to our evening before the big day. There will be music, dancing and a great mood.',
+      kk: 'Сізді үлкен тойдан бұрынғы кешімізге шақырамыз. Музыка, би және жақсы көңіл-күй болады.'
+    },
+    warm: {
+      ru: 'Собираем своих на последний вечер перед свадьбой. Приходите повеселиться вместе с нами.',
+      uz: 'To\'ydan oldingi so\'nggi oqshomga yaqinlarimizni yig\'amiz. Biz bilan birga ko\'ngil ochishga keling.',
+      en: 'We are gathering our people for the last evening before the wedding. Come and have fun with us.',
+      kk: 'Үйлену тойынан бұрынғы соңғы кешке өз адамдарымызды жинаймыз. Бізбен бірге көңіл көтеруге келіңіз.'
+    },
+    short: {
+      ru: 'Приглашаем на вечер. Ждём!',
+      uz: 'Oqshomga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to our party. See you there!',
+      kk: 'Кешке шақырамыз. Күтеміз!'
+    }
+  },
+  hayit: {
+    classic: {
+      ru: 'Приглашаем вас встретить праздник за общим столом. Пусть он принесёт в каждый дом мир, достаток и добрые вести.',
+      uz: 'Sizni bayramni umumiy dasturxon atrofida kutib olishga taklif qilamiz. U har bir xonadonga tinchlik, baraka va xushxabar olib kelsin.',
+      en: 'We invite you to welcome the holiday around a shared table. May it bring peace, abundance and good news to every home.',
+      kk: 'Сізді мерекені ортақ дастарқан басында қарсы алуға шақырамыз. Ол әр үйге бейбітшілік, береке және игі хабар әкелсін.'
+    },
+    warm: {
+      ru: 'Праздник приходит в дом, и мы будем рады видеть вас у нас. Приходите, посидим за чаем и добрым разговором.',
+      uz: 'Bayram uyga keladi, sizni ko\'rsak xursand bo\'lamiz. Keling, choy va yaxshi suhbat atrofida o\'tiramiz.',
+      en: 'The holiday is coming to our home and we would love to see you. Come, let us sit over tea and good conversation.',
+      kk: 'Мереке үйімізге келеді, сізді көргенімізге қуанамыз. Келіңіз, шай мен жылы әңгіме үстінде отырайық.'
+    },
+    short: {
+      ru: 'Приглашаем на праздничный стол. Ждём!',
+      uz: 'Bayram dasturxoniga taklif qilamiz. Kutamiz!',
+      en: 'You are invited to our festive table. See you there!',
+      kk: 'Мерекелік дастарқанға шақырамыз. Күтеміз!'
     }
   }
 };

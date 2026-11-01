@@ -214,8 +214,38 @@ T('нет конфликта классов: стили заставок тол�
   const ru = ix.slice(ix.indexOf('ru:{ey:'), ix.indexOf('uz:{ey:')), uz = ix.slice(ix.indexOf('uz:{ey:'));
   T('мастер: названия 5 шагов и кнопки есть на ru и uz', ['wz1:', 'wz2:', 'wz3:', 'wz4:', 'wz5:', 'wzNext:', 'wzBack:', 'wzNeed:', 'wzOf:'].every((k) => ru.includes(k) && uz.slice(0, uz.indexOf('\nconst ')).includes(k)));
   T('мастер: поля даты и времени сжимаются (нет горизонтальной прокрутки на 280–320 px)', /\.row\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(ix) && ix.includes('.row input[type=date]'));
-  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec'].every((f) => existsSync('tests/wizard/' + f + '.py')));
+  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec', 'types12'].every((f) => existsSync('tests/wizard/' + f + '.py')));
   T('предпросмотр: живой блок #pvb и «Посмотреть как гость» остаются на последнем шаге', fb.indexOf('id="pvb"') > fb.indexOf('h+=STEP(5)') && fb.includes('data-pvfull'));
+}
+
+
+// 3.8 Двенадцать шаблонов-характеров (п. 1): каждый событийный тип целиком
+{
+  const TYPES = ['wedding', 'nikah', 'birthday', 'anniversary', 'sunnat', 'beshik', 'grad', 'party', 'corp', 'navruz', 'hayit', 'other'];
+  const tplStart = sh.indexOf('export const TPL'), tplEnd = sh.indexOf('export const THEMES');
+  const tpl = sh.slice(tplStart, tplEnd), ph = read('docs/phrases.js'), sd = read('docs/send.js'), ix2 = read('docs/index.html');
+  const keys = [...tpl.matchAll(/\n  (\w+): \{ music:/g)].map((m) => m[1]);
+  T('шаблоны: ровно 12 типов', keys.length === 12 && TYPES.every((k) => keys.includes(k)), keys.join());
+  const tp = ix2.match(/const TP=\[([^\]]*)\]/)[1];
+  const evBlock = sd.slice(sd.indexOf('const EV'), sd.indexOf('function plural'));
+  for (const k of TYPES) {
+    const i0 = tpl.indexOf('\n  ' + k + ': { music:'), nx = tpl.slice(i0 + 5).search(/\n  \w+: \{ music:/), blk = tpl.slice(i0, nx > 0 ? i0 + 5 + nx : undefined);
+    const th = (blk.match(/theme: \{([^}]*)\}/) || [])[1] || '';
+    const g = (n) => (th.match(new RegExp(n + ": '(#[0-9A-Fa-f]{6})'")) || [])[1];
+    const base = g('base');
+    T(`шаблон ${k}: контраст ink/muted/accentText ≥ 4.5`, !!base && [g('ink'), g('muted'), g('accentText')].every((c) => c && cr(c, base) >= 4.5), base && [g('ink'), g('muted'), g('accentText')].map((c) => cr(c, base).toFixed(1)).join('/'));
+    const pageHex = ((th.match(/page: '([^']*)'/) || [])[1] || '').match(/#[0-9A-Fa-f]{6}/g) || [];
+    T(`шаблон ${k}: текст читаем на фоне страницы`, pageHex.length > 0 && Math.min(...pageHex.map((c) => cr(g('ink'), c))) >= 4.5);
+    T(`шаблон ${k}: название и приветствие на 4 языках`, ['label', 'greeting'].every((f) => { const m = blk.match(new RegExp(f + ': \\{([^}]*)\\}')); return m && ['ru', 'uz', 'en', 'kk'].every((l) => new RegExp('\\b' + l + ': ').test(m[1])); }));
+    T(`шаблон ${k}: обложка, портрет и 3 фото галереи`, /cover: U\('photo-/.test(blk) && /portrait: U\('photo-/.test(blk) && (blk.match(/gallery: \[([^\]]*)\]/) || [, ''])[1].split('U(').length - 1 >= 3);
+    T(`шаблон ${k}: 3 стиля фраз × 4 языка`, ['classic', 'warm', 'short'].every((st) => { const a = ph.indexOf('\n  ' + k + ': {'); if (a < 0) return false; const part = ph.slice(a, a + 6000); const m = part.match(new RegExp(st + ': \\{([\\s\\S]*?)\\n    \\}')); return m && ['ru', 'uz', 'en', 'kk'].every((l) => new RegExp('\\n      ' + l + ": '").test(m[1])); }));
+    T(`шаблон ${k}: подпись события в рассылке на 4 языках`, (evBlock.match(new RegExp('\\b' + k + ': ', 'g')) || []).length === 4);
+    T(`шаблон ${k}: есть в мастере`, tp.includes("'" + k + "'"));
+    for (const f of ['bot/bot.mjs', 'worker/worker.js']) T(`шаблон ${k}: пропущен ${f}`, new RegExp("\\[[^\\]]*'" + k + "'[^\\]]*\\]\\.includes\\(d\\.t\\)").test(read(f)));
+  }
+  T('бот: для каждого типа есть обложка в карточке', TYPES.filter((k) => !['wedding'].includes(k)).every((k) => new RegExp('\\b' + k + ": 'photo-").test(read('bot/bot.mjs'))));
+  const bad = [...new Set([...tpl.matchAll(/photo-\d+-[0-9a-f]+/g)].map((m) => m[0]))].filter((x) => /^photo-1523050854058/.test(x));
+  T('шаблоны: известный мёртвый ID фото не вернулся', bad.length === 0, bad.join());
 }
 
 // 4. Нет секретов в публичной части

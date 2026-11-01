@@ -13,7 +13,7 @@ const okMedia = (u) => (/^media\/\d{3,15}\/[a-z0-9]{4,20}\.(jpg|png|webp|mp3|m4a
 function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
   const o = {
-    t: ['wedding', 'birthday', 'anniversary', 'jubilee', 'nikah', 'nikoh', 'navruz', 'other'].includes(d.t) ? d.t : 'wedding',
+    t: ['wedding', 'birthday', 'anniversary', 'jubilee', 'nikah', 'nikoh', 'navruz', 'other', 'sunnat', 'beshik', 'grad', 'corp', 'party', 'hayit'].includes(d.t) ? d.t : 'wedding',
     l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60),
     d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',

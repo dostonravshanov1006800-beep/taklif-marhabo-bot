@@ -19,10 +19,10 @@ const MSG = {
         rem: (n, who, d, left) => `${n}, еске саламыз${who ? ': ' + who : ''}${d ? ' (' + d + ')' : ''}${left === 0 ? ' бүгін' : left === 1 ? ' ертең' : left > 1 ? ', ' + left + ' күн қалды' : ''}. Келетініңізді растаңыз:` },
 };
 const EV = {
-  ru: { wedding: 'свадьбу', nikah: 'никах', birthday: 'день рождения', anniversary: 'годовщину', navruz: 'Навруз', other: 'праздник' },
-  uz: { wedding: 'to\u2018y', nikah: 'nikoh', birthday: 'tug\u2018ilgan kun', anniversary: 'yubiley', navruz: 'Navro\u2018z', other: 'bayram' },
-  en: { wedding: 'the wedding of', nikah: 'the nikah of', birthday: 'the birthday of', anniversary: 'the anniversary of', navruz: 'Navruz', other: 'the celebration of' },
-  kk: { wedding: 'үйлену тойы', nikah: 'неке', birthday: 'туған күн', anniversary: 'мерейтой', navruz: 'Наурыз', other: 'мереке' },
+  ru: { sunnat: 'сүннат той', beshik: 'бешик той', grad: 'выпускной', corp: 'корпоратив', party: 'вечер', hayit: 'хайит', wedding: 'свадьбу', nikah: 'никах', birthday: 'день рождения', anniversary: 'годовщину', navruz: 'Навруз', other: 'праздник' },
+  uz: { sunnat: 'sunnat to\u2018yi', beshik: 'beshik to\u2018yi', grad: 'bitiruv kechasi', corp: 'korporativ tadbir', party: 'oqshom', hayit: 'hayit', wedding: 'to\u2018y', nikah: 'nikoh', birthday: 'tug\u2018ilgan kun', anniversary: 'yubiley', navruz: 'Navro\u2018z', other: 'bayram' },
+  en: { sunnat: 'the sunnat celebration of', beshik: 'the cradle ceremony of', grad: 'the graduation of', corp: 'the corporate event', party: 'the party of', hayit: 'the Eid celebration', wedding: 'the wedding of', nikah: 'the nikah of', birthday: 'the birthday of', anniversary: 'the anniversary of', navruz: 'Navruz', other: 'the celebration of' },
+  kk: { sunnat: 'сүндет той', beshik: 'бесік той', grad: 'түлектер кеші', corp: 'корпоратив', party: 'кеш', hayit: 'айт', wedding: 'үйлену тойы', nikah: 'неке', birthday: 'туған күн', anniversary: 'мерейтой', navruz: 'Наурыз', other: 'мереке' },
 };
 function plural(n, a, b, c) { const m = n % 100, k = n % 10; return m > 10 && m < 20 ? c : k === 1 ? a : k > 1 && k < 5 ? b : c; }
 export function fmtDate(iso, lang) {
@@ -41,7 +41,7 @@ export function whoLine(it, lang) {
   const a = (it.a || '').trim(), b = (it.b || '').trim(), names = a && b ? a + ' & ' + b : a;
   const ev = (EV[lang] || EV.ru)[kindOf(it)] || '';
   if (!names) return ev;
-  if (kindOf(it) === 'navruz') return ev;
+  if (['navruz', 'corp', 'hayit'].includes(kindOf(it))) return ev;
   return (ev + ' ' + names).trim();
 }
 /* Текст для одного гостя. mode: 'inv' приглашение, 'rem' напоминание. */

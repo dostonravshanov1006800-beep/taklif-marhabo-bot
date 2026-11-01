@@ -291,7 +291,7 @@ async function saveMedia(m) {
 const INV_DIR = 'docs/inv';
 const PREV_DIR = 'docs/i';
 // запасные обложки по шаблонам (те же, что на странице гостя), чтобы у превью всегда была картинка
-const COVER = { wedding: 'photo-1606800052052-a08af7148866', birthday: 'photo-1530103862676-de8c9debad1d', jubilee: 'photo-1522673607200-164d1b6ce486', anniversary: 'photo-1522673607200-164d1b6ce486', nikoh: 'photo-1519741497674-611481863552', nikah: 'photo-1519741497674-611481863552', navruz: 'photo-1490750967868-88aa4486c946', other: 'photo-1492684223066-81342ee5ff30' };
+const COVER = { wedding: 'photo-1606800052052-a08af7148866', birthday: 'photo-1530103862676-de8c9debad1d', jubilee: 'photo-1522673607200-164d1b6ce486', anniversary: 'photo-1522673607200-164d1b6ce486', nikoh: 'photo-1519741497674-611481863552', nikah: 'photo-1519741497674-611481863552', navruz: 'photo-1490750967868-88aa4486c946', other: 'photo-1492684223066-81342ee5ff30', sunnat: 'photo-1503454537195-1dcabb73ffb9', beshik: 'photo-1515488042361-ee00e0ddd4e4', grad: 'photo-1541339907198-e08756dedf3f', corp: 'photo-1511578314322-379afb476865', party: 'photo-1496843916299-590492c751f4', hayit: 'photo-1564769625905-50e93615e769' };
 const MONTHS = { ru: ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'], uz: ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'] };
 MONTHS.en = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 MONTHS.kk = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
@@ -395,7 +395,7 @@ async function findInvById(id) {
 }
 function sanitizeInv(d, owner) {
   if (!d || typeof d !== 'object') return null;
-  const o = { t: ['wedding','birthday','anniversary','jubilee','nikah','nikoh','navruz','other'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
+  const o = { t: ['wedding','birthday','anniversary','jubilee','nikah','nikoh','navruz','other','sunnat','beshik','grad','corp','party','hayit'].includes(d.t) ? d.t : 'wedding', l: LGS.includes(d.l) ? d.l : 'ru',
     a: cleanStr(d.a, 60), b: cleanStr(d.b, 60), d: /^\d{4}-\d{2}-\d{2}$/.test(d.d || '') ? d.d : '', h: /^\d{2}:\d{2}$/.test(d.h || '') ? d.h : '',
     pl: cleanStr(d.pl, 90), ad: cleanStr(d.ad, 120), m: okUrl(cleanStr(d.m, 400)), x: cleanStr(d.x, 400), dc: cleanStr(d.dc, 80), dp: (Array.isArray(d.dp) ? d.dp : []).map((c) => String(c).toUpperCase()).filter((c) => /^#[0-9A-F]{6}$/.test(c)).slice(0, 6), ct: cleanStr(d.ct, 40),
     k: BOT_NAME, o: String(owner), i: cleanStr(d.i, 12).replace(/[^a-z0-9]/gi, '') };
