@@ -334,3 +334,7 @@ html,body{background-color:#FCF9F3}
 .skipl:focus{top:8px;outline:2px solid #B28A50;outline-offset:2px}
 .sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #st:focus,h1:focus{outline:none}
+/* Галерея 2.0: подпись и слайд-шоу */
+#lb .gcb{position:absolute;left:0;right:0;bottom:max(46px,calc(env(safe-area-inset-bottom) + 36px));padding:0 56px;text-align:center;color:#fff;font:500 14px/1.4 Manrope,sans-serif;text-shadow:0 1px 8px rgba(0,0,0,.7);pointer-events:none}
+#lb #gsb{position:absolute;top:max(8px,env(safe-area-inset-top));left:10px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#lb #gsb:focus-visible{outline:2px solid #fff;outline-offset:2px}

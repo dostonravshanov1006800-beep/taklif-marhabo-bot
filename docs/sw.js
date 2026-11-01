@@ -1,6 +1,6 @@
 /* Офлайн-режим приглашений. Версия кэша подставляется CI (ci/build-sw.mjs). */
-const V='tk-d7a8eaa7';
-const SHELL=['shared.js','fx.js','fx.css','bundle.css','intro.js','intro.css','curtain.js','curtain.css','reveal.js','reveal.css','a11y.js','lines.js','phrases.js'];
+const V='tk-921f1840';
+const SHELL=['shared.js','fx.js','gallery2.js','fx.css','bundle.css','intro.js','intro.css','curtain.js','curtain.css','reveal.js','reveal.css','a11y.js','lines.js','phrases.js'];
 const MAXMEDIA=40; /* сколько картинок/музыки держим, чтобы не раздувать память телефона */
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V+'-shell').then(c=>Promise.all(SHELL.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>0)))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('tk-')&&!k.startsWith(V)).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

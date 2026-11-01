@@ -421,7 +421,12 @@ function sanitizeInv(d, owner) {
   if (d.p && typeof d.p === 'object') {
     const p = {}; const c = okMedia(d.p.c), q = okMedia(d.p.o);
     if (c) p.c = c; if (q) p.o = q;
-    if (Array.isArray(d.p.g)) { const g = d.p.g.map(okMedia).filter(Boolean).slice(0, 6); if (g.length) p.g = g; }
+    if (Array.isArray(d.p.g)) {
+      // подписи привязаны к позиции фото: считаем вместе, чтобы отброшенное фото не сдвигало чужие подписи
+      const gc = Array.isArray(d.p.gc) ? d.p.gc : [];
+      const gp = d.p.g.slice(0, 12).map((x, i) => ({ u: okMedia(x), c: cleanStr(typeof gc[i] === 'string' ? gc[i] : '', 60) })).filter((x) => x.u);
+      if (gp.length) { p.g = gp.map((x) => x.u); if (gp.some((x) => x.c)) p.gc = gp.map((x) => x.c); if (d.p.gv === 'm' || d.p.gv === 'r') p.gv = d.p.gv; }
+    }
     // видео: [[путь, 'l'|'p'], ...] — l = 16:9 (горизонтальное), p = 9:16 (вертикальное). Только файлы из нашего репозитория или https.
     if (Array.isArray(d.p.v)) {
       const v = d.p.v.slice(0, 3).map((x) => { const u = okMedia(Array.isArray(x) ? x[0] : x); const o2 = Array.isArray(x) && x[1] === 'p' ? 'p' : 'l'; return u && /\.(mp4|webm)(\?|$)/i.test(u) ? [u, o2] : null; }).filter(Boolean);

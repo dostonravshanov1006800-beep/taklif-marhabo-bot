@@ -214,7 +214,7 @@ T('нет конфликта классов: стили заставок тол�
   const ru = ix.slice(ix.indexOf('ru:{ey:'), ix.indexOf('uz:{ey:')), uz = ix.slice(ix.indexOf('uz:{ey:'));
   T('мастер: названия 5 шагов и кнопки есть на ru и uz', ['wz1:', 'wz2:', 'wz3:', 'wz4:', 'wz5:', 'wzNext:', 'wzBack:', 'wzNeed:', 'wzOf:'].every((k) => ru.includes(k) && uz.slice(0, uz.indexOf('\nconst ')).includes(k)));
   T('мастер: поля даты и времени сжимаются (нет горизонтальной прокрутки на 280–320 px)', /\.row\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(ix) && ix.includes('.row input[type=date]'));
-  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec', 'types12', 'videocover', 'videocover_wz'].every((f) => existsSync('tests/wizard/' + f + '.py')));
+  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec', 'types12', 'videocover', 'videocover_wz', 'gallery2', 'gallery2_wz'].every((f) => existsSync('tests/wizard/' + f + '.py')));
   // П.3 видео-открытка: флаг vc должен жить во всех звеньях цепочки, иначе тихо потеряется
   const gi = read('docs/i.html'), wk = read('worker/worker.js'), bt = read('bot/bot.mjs');
   T('видео-открытка: переключатель #vcsw в мастере виден только при загруженном видео', ix.includes("(d.vl||[]).some(v=>v.url))h+='<label class=\"sw\"") && ix.includes('id=\"vcsw\"'));
@@ -227,6 +227,18 @@ T('нет конфликта классов: стили заставок тол�
   T('видео-открытка: видео обложки не мешает обработчикам обычного видео', gi.split("v.id==='cvv'").length - 1 >= 6);
   T('видео-открытка: видео обложки останавливается, когда заставка закрыта', gi.includes("classList.contains('out')") && gi.includes('v.pause()'));
   T('видео-открытка: тест воркера и бота tests/worker-types.mjs лежит в репозитории', existsSync('tests/worker-types.mjs'));
+  // П.5 Галерея 2.0
+  const g2 = read('docs/gallery2.js');
+  T('галерея 2.0: gallery2.js подключён в i.html после fx.js и лежит в кэше офлайн', gi.indexOf('src="fx.js"') > 0 && gi.indexOf('src="gallery2.js"') > gi.indexOf('src="fx.js"') && read('docs/sw.js').includes("'gallery2.js'"));
+  T('галерея 2.0: кнопку слайд-шоу слушает window (fx.js глушит клики на #lb)', /window\.addEventListener\('click', function \(e\) \{\s*var b = e\.target && e\.target\.closest && e\.target\.closest\('#gsb'\)/.test(g2) && !/lb\.addEventListener\('click'[^\n]*#gsb/.test(g2));
+  T('галерея 2.0: слайд-шоу не включается при «меньше движения», пауза при скрытой вкладке', g2.includes('prefers-reduced-motion') && g2.includes('document.hidden'));
+  T('галерея 2.0: слайд-шоу и подписи на 4 языках', ['Слайд-шоу', 'Slayd-shou', 'Slideshow', 'Слайд-шоу'].every((x) => g2.includes(x)) && g2.includes('Остановить') && g2.includes('Stop slideshow') && g2.includes('тоқтату'));
+  T('галерея 2.0: раскладки сетка, мозаика, лента в стилях гостя', ['gr-m', 'gr-r', 'scroll-snap-type', 'column-count'].every((x) => gi.includes(x)));
+  T('галерея 2.0: подписи считаются по тем же фото, что и пути (индексы не сдвигаются)', ix.includes('const gp=(it.gl||[]).map(x=>({u:rel(x.url)') && [wk, bt].every((x) => x.includes('const gp = d.p.g.slice(0, 12)')));
+  T('галерея 2.0: лимит 12 фото везде, 6 нигде не остался', !/gl\.length>=6|gl\.length<6|\.slice\(0,6\);if\(g\.length\)ph\.g/.test(ix) && [wk, bt].every((x) => !x.includes('map(okMedia).filter(Boolean).slice(0, 6)')) && ix.includes('gl.length<12'));
+  T('галерея 2.0: подпись и раскладка сохраняют черновик сразу', ix.includes('g.cap=i.value.slice(0,60);autoSave()') && ix.includes("ST.draft.gv=b.dataset.gv;autoSave()"));
+  T('галерея 2.0: подписи мастера на ru и uz', ['glay:', 'glg:', 'glm:', 'glr:', 'gcap:', 'gcapph:'].every((k) => ix.split(k).length >= 3));
+  T('галерея 2.0: у фото с подписью alt пуст (скринридер не читает дважды)', gi.includes("' alt=\"\" loading=\"lazy\""));
   T('предпросмотр: живой блок #pvb и «Посмотреть как гость» остаются на последнем шаге', fb.indexOf('id="pvb"') > fb.indexOf('h+=STEP(5)') && fb.includes('data-pvfull'));
 }
 

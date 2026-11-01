@@ -29,3 +29,32 @@ const b1=bsan({t:'wedding',a:'A',i:'abc123',vc:1,p:{v:V}},'1'),b2=bsan({t:'weddi
 if(!b1||b1.vc!==1)bb.push('vc с видео потерян');if(b2&&b2.vc)bb.push('vc без видео прошёл');if(b3&&b3.vc)bb.push('vc с мусорной ссылкой прошёл');if(b4&&b4.vc)bb.push('vc без флага появился');
 console.log(bb.length?'БОТ ПРОВАЛ: '+bb.join('; '):'бот: 12 типов и vc ведут себя как воркер');
 if(bb.length)process.exit(1);
+
+// П.5 галерея: подписи привязаны к фото, лимит 12, раскладка только m/r. Одинаково для воркера и бота.
+const gp=(n)=>Array.from({length:n},(_,i)=>'media/123456/photo'+(i+1)+'ab.jpg');
+function galCheck(name,san){
+  const bad=[];
+  const a=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(3),gc:['один','два','три'],gv:'m'}},'1');
+  if(!a||!a.p||a.p.g.length!==3||a.p.gc.join()!=='один,два,три'||a.p.gv!=='m')bad.push('базовый случай');
+  // среднее фото с мусорной ссылкой отбрасывается, подпись уходит вместе с ним
+  const b=san({t:'wedding',a:'A',i:'abc123',p:{g:[gp(3)[0],'javascript:alert(1)',gp(3)[2]],gc:['один','два','три']}},'1');
+  if(!b||!b.p||b.p.g.length!==2||b.p.gc.join()!=='один,три')bad.push('подписи сдвинулись при отброшенном фото: '+JSON.stringify(b&&b.p));
+  const c=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(15)}},'1');
+  if(!c||c.p.g.length!==12)bad.push('лимит 12: '+(c&&c.p&&c.p.g.length));
+  const d=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(2),gc:['x'.repeat(200),'ok']}},'1');
+  if(!d||d.p.gc[0].length!==60)bad.push('подпись не обрезана до 60');
+  const e=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(2),gv:'<script>'}},'1');
+  if(!e||e.p.gv)bad.push('чужая раскладка прошла');
+  const f=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(2),gc:['','  ']}},'1');
+  if(!f||f.p.gc)bad.push('пустые подписи не должны храниться');
+  const g=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(2),gc:[123,{a:1}]}},'1');
+  if(!g||g.p.gc)bad.push('нестроковые подписи прошли');
+  const h=san({t:'wedding',a:'A',i:'abc123',p:{gc:['x'],gv:'r'}},'1');
+  if(h&&h.p&&(h.p.gc||h.p.gv))bad.push('подписи и раскладка без фото');
+  const k=san({t:'wedding',a:'A',i:'abc123',p:{g:gp(2),gc:['<img src=x onerror=1>','a\nb']}},'1');
+  if(!k||k.p.gc[1]!=='a b')bad.push('перенос строки не схлопнут: '+JSON.stringify(k&&k.p&&k.p.gc));
+  console.log(bad.length?name+' ГАЛЕРЕЯ ПРОВАЛ: '+bad.join('; '):name+': галерея 2.0 (12 фото, подписи, раскладка) в порядке');
+  return bad.length;
+}
+let gbad=galCheck('воркер',sanitizeInv)+galCheck('бот',bsan);
+if(gbad)process.exit(1);

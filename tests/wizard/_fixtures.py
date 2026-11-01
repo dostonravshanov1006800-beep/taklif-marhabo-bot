@@ -4,7 +4,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 INV = os.path.join(ROOT, 'docs', 'inv'); MEDIA = os.path.join(ROOT, 'docs', 'media', '999000111')
 TYPES6 = ['sunnat', 'beshik', 'grad', 'corp', 'party', 'hayit']
 @contextlib.contextmanager
-def temp_invites(types=(), video=False):
+def temp_invites(types=(), video=False, gallery=False):
     made = []
     try:
         base = {'t': 'wedding', 'l': 'ru', 'a': 'Азиз', 'b': 'Дилноза', 'd': '2027-06-12', 'h': '18:00', 'pl': 'Зал', 'ad': 'Ташкент', 'ct': '+998901234567'}
@@ -16,6 +16,17 @@ def temp_invites(types=(), video=False):
             p = {'v': [['media/999000111/vcov1.mp4', 'l']]}
             for slug, extra in (('tt-vc', {'vc': 1}), ('tt-novc', {})):
                 f = os.path.join(INV, slug + '.json'); json.dump(dict(base, i=slug, p=p, **extra), open(f, 'w', encoding='utf8'), ensure_ascii=False); made.append(f)
+        if gallery:
+            os.makedirs(MEDIA, exist_ok=True); paths = []
+            for k, (w, hh, col) in enumerate([(640, 480, 'c0a060'), (480, 640, '6080c0'), (600, 600, 'c06080'), (700, 420, '60c080'), (420, 700, '8060c0')]):
+                f = os.path.join(MEDIA, f'gal{k+1}x.jpg')
+                subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', f'color=c=0x{col}:s={w}x{hh}', '-frames:v', '1', f], check=True); made.append(f); paths.append(f'media/999000111/gal{k+1}x.jpg')
+            caps = ['Наш первый танец', '', 'Мама и папа', 'Лето', 'Финал']
+            for slug, extra in (('tt-gg', {}), ('tt-gm', {'gv': 'm'}), ('tt-gr', {'gv': 'r'}), ('tt-gn', {})):
+                p = {'g': paths}
+                if slug != 'tt-gn': p['gc'] = caps
+                p.update(extra)
+                f = os.path.join(INV, slug + '.json'); json.dump(dict(base, i=slug, p=p), open(f, 'w', encoding='utf8'), ensure_ascii=False); made.append(f)
         yield
     finally:
         for f in made:
