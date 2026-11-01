@@ -238,6 +238,10 @@ T('нет конфликта классов: стили заставок тол�
   T('галерея 2.0: лимит 12 фото везде, 6 нигде не остался', !/gl\.length>=6|gl\.length<6|\.slice\(0,6\);if\(g\.length\)ph\.g/.test(ix) && [wk, bt].every((x) => !x.includes('map(okMedia).filter(Boolean).slice(0, 6)')) && ix.includes('gl.length<12'));
   T('галерея 2.0: подпись и раскладка сохраняют черновик сразу', ix.includes('g.cap=i.value.slice(0,60);autoSave()') && ix.includes("ST.draft.gv=b.dataset.gv;autoSave()"));
   T('галерея 2.0: подписи мастера на ru и uz', ['glay:', 'glg:', 'glm:', 'glr:', 'gcap:', 'gcapph:'].every((k) => ix.split(k).length >= 3));
+  // Бот: нижней постоянной кнопки нет, висящая снимается
+  T('бот: нет постоянной клавиатуры (is_persistent / «Открыть Marhabo» внизу)', !bt.includes('is_persistent') && !bt.includes('permKb') && !bt.includes('PERM['));
+  T('бот: на /start снимается старая нижняя клавиатура', bt.includes("remove_keyboard: true }, disable_notification: true") && bt.includes("tg('deleteMessage'"));
+  T('бот: остались «Старт», «Информация» и синяя кнопка меню', bt.includes('startKb') && bt.includes("callback_data: 'info'") && bt.includes("setChatMenuButton"));
   // П.6 Плейлист
   T('плейлист: воркер и бот принимают до 4 доп. треков только при основном и только аудио из хранилища', [wk, bt].every((x) => x.includes('d.p.ul.slice(0, 4)') && x.includes('if (o.u && Array.isArray(d.p.ul))') && x.includes('(mp3|m4a|ogg|wav)$/i.test(x.u)') && x.includes('x.u !== o.u')));
   T('плейлист: названия привязаны к своему треку, до 40 знаков', [wk, bt].every((x) => x.includes("cleanStr(typeof un[i] === 'string' ? un[i] : '', 40)")));

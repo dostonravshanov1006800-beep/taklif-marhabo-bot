@@ -1,0 +1,30 @@
+import fs from 'fs';
+const REPO='/app/conversations/6ae32fd38b107a4b39ea2360/taklif-gh';
+const ROOT='/tmp/bc2'; fs.rmSync(ROOT,{recursive:true,force:true}); fs.mkdirSync(ROOT,{recursive:true});
+fs.cpSync(REPO+'/docs',ROOT+'/docs',{recursive:true}); fs.mkdirSync(ROOT+'/bot',{recursive:true}); fs.copyFileSync(REPO+'/bot/bot.mjs',ROOT+'/bot/bot.mjs'); fs.copyFileSync(REPO+'/bot/media-check.mjs',ROOT+'/bot/media-check.mjs');
+process.chdir(ROOT);
+let src=fs.readFileSync('bot/bot.mjs','utf8');
+src=src.replace("from '../docs/qr.mjs'","from '"+ROOT+"/docs/qr.mjs'").replace("from './media-check.mjs'","from '"+ROOT+"/bot/media-check.mjs'");
+src=src.replace(/\nmain\(\)\.catch[^\n]*\s*$/,'\nmain();').replace(/\nmain\(\);\s*$/,'\nexport {onMessage};');
+src=src.replace("const TOKEN = process.env.BOT_TOKEN;","const TOKEN = 'T';").replace("const APP_URL = process.env.APP_URL; ","const APP_URL = 'https://dostonravshanov1006800-beep.github.io/taklif-marhabo-bot'; ");
+src=src.replace("execSync('git config user.name","return; execSync('git config user.name");
+const sent=[]; globalThis.fetch=async(url,opt)=>{let b={};try{b=JSON.parse(opt.body)}catch{};sent.push({m:String(url).split('/').pop(),b});return {json:async()=>({ok:true,result:{message_id:555}})}};
+fs.writeFileSync('/tmp/bc2_mod.mjs',src);
+const {onMessage}=await import('/tmp/bc2_mod.mjs');
+let res=[]; const ok=(n,c,e='')=>{console.log(c?'PASS':'FAIL',n,c?'':e);res.push(!!c)};
+const say=async(uid,text,lc)=>{sent.length=0;await onMessage({chat:{id:uid,type:'private'},from:{id:uid,first_name:'Алишер',language_code:lc},text});await new Promise(r=>setTimeout(r,30));return [...sent]};
+let n=100;
+for (const lc of ['ru','uz','en','kk']) {
+  const r=await say(++n,'/start',lc); const all=JSON.stringify(r);
+  ok(`${lc}: нет постоянной нижней клавиатуры`, !/"is_persistent"|"keyboard":\[\[/.test(all) && !/Открыть Marhabo|Marhabo ni ochish|Open Marhabo|Marhabo ашу/.test(all), all.slice(0,160));
+  ok(`${lc}: старая клавиатура снимается (remove_keyboard)`, r.some(x=>x.b.reply_markup&&x.b.reply_markup.remove_keyboard===true));
+  ok(`${lc}: снимающее сообщение тут же удаляется`, r.some(x=>x.m==='deleteMessage'));
+  ok(`${lc}: убрана реклама «Кнопка внизу»`, !/Кнопка внизу|Pastdagi tugma|button below|Төмендегі/.test(all));
+  const card=r.find(x=>x.m==='sendPhoto'||(x.m==='sendMessage'&&x.b.reply_markup&&x.b.reply_markup.inline_keyboard));
+  const kb=card?card.b.reply_markup.inline_keyboard:[];
+  ok(`${lc}: карточка с кнопками «Старт» (web_app) и «Информация»`, kb.length===2&&kb[0][0].web_app&&kb[1][0].callback_data==='info', JSON.stringify(kb).slice(0,140));
+  const r2=await say(n,'/start',lc); ok(`${lc}: повторный /start не шлёт снимающее сообщение второй раз`, !r2.some(x=>x.b.reply_markup&&x.b.reply_markup.remove_keyboard===true));
+  const p=await say(n,'/publish',lc); const pj=JSON.stringify(p);
+  ok(`${lc}: /publish не отсылает к нижней кнопке`, p.length>0&&!/внизу|Pastdagi|below|Төмендегі|Открыть Marhabo/.test(pj), pj.slice(0,160));
+}
+console.log('ИТОГО',res.filter(Boolean).length,'/',res.length);

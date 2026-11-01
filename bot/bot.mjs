@@ -71,8 +71,6 @@ function publish() {
 const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
 // постоянная кнопка под полем ввода: открывает мини-апп в режиме отправки, публикация идёт в один шаг
-const PERM = { ru: '✨ Открыть Marhabo', uz: '✨ Marhabo ni ochish', en: '✨ Open Marhabo', kk: '✨ Marhabo ашу' };
-const permKb = (lang) => ({ keyboard: [[{ text: PERM[lang] || PERM.ru, web_app: { url: APP_URL.replace(/\/?$/, '/') + '?send=1' } }]], resize_keyboard: true, is_persistent: true });
 const PERMSHOWN = new Set(); // чатам, где постоянная кнопка уже показана в этом запуске
 const KBCHATS = new Set(); // чаты, где сейчас висит клавиатура «Опубликовать»
 async function tg(method, body = {}) {
@@ -508,7 +506,7 @@ async function onMessage(m) {
       if (r.error) { await tg('sendMessage', { chat_id: chat, text: t.pubBad, parse_mode: 'HTML' }); return; }
       publish();
       const url = `${APP_URL.replace(/\/?$/, '/')}i/${r.slug}`;
-      await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: permKb(lang) });
+      await tg('sendMessage', { chat_id: chat, text: t.pubOk(esc(r.name)), parse_mode: 'HTML', reply_markup: { remove_keyboard: true } });
       KBCHATS.delete(chat);
       await tg('sendMessage', { chat_id: chat, text: url, disable_web_page_preview: true });
       return;
@@ -516,7 +514,7 @@ async function onMessage(m) {
   }
   // /publish: кнопка клавиатуры, открывает мини-апп в режиме отправки (по ней данные приходят боту автоматически)
   if (/^\/(publish|start publish)(@\w+)?$/i.test(text)) {
-    await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Нажмите кнопку «✨ Открыть Marhabo» внизу, затем «Сохранить». Приглашение опубликуется само.', uz: "👇 Pastdagi «✨ Marhabo ni ochish» tugmasini bosing, so'ng «Saqlash». Taklifnoma o'zi e'lon bo'ladi.", en: '👇 Tap «✨ Open Marhabo» below, then Save. It publishes by itself.', kk: '👇 Төмендегі «✨ Marhabo ашу» түймесін басыңыз, содан кейін «Сақтау».' })[lang] || '', reply_markup: permKb(lang) });
+    await tg('sendMessage', { chat_id: chat, text: ({ ru: 'Откройте Marhabo кнопкой «✨ Старт» и нажмите «Сохранить». Приглашение опубликуется само.', uz: "«✨ Start» tugmasi orqali Marhabo ni oching va «Saqlash» ni bosing. Taklifnoma o'zi e'lon qilinadi.", en: 'Open Marhabo with the «✨ Start» button and tap Save. The invitation publishes itself.', kk: '«✨ Бастау» түймесімен Marhabo ашып, «Сақтау» басыңыз. Шақыру өзі жарияланады.' })[lang] || '', reply_markup: { remove_keyboard: true } });
     return;
   }
   if (false) {
@@ -738,7 +736,8 @@ const infoKb = (lang) => ({ inline_keyboard: [[{ text: T[lang].btn, web_app: { u
 const bannerUrl = (lang) => `${APP_URL.replace(/\/?$/, '/')}brand/banner_${lang}.jpg`;
 
 async function sendStart(chat, lang) {
-  { PERMSHOWN.add(chat); await tg('sendMessage', { chat_id: chat, text: ({ ru: '👇 Кнопка внизу открывает Marhabo и публикует приглашение в один шаг', uz: '👇 Pastdagi tugma Marhabo ni ochadi va taklifnomani bir qadamda e\'lon qiladi', en: '👇 The button below opens Marhabo and publishes in one step', kk: '👇 Төмендегі түйме Marhabo ашады және бір қадамда жариялайды' })[lang] || '', reply_markup: permKb(lang) }); }
+  // нижняя кнопка клавиатуры больше не нужна (мини-апп сам сохраняет): снимаем её у тех, у кого осталась с прошлых версий
+  if (!PERMSHOWN.has(chat)) { PERMSHOWN.add(chat); const rk = await tg('sendMessage', { chat_id: chat, text: '✨', reply_markup: { remove_keyboard: true }, disable_notification: true }); if (rk && rk.message_id) tg('deleteMessage', { chat_id: chat, message_id: rk.message_id }); }
   const r = await tg('sendPhoto', { chat_id: chat, photo: bannerUrl(lang), caption: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) });
   if (!r) await tg('sendMessage', { chat_id: chat, text: T[lang].start, parse_mode: 'HTML', reply_markup: startKb(lang) }); // запасной путь без картинки
 }
