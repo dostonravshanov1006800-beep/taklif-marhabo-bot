@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, unlinkSync, readdirSync, statSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import { png as qrPng } from '../docs/qr.mjs';
+import { checkMedia, ownerRoom } from './media-check.mjs';
 
 const TOKEN = process.env.BOT_TOKEN;
 const APP_URL = process.env.APP_URL;           // https://<user>.github.io/<repo>/
@@ -135,6 +136,8 @@ const T = {
     pubOk: (n) => `✅ Приглашение <b>${n}</b> опубликовано. Ссылка ниже заработает через 1-2 минуты. Вернитесь в Marhabo: гостевые ссылки станут короткими.`,
     pubBad: '⚠️ Не удалось прочитать приглашение. Вернитесь в Marhabo и нажмите «Опубликовать» ещё раз.',
     mediaBad: '⚠️ Нужны фото (JPG, PNG, WebP), музыка (MP3, M4A, OGG, WAV) или видео (MP4, WebM до 19 МБ). Отправьте как фото, видео или как файл.',
+    mediaDim:'⚠️ Картинка слишком большая по размеру (больше 12000 пикселей). Уменьшите её и отправьте снова.',
+    mediaFull:'⚠️ Достигнут предел хранилища: не больше 120 файлов и 120 МБ на владельца. Удалите ненужные файлы в мини-аппе и повторите.',
     guest: 'Гость',
   },
   uz: {
@@ -162,6 +165,8 @@ const T = {
     pubOk: (n) => `✅ <b>${n}</b> taklifnomasi e'lon qilindi. Havola 1-2 daqiqada ishlaydi. Marhabo'ga qaytsangiz, mehmon havolalari qisqa bo'ladi.`,
     pubBad: '⚠️ Taklifnomani o‘qib bo‘lmadi. Marhabo\'ga qaytib «E\'lon qilish» ni yana bosing.',
     mediaBad: '⚠️ Rasm (JPG, PNG, WebP), musiqa (MP3, M4A, OGG, WAV) yoki video (MP4, WebM, 19 MB gacha) kerak. Rasm, video yoki fayl sifatida yuboring.',
+    mediaDim:'⚠️ Rasm o\u2018lchami juda katta (12000 pikseldan ortiq). Kichraytirib, qayta yuboring.',
+    mediaFull:'⚠️ Saqlash chegarasiga yetildi: egasi uchun 120 tagacha fayl va 120 MB. Mini-ilovada keraksiz fayllarni o\u2018chirib, qayta urinib ko\u2018ring.',
     guest: 'Mehmon',
   },
   en: {
@@ -189,6 +194,8 @@ const T = {
     pubOk: (n) => `✅ The invitation <b>${n}</b> is published. The link below will work in 1-2 minutes. Go back to Marhabo: guest links will become short.`,
     pubBad: '⚠️ Could not read the invitation. Go back to Marhabo and press "Publish" again.',
     mediaBad: '⚠️ Send a photo (JPG, PNG, WebP), music (MP3, M4A, OGG, WAV) or video (MP4, WebM up to 19 MB). Send it as a photo, video or file.',
+    mediaDim:'⚠️ The image is too large in pixels (over 12000). Resize it and send again.',
+    mediaFull:'⚠️ Storage limit reached: up to 120 files and 120 MB per owner. Delete unused files in the mini app and try again.',
     guest: 'Guest',
   },
   kk: {
@@ -216,6 +223,8 @@ const T = {
     pubOk: (n) => `✅ <b>${n}</b> шақыруы жарияланды. Төмендегі сілтеме 1-2 минутта жұмыс істейді. Marhabo-ға оралыңыз: қонақ сілтемелері қысқа болады.`,
     pubBad: '⚠️ Шақыруды оқу мүмкін болмады. Marhabo-ға оралып, «Жариялау» түймесін қайта басыңыз.',
     mediaBad: '⚠️ Фото (JPG, PNG, WebP), музыка (MP3, M4A, OGG, WAV) немесе бейне (MP4, WebM, 19 МБ дейін) керек. Оны фото, бейне немесе файл ретінде жіберіңіз.',
+    mediaDim:'⚠️ Сурет көлемі тым үлкен (12000 пикселден асады). Кішірейтіп, қайта жіберіңіз.',
+    mediaFull:'⚠️ Сақтау шегіне жеттіңіз: иесіне 120 файлға және 120 МБ-қа дейін. Мини-аппта қажетсіздерін жойып, қайталаңыз.',
     guest: 'Қонақ',
   },
 };
@@ -252,12 +261,18 @@ async function saveMedia(m) {
   const r = await fetch(`https://api.telegram.org/file/bot${TOKEN}/${f.file_path}`);
   if (!r.ok) return { error: 'get' };
   const buf = Buffer.from(await r.arrayBuffer());
+  // проверка по СОДЕРЖИМОМУ: имя и MIME присылает клиент, им верить нельзя
+  const chk = checkMedia(buf, { ext });
+  if (!chk.ok) return { error: chk.error };
+  ext = chk.ext; kind = chk.kind; // формат и вид определяет файл, а не имя
+  if (chk.kind === 'photo') { vw = undefined; vh = undefined; }
   const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   const dir = `${MEDIA_DIR}/${m.from.id}`;
   mkdirSync(dir, { recursive: true });
-  writeFileSync(`${dir}/${id}.${ext}`, buf);
   let idx = [];
   try { idx = JSON.parse(readFileSync(`${dir}/index.json`, 'utf8')); } catch {}
+  if (!ownerRoom(idx, buf.length)) return { error: 'full' };
+  writeFileSync(`${dir}/${id}.${ext}`, buf);
   const rec = { f: `${id}.${ext}`, k: kind, kb: Math.round(buf.length / 1024), t: new Date().toISOString() };
   if (kind === 'video' && vw && vh) { rec.w = vw; rec.h = vh; rec.o = vh > vw ? 'p' : 'l'; } // ориентация: p = 9:16, l = 16:9
   idx.unshift(rec);
@@ -615,7 +630,7 @@ async function onMessage(m) {
       publish();
       await tg('sendMessage', { chat_id: chat, text: t.mediaOk(res.kb), parse_mode: 'HTML', disable_web_page_preview: true });
     } else {
-      await tg('sendMessage', { chat_id: chat, text: res && res.error === 'size' ? t.mediaBig : t.mediaBad, parse_mode: 'HTML' });
+      await tg('sendMessage', { chat_id: chat, text: res && res.error === 'size' ? t.mediaBig : res && res.error === 'dim' ? t.mediaDim : res && res.error === 'full' ? t.mediaFull : t.mediaBad, parse_mode: 'HTML' });
     }
     return;
   }

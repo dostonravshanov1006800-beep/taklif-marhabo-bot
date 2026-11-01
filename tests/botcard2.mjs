@@ -1,10 +1,10 @@
 import fs from 'fs';
 const REPO='/app/conversations/6ae32fd38b107a4b39ea2360/taklif-gh';
 const ROOT='/tmp/bc2'; fs.rmSync(ROOT,{recursive:true,force:true}); fs.mkdirSync(ROOT,{recursive:true});
-fs.cpSync(REPO+'/docs',ROOT+'/docs',{recursive:true}); fs.mkdirSync(ROOT+'/bot',{recursive:true}); fs.copyFileSync(REPO+'/bot/bot.mjs',ROOT+'/bot/bot.mjs');
+fs.cpSync(REPO+'/docs',ROOT+'/docs',{recursive:true}); fs.mkdirSync(ROOT+'/bot',{recursive:true}); fs.copyFileSync(REPO+'/bot/bot.mjs',ROOT+'/bot/bot.mjs'); fs.copyFileSync(REPO+'/bot/media-check.mjs',ROOT+'/bot/media-check.mjs');
 process.chdir(ROOT);
 let src=fs.readFileSync('bot/bot.mjs','utf8');
-src=src.replace("from '../docs/qr.mjs'","from '"+ROOT+"/docs/qr.mjs'");
+src=src.replace("from '../docs/qr.mjs'","from '"+ROOT+"/docs/qr.mjs'").replace("from './media-check.mjs'","from '"+ROOT+"/bot/media-check.mjs'");
 src=src.replace(/\nmain\(\)\.catch[^\n]*\s*$/,'\nmain();').replace(/\nmain\(\);\s*$/,'\nexport {onMessage};');
 src=src.replace("const TOKEN = process.env.BOT_TOKEN;","const TOKEN = 'T';").replace("const APP_URL = process.env.APP_URL; ","const APP_URL = 'https://dostonravshanov1006800-beep.github.io/taklif-marhabo-bot'; ");
 src=src.replace("execSync('git config user.name","return; execSync('git config user.name");

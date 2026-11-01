@@ -128,6 +128,37 @@ T('нет конфликта классов: стили заставок тол�
   T('мини-апп: имя в карточке подстраивается под длину (lg/xl)', ix.includes('.ic .nm.lg{') && ix.includes('.ic .nm.xl{'));
 }
 
+// 3h. Офлайн-режим: service worker, его версия и подключение
+{
+  const sw = read('docs/sw.js'), ih = read('docs/i.html'), off = read('docs/offline.js');
+  const crypto = await import('node:crypto');
+  const files = (sw.match(/const SHELL=\[([^\]]*)\]/)[1].match(/'([^']+)'/g) || []).map(x => x.slice(1, -1));
+  const h = crypto.createHash('sha1');
+  for (const f of [...files, 'i.html']) h.update(existsSync('docs/' + f) ? readFileSync('docs/' + f) : '');
+  const ver = h.digest('hex').slice(0, 8);
+  T('sw.js: версия кэша свежая (запусти node ci/build-sw.mjs)', sw.includes("const V='tk-" + ver + "'"), ver);
+  T('sw.js: все файлы оболочки существуют', files.every(f => existsSync('docs/' + f)), files.filter(f => !existsSync('docs/' + f)));
+  T('sw.js: данные приглашения «сеть сначала» (правка владельца не застревает)', /inv\/.*netFirst/.test(sw) && sw.includes("includes('/api/inv')"));
+  T('sw.js: POST и Range не перехватываются', sw.includes("q.method!=='GET'") && sw.includes("has('range')"));
+  T('sw.js: старые кэши удаляются при смене версии', sw.includes("caches.delete(k)") && sw.includes("startsWith('tk-')"));
+  T('sw.js: число медиа в кэше ограничено', /MAXMEDIA=\d+/.test(sw));
+  T('sw.js: синтаксис валиден', (() => { try { new Function(sw.replace(/self\.addEventListener/g, '(()=>0)')); return true } catch (e) { return false } })());
+  T('i.html: подключён offline.js', ih.includes('<script src="offline.js"></script>'));
+  T('offline.js: плашка на 4 языках (ru/uz/en/kk)', ['ru:', 'uz:', 'en:', 'kk:'].every(l => off.includes(l)));
+  T('offline.js: регистрация sw.js от базы сайта (работает и на /i/имя/)', off.includes("register(base + 'sw.js'"));
+}
+
+// 3i. Загрузки: проверка по содержимому (юнит-тесты на настоящих файлах) и подключение к боту
+{
+  const { default: mt } = await import('./test-media.mjs');
+  for (const [n, ok, e] of mt) T('загрузки: ' + n, ok, e);
+  const bot = read('bot/bot.mjs');
+  T('бот: приём файлов использует checkMedia (по содержимому)', bot.includes("from './media-check.mjs'") && bot.includes('checkMedia(buf, { ext })'));
+  T('бот: формат и вид берутся из содержимого, а не из имени', bot.includes('ext = chk.ext; kind = chk.kind'));
+  T('бот: потолок файлов у владельца проверяется до записи на диск', bot.indexOf('ownerRoom(idx, buf.length)') > 0 && bot.indexOf('ownerRoom(idx, buf.length)') < bot.indexOf('writeFileSync(`${dir}/${id}.${ext}`, buf)'));
+  T('бот: сообщения mediaDim и mediaFull есть на 4 языках', (bot.match(/mediaDim:/g) || []).length === 4 && (bot.match(/mediaFull:/g) || []).length === 4);
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);
