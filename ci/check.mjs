@@ -174,6 +174,30 @@ T('нет конфликта классов: стили заставок тол�
   T('табло: при reduced-motion переворота нет', fxc.includes('.sq b i{animation:none!important}') && fxs.includes('RM || document.hidden'));
 }
 
+
+// 3.6 Рассылка и напоминания гостям (send.js)
+{
+  const M = await import('../docs/send.js'), ix = read('docs/index.html');
+  const it = { id: 'a', t: 'wedding', l: 'ru', a: 'Азиз', b: 'Дилноза', d: '2026-11-14', guests: [{ n: 'Али', k: 'k1' }, { n: 'Мадина', k: 'k2' }, { n: 'Рустам', k: 'k3' }] };
+  const now = new Date(2026, 10, 1, 12), t0 = now.getTime();
+  T('рассылка: send.js подключён в мини-аппе, экран send и кнопки есть', ix.includes("from './send.js'") && ix.includes("v==='send'?sendScreen()") && ix.includes('data-sd="inv"') && ix.includes('data-sd="rem"'));
+  for (const l of ['ru', 'uz', 'en', 'kk']) for (const mode of ['inv', 'rem']) {
+    const x = M.buildText({ ...it, l }, it.guests[0], mode, now);
+    T(`рассылка: текст ${l}/${mode} с именем гостя, названием события и датой`, x.startsWith('Али') && x.includes('Азиз & Дилноза') && x.length > 40 && !/undefined|NaN|\bnull\b/.test(x), x);
+  }
+  T('рассылка: имена не склоняются (нет суффикса, приклеенного к имени)', !/Дилнозаga|Дилнозаге|Дилнозаning/.test(['uz', 'kk'].map((l) => M.buildText({ ...it, l }, it.guests[0], 'inv', now)).join(' ')));
+  T('рассылка: «сегодня» и «завтра» в напоминании', M.buildText(it, it.guests[0], 'rem', new Date(2026, 10, 14)).includes('сегодня') && M.buildText(it, it.guests[0], 'rem', new Date(2026, 10, 13)).includes('завтра'));
+  T('рассылка: склонение «день/дня/дней»', [[1, 'день'], [2, 'дня'], [5, 'дней'], [11, 'дней'], [21, 'день'], [22, 'дня']].every(([n, w]) => M.buildText({ ...it, d: new Date(2026, 10, 1 + n).toISOString().slice(0, 10).replace(/-(\d\d)$/, (_, d) => '-' + d) }, it.guests[0], 'rem', now).includes('осталось ' + n + ' ' + w) || n === 1));
+  T('рассылка: приглашение уходит только не отправленным', JSON.stringify(M.pickRecipients(it, {}, { 'inv:k1': 1 }, 'inv', now)) === '[1,2]');
+  T('рассылка: напоминание не получают ответившие («придёт» и «не сможет»)', JSON.stringify(M.pickRecipients(it, { 'a:k1': { s: 'y' }, 'a:k3': { s: 'n' } }, {}, 'rem', now)) === '[1]');
+  T('рассылка: «пока не знаю» и «только открыл» остаются в напоминаниях', JSON.stringify(M.pickRecipients(it, { 'a:k1': { o: 'x' }, 'a:k2': { s: 'p' } }, {}, 'rem', now)) === '[0,1,2]');
+  T('рассылка: повторное напоминание не раньше чем через 24 ч', JSON.stringify(M.pickRecipients(it, {}, { 'rem:k1': t0 - 2 * 36e5, 'rem:k2': t0 - 30 * 36e5 }, 'rem', now)) === '[1,2]');
+  T('рассылка: напоминания не идут без даты и после события', M.pickRecipients({ ...it, d: '' }, {}, {}, 'rem', now).length === 0 && M.pickRecipients(it, {}, {}, 'rem', new Date(2026, 10, 20)).length === 0);
+  T('рассылка: приглашения и напоминания хранятся отдельно (inv:/rem:)', Object.keys(M.markSent(M.markSent({}, 'inv', 'k1'), 'rem', 'k1')).sort().join() === 'inv:k1,rem:k1');
+  T('рассылка: ссылки Telegram и WhatsApp кодируют текст', M.tgShareUrl('https://t.me/b?start=i_a__k1', 'Али, привет').includes('%D0%90%D0%BB%D0%B8') && M.waShareUrl('https://x/y', 'Али').startsWith('https://wa.me/?text='));
+  { const k = ix.indexOf("$$('[data-sdsk]')"), blk2 = ix.slice(k, ix.indexOf('\n', ix.indexOf('render()});', k))); T('рассылка: пропуск не помечает отправленным (нет sentSet в обработчике, гость уходит в конец)', k > 0 && !blk2.includes('sentSet') && blk2.includes('ST.sd.skip'), blk2.slice(0, 120)); }
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);
