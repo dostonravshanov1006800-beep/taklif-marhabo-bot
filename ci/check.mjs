@@ -78,6 +78,7 @@ for (const k of KINDS) {
   T('видео-заставки: текст привязан к кадру (currentTime) и остаётся на последнем кадре', ij.includes('v.currentTime >= cfg.at') && ij.includes("addEventListener('ended'") && ij.includes('fallback'));
   T('видео-заставки: только свадьба и никах (мастер, бот, воркер)', ix.includes('IV_VID(k))&&!CUR_OK') && read('bot/bot.mjs').includes("['vmuhr', 'vnikoh'].includes(d.cv) && ['wedding', 'nikah', 'nikoh']") && read('worker/worker.js').includes("['vmuhr', 'vnikoh'].includes(d.cv) && ['wedding', 'nikah', 'nikoh']"));
   T('видео-заставки: видео заставки исключено из общего плеера гостя', (ih2.match(/v\.closest\('#intro'\)/g) || []).length >= 6);
+  T('видео-заставки: в мастере на шаге 3, по умолчанию свадьба=Конверт, никах=Бабочки, плитки первыми', /h\+=STEP\(3\);\n h\+='<div class="lbl">'\+t\('intro'\)/.test(ix) && ix.includes("const IV_DEF=t=>t==='wedding'?'vmuhr'") && ix.includes("const IV_KINDS=['','vmuhr','vnikoh'"));
   T('видео-заставки: стили Muhr и Nikoh', ic.includes('#intro.iv-vmuhr') && ic.includes('#intro.iv-vnikoh') && ic.includes('container-type:inline-size')); }
 T('нет конфликта классов: стили заставок только с префиксом iv-', !/#intro\.(seal|env|gift|door|book)\b/.test(introCss));
 
