@@ -24,7 +24,7 @@ for (const f of ['docs/index.html', 'docs/i.html', 'docs/s.html']) {
 const lum = (h) => { h = h.replace('#', ''); const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((v) => v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
 const cr = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
 const sh = read('docs/shared.js');
-const themes = [...sh.matchAll(/\n  (\w+):\s*\{ name:[\s\S]*?theme: \{([^}]*)\} \}/g)];
+const themes = [...sh.matchAll(/\n  (\w+):\s*\{ name:[\s\S]*?theme: \{([^}]*)\}(?:, alt: \{[^}]*\})? \}/g)];
 T('найдено тем >= 10', themes.length >= 10, themes.length);
 for (const [, id, body] of themes) {
   const g = (k) => (body.match(new RegExp(k + ": '(#[0-9A-Fa-f]{6})'")) || [])[1];
@@ -35,6 +35,21 @@ for (const [, id, body] of themes) {
   T(`контраст ${id} accentText`, cr(acc, base) >= 4.5, cr(acc, base).toFixed(2));
   const pageHex = ((body.match(/page: '([^']*)'/) || [])[1] || '').match(/#[0-9A-Fa-f]{6}/g) || [];
   if (pageHex.length) T(`контраст ${id} ink на фоне страницы`, Math.min(...pageHex.map((c) => cr(ink, c))) >= 4.5, id);
+}
+
+// 2b. Тёмная/светлая версия: у каждой темы есть alt, и она читаема (контраст 4.5+)
+for (const [, id] of themes) {
+  const st = sh.indexOf('\n  ' + id + ':'); const en = sh.indexOf('\n  ', st + 5 + id.length); const nx = sh.slice(st + 1).search(/\n  \w+:\s+\{ name:/); const blk = st < 0 ? '' : sh.slice(st, nx > 0 ? st + 1 + nx : sh.length);
+  const am = blk.match(/alt: \{([^}]*)\}/);
+  T('тема ' + id + ' имеет обратную палитру alt', !!am);
+  if (!am) continue;
+  const ga = (k) => (am[1].match(new RegExp(k + ": '(#[0-9A-Fa-f]{6})'")) || [])[1];
+  const b2 = ga('base'), i2 = ga('ink'), m2 = ga('muted'), a2 = ga('accentText');
+  T(`контраст ${id}/alt ink`, !!b2 && cr(i2, b2) >= 4.5, b2 && cr(i2, b2).toFixed(2));
+  T(`контраст ${id}/alt muted`, !!b2 && cr(m2, b2) >= 4.5, b2 && cr(m2, b2).toFixed(2));
+  T(`контраст ${id}/alt accentText`, !!b2 && cr(a2, b2) >= 4.5, b2 && cr(a2, b2).toFixed(2));
+  const ph = ((am[1].match(/page: '([^']*)'/) || [])[1] || '').match(/#[0-9A-Fa-f]{6}/g) || [];
+  if (ph.length) T(`контраст ${id}/alt ink на фоне страницы`, Math.min(...ph.map((c) => cr(i2, c))) >= 4.5, id);
 }
 
 // 3. Белые списки бота и воркера совпадают с темами и шрифтами из shared.js
