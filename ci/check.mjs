@@ -214,7 +214,19 @@ T('нет конфликта классов: стили заставок тол�
   const ru = ix.slice(ix.indexOf('ru:{ey:'), ix.indexOf('uz:{ey:')), uz = ix.slice(ix.indexOf('uz:{ey:'));
   T('мастер: названия 5 шагов и кнопки есть на ru и uz', ['wz1:', 'wz2:', 'wz3:', 'wz4:', 'wz5:', 'wzNext:', 'wzBack:', 'wzNeed:', 'wzOf:'].every((k) => ru.includes(k) && uz.slice(0, uz.indexOf('\nconst ')).includes(k)));
   T('мастер: поля даты и времени сжимаются (нет горизонтальной прокрутки на 280–320 px)', /\.row\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/.test(ix) && ix.includes('.row input[type=date]'));
-  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec', 'types12'].every((f) => existsSync('tests/wizard/' + f + '.py')));
+  T('мастер: браузерные сценарии лежат в tests/wizard', ['steps', 'flow', 'wide', 'autosave', 'send', 'reminders', 'phrasespec', 'types12', 'videocover', 'videocover_wz'].every((f) => existsSync('tests/wizard/' + f + '.py')));
+  // П.3 видео-открытка: флаг vc должен жить во всех звеньях цепочки, иначе тихо потеряется
+  const gi = read('docs/i.html'), wk = read('worker/worker.js'), bt = read('bot/bot.mjs');
+  T('видео-открытка: переключатель #vcsw в мастере виден только при загруженном видео', ix.includes("(d.vl||[]).some(v=>v.url))h+='<label class=\"sw\"") && ix.includes('id=\"vcsw\"'));
+  T('видео-открытка: пакет несёт vc только при ролике, который уже загружен', ix.includes("vc:(it.vc&&(it.vl||[]).some(x=>x.url))?1:''"));
+  T('видео-открытка: переключатель сохраняет черновик сразу', ix.includes('ST.draft.vc=vcsw.checked;autoSave()'));
+  T('видео-открытка: подписи в мастере на ru и uz', ['vcov:', 'vcovOn:', 'vcovH:'].every((k) => ix.split(k).length >= 3));
+  T('видео-открытка: воркер и бот ставят vc только после проверки ролика', [wk, bt].every((x) => x.includes('d.vc === 1') && x.includes('p.v && p.v.length) o.vc = 1')));
+  T('видео-открытка: страница гостя уважает «меньше движения» и экономию трафика', gi.includes('cvOn=') && gi.includes('prefers-reduced-motion: reduce') && gi.includes('saveData'));
+  T('видео-открытка: звук включается кнопкой на 4 языках', ['Включить звук', 'Ovozni yoqish', 'Turn sound on', 'Дыбысты қосу'].every((x) => gi.includes(x)));
+  T('видео-открытка: видео обложки не мешает обработчикам обычного видео', gi.split("v.id==='cvv'").length - 1 >= 6);
+  T('видео-открытка: видео обложки останавливается, когда заставка закрыта', gi.includes("classList.contains('out')") && gi.includes('v.pause()'));
+  T('видео-открытка: тест воркера и бота tests/worker-types.mjs лежит в репозитории', existsSync('tests/worker-types.mjs'));
   T('предпросмотр: живой блок #pvb и «Посмотреть как гость» остаются на последнем шаге', fb.indexOf('id="pvb"') > fb.indexOf('h+=STEP(5)') && fb.includes('data-pvfull'));
 }
 

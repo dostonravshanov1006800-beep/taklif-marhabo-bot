@@ -12,3 +12,4 @@ docs/inv/test-*.json
 docs/media/*/tv*.mp4
 docs/wishes/*.json
 !docs/wishes/.keep
+__pycache__/

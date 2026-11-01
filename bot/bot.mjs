@@ -428,6 +428,7 @@ function sanitizeInv(d, owner) {
       if (v.length) p.v = v;
     }
     if (Object.keys(p).length) o.p = p;
+    if ((d.vc === 1 || d.vc === true) && p.v && p.v.length) o.vc = 1; // видео-открытка: только если есть проверенный ролик
   }
   if (Array.isArray(d.st)) { const st = d.st.slice(0, 5).map((r) => [cleanStr(r && r[0], 24), cleanStr(r && r[1], 160)]).filter((r) => r[1]); if (st.length) o.st = st; } // «Наша история»
   if (Array.isArray(d.pr)) { const pr = d.pr.slice(0, 10).map((r) => [cleanStr(r && r[0], 5), cleanStr(r && r[1], 80)]).filter((r) => r[1]); if (pr.length) o.pr = pr; }

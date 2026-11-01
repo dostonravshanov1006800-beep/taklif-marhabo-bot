@@ -1,5 +1,7 @@
 # 12 шаблонов: плитки в мастере, образец, подбор текста, страница гостя, подпись рассылки.
-import json, subprocess
+import json, subprocess, sys, os
+sys.path.insert(0, os.path.dirname(__file__))
+from _fixtures import temp_invites, TYPES6
 from playwright.sync_api import sync_playwright
 BASE = 'http://localhost:8834/taklif-marhabo-bot'
 TYPES = ['wedding','nikah','birthday','anniversary','sunnat','beshik','grad','party','corp','navruz','hayit','other']
@@ -10,6 +12,7 @@ def route(ctx):
     ctx.route('**/fonts.googleapis.com/**', lambda r, *a: r.fulfill(status=200, content_type='text/css', body=''))
     ctx.route('**/images.unsplash.com/**', lambda r, *a: r.fulfill(status=200, content_type='image/gif', body=bytes.fromhex('47494638396101000100800000ffffff00000021f90401000000002c00000000010001000002024401003b')))
     ctx.route('**/*workers.dev/**', lambda r, *a: r.fulfill(status=200, content_type='application/json', headers={'access-control-allow-origin': '*'}, body='{}'))
+_fx = temp_invites(TYPES6); _fx.__enter__()
 with sync_playwright() as p:
     b = p.chromium.launch()
     for lang in ('ru', 'uz'):
@@ -59,6 +62,7 @@ with sync_playwright() as p:
         ok(f'гость {t}: нет JS-ошибок и горизонтальной прокрутки', not errs and pg.evaluate("document.documentElement.scrollWidth<=innerWidth+1"), errs)
         ctx.close()
     b.close()
+_fx.__exit__(None, None, None)
 # подпись рассылки на 4 языках для каждого нового типа (чистый JS)
 js = r"""import {whoLine} from '/app/conversations/6ae32fd38b107a4b39ea2360/taklif-gh/docs/send.js';
 const out={};for(const t of ['sunnat','beshik','grad','corp','party','hayit'])for(const l of ['ru','uz','en','kk'])out[t+l]=whoLine({t,a:'Азиз',b:'Дилноза'},l);console.log(JSON.stringify(out));"""
