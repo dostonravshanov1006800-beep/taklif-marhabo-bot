@@ -120,6 +120,14 @@ T('нет конфликта классов: стили заставок тол�
   T('i.html: шрифты не блокируют отрисовку (media=print+onload)', ih.includes('media="print" onload="this.media=\'all\'"'));
 }
 
+// 3g. Мини-апп: карточка «Мои» не должна наследовать стили значка меню (.bd), имя подстраивается под длину
+{
+  const ix = read('docs/index.html');
+  T('мини-апп: тело карточки не использует класс .bd (конфликт с значком меню)', !/<div class="bd"><div class="dt">/.test(ix) && ix.includes('.ic .icb{'));
+  T('мини-апп: значок меню .bd остаётся только для счётчика', (ix.match(/class="bd"/g) || []).length === 1);
+  T('мини-апп: имя в карточке подстраивается под длину (lg/xl)', ix.includes('.ic .nm.lg{') && ix.includes('.ic .nm.xl{'));
+}
+
 // 4. Нет секретов в публичной части
 for (const f of readdirSync('docs').filter((x) => /\.(js|html|css|json)$/.test(x))) {
   const s = read('docs/' + f);

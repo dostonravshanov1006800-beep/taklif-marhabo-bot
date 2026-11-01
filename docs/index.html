@@ -166,7 +166,8 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .ic .st i{width:7px;height:7px;border-radius:99px;background:#3E9B62}.ic .st.w i{background:#D9892B}
 .ic .nm{position:absolute;z-index:2;left:16px;right:16px;bottom:12px;color:#fff;font-family:'Cormorant Garamond',serif;font-weight:500;font-size:30px;line-height:1.05;text-shadow:0 2px 14px rgba(0,0,0,.45);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
 .ic .nm em{font-style:italic;color:var(--ia,#fff)}
-.ic .bd{padding:14px 16px 16px}
+.ic .nm.lg{font-size:25px}.ic .nm.xl{font-size:21px;line-height:1.08}
+.ic .icb{padding:14px 16px 16px}
 .ic .dt{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--mut)}
 .ic .cd{flex:none;padding:5px 11px;border-radius:99px;background:var(--is,#F3EADB);color:#2B2219;font:600 11px Manrope,sans-serif}
 .ic .rs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
@@ -183,7 +184,7 @@ textarea{min-height:88px;resize:vertical;line-height:1.5}
 .ic .ac button{min-height:44px;border:1px solid var(--line);border-radius:12px;background:#fff;color:#2B2219;font:600 10px Manrope,sans-serif;letter-spacing:.04em;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px 1px;min-width:0;overflow:hidden;white-space:nowrap}
 .ic .ac button svg{width:16px;height:16px}
 .ic .ac button.p{background:#2B2219;border-color:#2B2219;color:#fff}
-@media(max-width:399px){.ic .ac{grid-template-columns:repeat(4,minmax(0,1fr))}.ic .ac button.p{grid-column:1/-1;flex-direction:row;gap:8px;min-height:46px;font-size:11px}.ic .nm{font-size:26px}}
+@media(max-width:399px){.ic .ac{grid-template-columns:repeat(4,minmax(0,1fr))}.ic .ac button.p{grid-column:1/-1;flex-direction:row;gap:8px;min-height:46px;font-size:11px}.ic .nm{font-size:26px}.ic .nm.lg{font-size:23px}.ic .nm.xl{font-size:19px}}
 .ic .ac button:active{transform:scale(.97)}
 /* панель */
 .sm2{margin-top:16px;padding:16px;border:1px solid #E7DAC6;border-radius:16px;background:#fff}
@@ -597,8 +598,8 @@ function invCard(it){const T=TPL[it.t],th=T.theme,c=counts(it),fresh=isFresh(it)
  return '<div class="ic" style="--ia:'+th.accent+';--is:'+th.accentSoft+'">'
  +'<div class="cv" style="background-image:url(\''+esc(cover)+'\')"><span class="tg">'+esc(T.label[LANG])+'</span>'
  +'<span class="st '+(fresh?'':'w')+'"><i></i>'+esc(fresh?t('pubOk').split(',')[0]:t('notPub'))+'</span>'
- +'<div class="nm">'+esc(it.a)+(it.b?' <em>&amp;</em> '+esc(it.b):'')+'</div></div>'
- +'<div class="bd"><div class="dt"><span>'+esc(fmtD(it.d))+'</span><span class="cd">'+esc(cdText(it.d))+'</span></div>'
+ +'<div class="nm'+(((it.a||'').length+(it.b||'').length)>34?' xl':((it.a||'').length+(it.b||'').length)>22?' lg':'')+'">'+esc(it.a)+(it.b?' <em>&amp;</em> '+esc(it.b):'')+'</div></div>'
+ +'<div class="icb"><div class="dt"><span>'+esc(fmtD(it.d))+'</span><span class="cd">'+esc(cdText(it.d))+'</span></div>'
  +(c.total?'<div class="rs"><div><b>'+c.total+'</b><span>'+t('gcount')+'</span></div><div class="y"><b>'+c.y+'</b><span>'+t('cYes')+'</span></div><div class="n"><b>'+c.n+'</b><span>'+t('cNo')+'</span></div></div>'
   +'<div class="pb"><i class="y" style="width:'+py+'%"></i><i class="n" style="width:'+pn+'%"></i></div><div class="pl"><span>'+t('opened')+': '+c.o+'</span><span>'+t('awaitR')+': '+wait+'</span></div>'
   :'<div class="pl" style="margin-top:12px"><span>'+t('noGuests')+'</span></div>')
