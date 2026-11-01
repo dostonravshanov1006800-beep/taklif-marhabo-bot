@@ -238,6 +238,15 @@ T('нет конфликта классов: стили заставок тол�
   T('галерея 2.0: лимит 12 фото везде, 6 нигде не остался', !/gl\.length>=6|gl\.length<6|\.slice\(0,6\);if\(g\.length\)ph\.g/.test(ix) && [wk, bt].every((x) => !x.includes('map(okMedia).filter(Boolean).slice(0, 6)')) && ix.includes('gl.length<12'));
   T('галерея 2.0: подпись и раскладка сохраняют черновик сразу', ix.includes('g.cap=i.value.slice(0,60);autoSave()') && ix.includes("ST.draft.gv=b.dataset.gv;autoSave()"));
   T('галерея 2.0: подписи мастера на ru и uz', ['glay:', 'glg:', 'glm:', 'glr:', 'gcap:', 'gcapph:'].every((k) => ix.split(k).length >= 3));
+  // П.6 Плейлист
+  T('плейлист: воркер и бот принимают до 4 доп. треков только при основном и только аудио из хранилища', [wk, bt].every((x) => x.includes('d.p.ul.slice(0, 4)') && x.includes('if (o.u && Array.isArray(d.p.ul))') && x.includes('(mp3|m4a|ogg|wav)$/i.test(x.u)') && x.includes('x.u !== o.u')));
+  T('плейлист: названия привязаны к своему треку, до 40 знаков', [wk, bt].every((x) => x.includes("cleanStr(typeof un[i] === 'string' ? un[i] : '', 40)")));
+  T('плейлист: пакет мастера не берёт больше 4 и не повторяет основной', ix.includes(".filter(x=>x.u&&x.u!==mu).slice(0,4)") && ix.includes('if(mu&&pl.length)'));
+  T('плейлист: гость переходит на следующий трек, fx.js не зацикливает один трек', gi.includes('window.__plNext=()=>goTrack(ti+1,false)') && read('docs/fx.js').includes('if (window.__plNext)') && gi.includes("au.loop=false"));
+  T('плейлист: кнопка «следующий» ≥44px и подписана на 4 языках', gi.includes('.mpl button{width:44px;height:44px') && ['Следующий трек', 'Keyingi trek', 'Next track', 'Келесі трек'].every((x) => gi.includes(x)) && gi.includes('aria-label=\"\'+T.musicNext'));
+  T('плейлист: без плейлиста кнопки нет (одиночный трек как раньше)', gi.includes("(plist.length?'<div class=\\\"mpl\\\">") || gi.includes("plist.length?'<div class=\"mpl\">"));
+  T('плейлист: поля и кнопки мастера ≥44px, строки на ru и uz', ix.includes('.plr input{flex:1;min-width:0;min-height:44px') && ix.includes('.plx{flex:none;width:44px;height:44px') && ['plT:', 'plH:', 'plPh:', 'plAdd:', 'plDel:', 'plNone:'].every((k) => ix.split(k).length >= 3));
+  T('плейлист: убрали основной трек, плейлист очищается', ix.includes("if(k==='u'){delete ST.draft.pv.uN;ST.draft.pl2=[]}"));
   T('галерея 2.0: у фото с подписью alt пуст (скринридер не читает дважды)', gi.includes("' alt=\"\" loading=\"lazy\""));
   T('предпросмотр: живой блок #pvb и «Посмотреть как гость» остаются на последнем шаге', fb.indexOf('id="pvb"') > fb.indexOf('h+=STEP(5)') && fb.includes('data-pvfull'));
 }

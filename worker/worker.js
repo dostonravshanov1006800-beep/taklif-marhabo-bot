@@ -52,6 +52,12 @@ function sanitizeInv(d, owner) {
       const v = d.p.v.slice(0, 3).map((x) => { const u = okMedia(Array.isArray(x) ? x[0] : x); const o2 = Array.isArray(x) && x[1] === 'p' ? 'p' : 'l'; return u && /\.(mp4|webm)(\?|$)/i.test(u) ? [u, o2] : null; }).filter(Boolean);
       if (v.length) p.v = v;
     }
+    // плейлист: только при основном треке, до 4 доп. аудио из нашего хранилища, названия привязаны к своему треку
+    if (o.u && Array.isArray(d.p.ul)) {
+      const un = Array.isArray(d.p.un) ? d.p.un : [];
+      const pl = d.p.ul.slice(0, 4).map((x, i) => ({ u: okMedia(x), n: cleanStr(typeof un[i] === 'string' ? un[i] : '', 40) })).filter((x) => x.u && /^media\/\d{3,15}\/[a-z0-9]{4,20}\.(mp3|m4a|ogg|wav)$/i.test(x.u) && x.u !== o.u);
+      if (pl.length) { p.ul = pl.map((x) => x.u); if (pl.some((x) => x.n)) p.un = pl.map((x) => x.n); }
+    }
     if (Object.keys(p).length) o.p = p;
     if ((d.vc === 1 || d.vc === true) && p.v && p.v.length) o.vc = 1; // видео-открытка: только если есть проверенный ролик
   }

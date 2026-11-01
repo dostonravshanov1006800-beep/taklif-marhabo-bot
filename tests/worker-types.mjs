@@ -58,3 +58,22 @@ function galCheck(name,san){
 }
 let gbad=galCheck('воркер',sanitizeInv)+galCheck('бот',bsan);
 if(gbad)process.exit(1);
+
+// П.6 плейлист: одинаково для воркера и бота
+const AU=(n)=>Array.from({length:n},(_,i)=>'media/123456/trk'+(i+1)+'ab.mp3');
+function plCheck(name,san){
+  const bad=[]; const base={t:'wedding',a:'A',i:'abc123',u:'media/123456/main1ab.mp3'};
+  const a=san({...base,p:{ul:AU(2),un:['Вальс','Финал']}},'1');
+  if(!a||!a.p||a.p.ul.length!==2||a.p.un.join()!=='Вальс,Финал')bad.push('базовый');
+  const b=san({...base,p:{ul:AU(9)}},'1'); if(!b||!b.p||b.p.ul.length!==4)bad.push('лимит 4: '+(b&&b.p&&b.p.ul&&b.p.ul.length));
+  const c=san({t:'wedding',a:'A',i:'abc123',p:{ul:AU(2)}},'1'); if(c&&c.p&&c.p.ul)bad.push('без основного трека плейлист прошёл');
+  const d=san({...base,p:{ul:['media/123456/photo1ab.jpg','media/123456/clip1ab.mp4','javascript:alert(1)',AU(1)[0]]}},'1'); if(!d||!d.p||d.p.ul.length!==1||d.p.ul[0]!==AU(1)[0])bad.push('не-аудио прошло: '+JSON.stringify(d&&d.p));
+  const e=san({...base,p:{ul:[base.u,AU(1)[0]]}},'1'); if(!e||!e.p||e.p.ul.length!==1)bad.push('основной повторился в плейлисте');
+  const f=san({...base,p:{ul:[AU(1)[0],'javascript:x',AU(2)[1]],un:['один','два','три']}},'1'); if(!f||!f.p||f.p.ul.length!==2||f.p.un.join()!=='один,три')bad.push('названия сдвинулись: '+JSON.stringify(f&&f.p));
+  const g=san({...base,p:{ul:AU(1),un:['x'.repeat(200)]}},'1'); if(!g||!g.p||g.p.un[0].length!==40)bad.push('название не обрезано до 40');
+  const h=san({...base,p:{ul:AU(1),un:[123]}},'1'); if(!h||!h.p||h.p.un)bad.push('нестроковое название прошло');
+  const k=san({...base,p:{ul:'media/123456/trk1ab.mp3'}},'1'); if(k&&k.p&&k.p.ul)bad.push('ul-строка вместо массива прошла');
+  console.log(bad.length?name+' ПЛЕЙЛИСТ ПРОВАЛ: '+bad.join('; '):name+': плейлист (до 4, только аудио, названия по трекам) в порядке');
+  return bad.length;
+}
+if(plCheck('воркер',sanitizeInv)+plCheck('бот',bsan))process.exit(1);

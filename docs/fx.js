@@ -451,7 +451,7 @@
     // зацикливание без щелчка: затухание в конце, новый круг с нарастанием
     au.loop = false;
     au.addEventListener('timeupdate', function () { if (au.duration && au.duration - au.currentTime < 2.2 && au.volume > 0.02 && !au.fxEnding) { au.fxEnding = true; fade(0, 2000); } });
-    au.addEventListener('ended', function () { au.fxEnding = false; au.currentTime = 0; au.volume = 0; origPlay().then(function () { fade(target, 2200); }).catch(function () {}); });
+    au.addEventListener('ended', function () { au.fxEnding = false; if (window.__plNext) { au.volume = 0; window.__plNext(); au.play(); return; } au.currentTime = 0; au.volume = 0; origPlay().then(function () { fade(target, 2200); }).catch(function () {}); });
     au.addEventListener('seeked', function () { if (au.duration - au.currentTime > 3) au.fxEnding = false; });
     // уходим со вкладки: тише
     document.addEventListener('visibilitychange', function () { if (document.hidden && !au.paused) fade(target * 0.25, 600); else if (!au.paused) fade(target, 900); });

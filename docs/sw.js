@@ -1,5 +1,5 @@
 /* Офлайн-режим приглашений. Версия кэша подставляется CI (ci/build-sw.mjs). */
-const V='tk-921f1840';
+const V='tk-6cdfed81';
 const SHELL=['shared.js','fx.js','gallery2.js','fx.css','bundle.css','intro.js','intro.css','curtain.js','curtain.css','reveal.js','reveal.css','a11y.js','lines.js','phrases.js'];
 const MAXMEDIA=40; /* сколько картинок/музыки держим, чтобы не раздувать память телефона */
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V+'-shell').then(c=>Promise.all(SHELL.map(u=>c.add(new Request(u,{cache:'reload'})).catch(()=>0)))).then(()=>self.skipWaiting()))});
